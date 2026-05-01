@@ -635,9 +635,9 @@ function renderSceneScreen(phase) {
     ? buildDownedPanel(me)
     : buildPlayerPanel(phase, me, scData, players);
 
-  APP.innerHTML = `<div class="scene-screen">
-    <div class="shared-panel">${sharedHTML}</div>
-    <div class="player-panel">${playerHTML}</div>
+  APP.innerHTML = `<div class="scene-screen" style="display:flex;flex-direction:row;min-height:100vh;align-items:stretch;">
+    <div class="shared-panel" style="flex:1 1 55%;overflow-y:auto;border-right:2px solid var(--border-a);border-bottom:none;">${sharedHTML}</div>
+    <div class="player-panel" style="flex:0 0 360px;overflow-y:auto;">${playerHTML}</div>
   </div>`;
 
   manageTaunts(phase, players);
