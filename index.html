@@ -991,7 +991,9 @@ function gmReset() {
   if (!confirm('Reset entire session? All players return to archetype selection.')) return;
   ROOT.remove().then(() => {
     ROOT.set({ session: { active:false, phase:'archetype_selection' } });
-    sessionStorage.clear();
+    sessionStorage.removeItem('dcs_id');
+    sessionStorage.removeItem('dcs_name');
+    sessionStorage.removeItem('dcs_arch');
     myArch = null; myName = null;
   });
 }
