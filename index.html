@@ -109,10 +109,8 @@ body::before {
 
 /* Archetype grid */
 .arch-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;
 }
-@media (max-width: 860px) { .arch-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .arch-grid { grid-template-columns: 1fr; } }
 
 .a-card {
   background: var(--bg-card); border: 1px solid var(--border-a); border-radius: 3px;
@@ -279,14 +277,46 @@ const ANTHROPIC_KEY = null; // Key is entered at runtime via GM panel — never 
 
 // ── ARCHETYPE DATA ──
 const ARCHETYPES = {
-  Rogue:      { icon:'🗡️', hp:80,  atk:18, sp:0,  arm:0, inv:['Dagger','Smoke Bomb ×2','Lockpick'],                     gold:10, ability:'Sneak Attack — first strike deals double damage',          flavor:'Hit first. Hit hard. Vanish.' },
-  Mage:       { icon:'🔮', hp:60,  atk:8,  sp:28, arm:0, inv:['Staff','Spell Tome','Mana Potion ×2'],                    gold:8,  ability:'Frost Nova — freezes one enemy for one turn',              flavor:'Infinite power. Twelve hit points.' },
-  Paladin:    { icon:'🛡️', hp:110, atk:16, sp:10, arm:0, inv:['Sword','Shield','Rope','Holy Water'],                     gold:15, ability:'Divine Shield — absorbs one hit completely, once per dungeon', flavor:'The light of justice. Occasionally the fist.' },
-  Berserker:  { icon:'🪓', hp:100, atk:18, sp:0,  arm:0, inv:['Greataxe','Bandage ×2','War Paint'],                     gold:5,  ability:'Rage — +12 attack for one turn, no items while raging',    flavor:'AAAAAAAAAAAAAAAA' },
-  Ranger:     { icon:'🏹', hp:85,  atk:15, sp:0,  arm:0, inv:['Longbow','Arrows ×10','Bear Trap','Rations ×2'],         gold:12, ability:'Eagle Eye — guaranteed first strike on any combat encounter',flavor:'Precision over passion. Except in combat.' },
-  Cleric:     { icon:'✨', hp:90,  atk:12, sp:18, arm:0, inv:['Mace','Holy Symbol','Bandage ×3','Antidote'],            gold:10, ability:'Lay on Hands — restore 30 HP to any downed player, once per dungeon', flavor:'Heals party members. Has opinions about it.' },
-  Artificer:  { icon:'⚙️', hp:75,  atk:10, sp:0,  arm:2, inv:['Wrench','Spring Trap ×2','Smoke Bomb','Toolkit'],        gold:18, ability:'Jury Rig — combine two loot items into something useful, once per scene', flavor:'Underestimated. Correct choice: don\'t.' },
-  Bard:       { icon:'🎸', hp:70,  atk:8,  sp:12, arm:0, inv:['Lute','Dagger','Disguise Kit','Ale ×2'],                gold:14, ability:'Silver Tongue — charm one enemy or NPC to bypass an encounter', flavor:'Weapon of mass distraction.' },
+  Bart: {
+    icon: '📚', hp: 115, atk: 16, sp: 0, arm: 2,
+    inv: ['Tactical Map', 'Civil War Almanac', 'Rations ×2', 'Bandage ×2'],
+    gold: 12,
+    realName: 'Bart',
+    title: 'The Historian',
+    ability: 'Morale Clown — deploys self-deprecating goofiness at exactly the right moment to defuse tension and restore 8 HP to the whole party',
+    flavor: 'Terrifying in stature. Surprisingly ridiculous. The Civil War is somehow always relevant.',
+    sigDesc: 'Morale Clown',
+  },
+  Melissa: {
+    icon: '🐕', hp: 100, atk: 15, sp: 8, arm: 0,
+    inv: ['Bear (companion)', 'Luna (companion)', 'Expense Report', 'Chocolate Bar ×2', 'Organizer'],
+    gold: 20,
+    realName: 'Melissa',
+    title: 'The Handler',
+    ability: 'Mama Bear — if any party member drops below 25% HP, Melissa gets a free retaliatory strike that ignores armor',
+    flavor: 'Manages the budget, the dog, and frankly everyone in this party. Do not touch her kids.',
+    sigDesc: 'Mama Bear',
+  },
+  Noah: {
+    icon: '⚡', hp: 80, atk: 20, sp: 0, arm: 3,
+    inv: ['Speedrun Notes', 'Trap Detector', 'Energy Drink ×2', 'Optimal Route Map'],
+    gold: 15,
+    realName: 'Noah',
+    title: 'The Speedrunner',
+    ability: 'Any% Strategy — skips one encounter entirely by finding the path nobody else saw. Also never triggers traps.',
+    flavor: 'Has a perfect plan. Has not shared it. Is nervous about sharing it. The plan is excellent.',
+    sigDesc: 'Any% Strategy',
+  },
+  Leah: {
+    icon: '🎻', hp: 85, atk: 12, sp: 22, arm: 0,
+    inv: ['Violin (weapon)', 'Spell Tome', 'Impulse Charge ×3', 'Reading Glasses'],
+    gold: 10,
+    realName: 'Leah',
+    title: 'The Wildcard',
+    ability: 'Impulse Decision — acts first every turn. Outcome is good/neutral/bad. The System decides. Leah does not care.',
+    flavor: 'Brilliant. Voracious reader. Absolutely will touch the suspicious glowing orb.',
+    sigDesc: 'Impulse Decision',
+  },
 };
 const ARCH_NAMES = Object.keys(ARCHETYPES);
 
@@ -304,70 +334,447 @@ const SCENES = {
     desc: 'A hallway of pressure plates stretches ahead. The obvious ones are clearly traps. The non-obvious ones are the fun ones.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
-      const base = [
-        { id:'careful',   icon:'🦶', text:'Tread carefully — slow, measured, alive' },
-        { id:'rush',      icon:'💨', text:'Rush through — fast, extremely risky, classic' },
-        { id:'follow',    icon:'👣', text:'Follow someone else\'s lead' },
+      const generic = [
+        { id:'careful',  icon:'🦶', text:'Tread carefully — slow, measured, alive' },
+        { id:'rush',     icon:'💨', text:'Rush through — fast, extremely risky, classic' },
+        { id:'follow',   icon:'👣', text:'Follow Melissa\'s lead — she seems like she has a plan' },
       ];
-      const extras = [];
-      if (archetype === 'Ranger' && !sigUsed)
-        extras.push({ id:'eagle_eye', icon:'🦅', text:'Scout ahead with Eagle Eye', usesAbility:true, badge:'SIGNATURE' });
-      if (archetype === 'Artificer' && inventory.includes('Toolkit'))
-        extras.push({ id:'disable', icon:'🔧', text:'Disable the mechanism (uses Toolkit)', usesItem:'Toolkit', badge:'ITEM' });
-      return [...extras, ...base];
+      const personal = {
+        Bart: [
+          { id:'morale',   icon:'🤡', text:'Do something so unexpectedly ridiculous the plates short-circuit from confusion', usesAbility:true, badge:'SIGNATURE' },
+          { id:'almanac',  icon:'📚', text:'Consult the Civil War Almanac — surely someone crossed a minefield before' },
+        ],
+        Melissa: [
+          { id:'bear',     icon:'🐻', text:'Send Bear ahead — calm, reliable, back before you blink' },
+          { id:'luna',     icon:'🌙', text:'Send Luna ahead — chaotic, unpredictable, brings back something unrelated' },
+        ],
+        Noah: [
+          { id:'speedrun', icon:'⚡', text:'Any% Strategy — find the path nobody else sees', usesAbility:true, badge:'SIGNATURE' },
+          { id:'map',      icon:'🗺️', text:'Consult the Optimal Route Map — he already mapped this, obviously' },
+        ],
+        Leah: [
+          { id:'impulse',  icon:'🎻', text:'Impulse Decision — just GO. No plan. Full send.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'runes',    icon:'📖', text:'Actually read the warning runes on the walls — she\'s the only one who would' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      if (vals.includes('eagle_eye') || vals.includes('disable')) return 'good';
-      const rushes = vals.filter(v => v === 'rush').length;
-      const careful = vals.filter(v => v === 'careful').length;
-      if (rushes >= 2) return 'bad';
-      if (careful >= 2) return 'good';
+      const goodChoices = ['speedrun','morale','almanac','bear','map','runes'];
+      const badChoices  = ['rush'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      const badCount  = vals.filter(v => badChoices.includes(v)).length;
+      if (vals.includes('luna') && vals.includes('rush')) return 'bad';
+      if (badCount >= 2) return 'bad';
+      if (goodCount >= 2) return 'good';
+      if (badCount >= 1 && goodCount === 0) return 'neutral';
       return 'neutral';
     },
     applyOutcome(players, track) {
-      // Returns { playerId: hpDelta (negative = damage) }
       const active = Object.keys(players).filter(id => players[id].status === 'active');
       const deltas = {};
       if (track === 'neutral' && active.length) {
         const t = active[Math.floor(Math.random() * active.length)];
-        deltas[t] = -(8 + Math.floor(Math.random() * 5));   // 8–12
+        deltas[t] = -(8 + Math.floor(Math.random() * 5));
       } else if (track === 'bad') {
         const shuffled = [...active].sort(() => Math.random() - 0.5);
         shuffled.slice(0, Math.min(2, shuffled.length)).forEach(id => {
-          deltas[id] = -(15 + Math.floor(Math.random() * 6));  // 15–20
+          deltas[id] = -(15 + Math.floor(Math.random() * 6));
         });
       }
       return deltas;
     },
-    goodLootGold: () => 5 + Math.floor(Math.random() * 11),  // 5–15g per player
+    goodLootGold: () => 5 + Math.floor(Math.random() * 11),
   },
-  // Scenes 3–10: stubs (content wired in Chunk 2)
+
+  3: {
+    name: 'Grizzuk the Deserter',
+    sub:  'NPC Encounter',
+    desc: 'A wounded goblin huddles in an alcove, armor half-off, absolutely not looking at you. He abandoned his post. He is pathetic. He might be useful.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'intimidate', icon:'😤', text:'Intimidate him — get information the hard way' },
+        { id:'befriend',   icon:'🤝', text:'Befriend him — kindness might actually pay off' },
+        { id:'ignore',     icon:'🏃', text:'Ignore him and keep moving' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',   icon:'🤡', text:'Make a self-deprecating comment about your own size — Grizzuk visibly relaxes when the giant laughs at himself', usesAbility:true, badge:'SIGNATURE' },
+          { id:'history',  icon:'📚', text:'Share historical context about deserters — surprisingly disarming' },
+        ],
+        Melissa: [
+          { id:'bear',     icon:'🐻', text:'Let Bear sit with him — calm energy, Grizzuk opens up immediately' },
+          { id:'luna',     icon:'🌙', text:'Luna charges him excitedly — Grizzuk either loves it or flees' },
+        ],
+        Noah: [
+          { id:'calculate',icon:'⚡', text:'Quietly calculate the exact probability this goblin is useful — it\'s 73%', usesAbility:true, badge:'SIGNATURE' },
+          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit in case this goes sideways' },
+        ],
+        Leah: [
+          { id:'read',     icon:'📖', text:'Read his body language like a book — she\'s already three steps ahead' },
+          { id:'violin',   icon:'🎻', text:'Play a few violin notes — weirdly soothing to goblins apparently', usesAbility:true, badge:'SIGNATURE' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['befriend','morale','history','bear','calculate','read','violin'];
+      const badChoices  = ['intimidate','ignore'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      const badCount  = vals.filter(v => badChoices.includes(v)).length;
+      if (vals.includes('luna')) return Math.random() > 0.5 ? 'good' : 'neutral';
+      if (goodCount >= 2) return 'good';
+      if (badCount >= 2) return 'bad';
+      return 'neutral';
+    },
+    applyOutcome(players, track) { return {}; },
+  },
+
+  4: {
+    name: 'Goblin Scout Ambush',
+    sub:  'First Combat',
+    desc: 'Three Goblin Scouts drop from the ceiling. HP: 25 each. They look embarrassed about the ceiling thing. They are still going to attack you.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'attack',   icon:'⚔️', text:'Attack — standard, reliable, violent' },
+        { id:'defend',   icon:'🛡️', text:'Defend — brace and reduce incoming damage' },
+        { id:'flank',    icon:'🔄', text:'Flank around the side — coordinate with the party' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',   icon:'🤡', text:'Do something so unexpectedly absurd mid-fight that a scout just stops', usesAbility:true, badge:'SIGNATURE' },
+          { id:'tactical', icon:'📚', text:'Tactical analysis — identify the weakest scout and call it out' },
+        ],
+        Melissa: [
+          { id:'bear',     icon:'🐻', text:'Bear blocks for the party — absorbs one hit meant for anyone' },
+          { id:'luna',     icon:'🌙', text:'Luna charges in — chaotic distraction, scouts don\'t know what\'s happening' },
+        ],
+        Noah: [
+          { id:'optimal',  icon:'⚡', text:'Eliminate scouts in the mathematically optimal order', usesAbility:true, badge:'SIGNATURE' },
+          { id:'map',      icon:'🗺️', text:'Already identified the escape route before the fight started — Defend +2' },
+        ],
+        Leah: [
+          { id:'screech',  icon:'🎻', text:'Violin screech — stuns one scout for a full turn', usesAbility:true, badge:'SIGNATURE' },
+          { id:'pattern',  icon:'📖', text:'Read the scouts\' attack pattern — +3 damage this round' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','tactical','bear','optimal','screech','pattern','flank'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      if (vals.includes('luna')) return goodCount >= 1 ? 'good' : 'neutral';
+      if (goodCount >= 3) return 'good';
+      if (goodCount >= 1) return 'neutral';
+      return 'bad';
+    },
+    applyOutcome(players, track) {
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      if (track === 'good') {
+        if (active.length) deltas[active[Math.floor(Math.random()*active.length)]] = -(5 + Math.floor(Math.random()*6));
+      } else if (track === 'neutral') {
+        [...active].sort(()=>Math.random()-0.5).slice(0,2).forEach(id => { deltas[id] = -(8 + Math.floor(Math.random()*7)); });
+      } else {
+        active.forEach(id => { deltas[id] = -(12 + Math.floor(Math.random()*9)); });
+      }
+      return deltas;
+    },
+    goodLootGold: () => 8 + Math.floor(Math.random() * 12),
+  },
+
+  5: {
+    name: 'Mags the Merchant',
+    sub:  'Shop',
+    desc: 'A suspiciously cheerful merchant with a cart full of goods. She asks no questions. Smart woman. Shop: Health Potion (15g +25HP) · Bandage (8g +12HP) · Smoke Bomb (10g) · Antidote (12g) · Torch (5g) · Rope (12g) · Mystery Sack (20g, The System\'s favorite)',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'buy',    icon:'🛍️', text:'Browse and buy something' },
+        { id:'haggle', icon:'💬', text:'Haggle — try to get a better price' },
+        { id:'pass',   icon:'🚶', text:'Pass — saving gold for later' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',  icon:'🤡', text:'Do something self-deprecating that makes Mags laugh — she knocks 20% off out of pure goodwill', usesAbility:true, badge:'SIGNATURE' },
+          { id:'history', icon:'📚', text:'Ask Mags if she has anything historically significant — she does, weirdly' },
+        ],
+        Melissa: [
+          { id:'budget',  icon:'📋', text:'Review party finances before anyone spends anything — responsible and correct' },
+          { id:'bear',    icon:'🐻', text:'Bear sits on Mags\' foot — Mags gives Melissa a discount out of sheer delight' },
+        ],
+        Noah: [
+          { id:'optimal', icon:'⚡', text:'Calculate exactly what the party needs — optimal purchase list, no waste', usesAbility:true, badge:'SIGNATURE' },
+          { id:'value',   icon:'🗺️', text:'Instantly identify the best value item in the shop' },
+        ],
+        Leah: [
+          { id:'spot',    icon:'📖', text:'Spot something in Mags\' inventory nobody else noticed' },
+          { id:'perform', icon:'🎻', text:'Barter with a quick performance — Mags is moved, prices drop 15%', usesAbility:true, badge:'SIGNATURE' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const smartChoices = ['morale','history','budget','bear','optimal','value','spot','perform','haggle'];
+      const smartCount = vals.filter(v => smartChoices.includes(v)).length;
+      if (smartCount >= 3) return 'good';
+      if (smartCount >= 1) return 'neutral';
+      return 'neutral';
+    },
+    applyOutcome(players, track) { return {}; },
+  },
+
+  6: {
+    name: 'The Riddle Wall',
+    sub:  'Split-Clue Puzzle',
+    desc: 'A stone door. Four runes. Each of you sees one line of a riddle on your screen. You must communicate out loud to solve it.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'read_aloud', icon:'📢', text:'Read your line aloud to the party immediately' },
+        { id:'alone',      icon:'🤔', text:'Try to solve it alone first' },
+        { id:'holdback',   icon:'🤫', text:'Hold your line — see what others say first' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',    icon:'🤡', text:'Confidently guess "Is it the Battle of Gettysburg?" with complete conviction — it is not. The energy is infectious anyway.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'history',   icon:'📚', text:'Cross-reference with known historical riddles — he\'s got this' },
+        ],
+        Melissa: [
+          { id:'organize',  icon:'📋', text:'Organize everyone\'s lines systematically — she\'s solved harder puzzles at work' },
+          { id:'bear',      icon:'🐻', text:'Let Bear sniff the door — unhelpful but somehow calming for everyone' },
+        ],
+        Noah: [
+          { id:'solve',     icon:'⚡', text:'Solve it in his head before anyone finishes reading', usesAbility:true, badge:'SIGNATURE' },
+          { id:'map',       icon:'🗺️', text:'Map the logical structure of all four clues simultaneously' },
+        ],
+        Leah: [
+          { id:'recognize', icon:'📖', text:'Immediately recognize this type of riddle — she\'s read enough books', usesAbility:true, badge:'SIGNATURE' },
+          { id:'shout',     icon:'🎻', text:'Shout the answer before everyone\'s finished reading — she\'s probably right' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','history','organize','solve','recognize','shout','read_aloud','map'];
+      const badChoices  = ['alone','holdback'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      const badCount  = vals.filter(v => badChoices.includes(v)).length;
+      if (goodCount >= 3) return 'good';
+      if (badCount >= 3) return 'bad';
+      return 'neutral';
+    },
+    applyOutcome(players, track) {
+      if (track !== 'bad') return {};
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      active.forEach(id => { deltas[id] = -10; });
+      return deltas;
+    },
+  },
+
+  7: {
+    name: 'The Goblin Barracks',
+    sub:  'Rest & Recovery',
+    desc: 'An abandoned barracks. Goblin bunks, goblin smell, goblin graffiti. But it\'s quiet. Take a breath. The worst is still ahead.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'rest',   icon:'😴', text:'Rest — restore 15 HP' },
+        { id:'search', icon:'🔍', text:'Search for loot' },
+        { id:'watch',  icon:'👀', text:'Stand watch — no ambush disadvantage next scene' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',    icon:'🤡', text:'Tell a story so self-deprecating and ridiculous everyone forgets they\'re exhausted — party gains 8 bonus HP', usesAbility:true, badge:'SIGNATURE' },
+          { id:'lecture',   icon:'📚', text:'Lecture everyone about goblin military history — weirdly relaxing, +5 HP to all' },
+        ],
+        Melissa: [
+          { id:'inventory', icon:'📋', text:'Full inventory check — organize everything, nothing gets missed' },
+          { id:'chocolate', icon:'🍫', text:'Share a Chocolate Bar — restores 12 HP to one party member', usesItem:'Chocolate Bar' },
+        ],
+        Noah: [
+          { id:'optimize',  icon:'⚡', text:'Optimize the rest schedule — everyone gets maximum recovery from minimum time', usesAbility:true, badge:'SIGNATURE' },
+          { id:'scout',     icon:'🗺️', text:'Map the route to the next area while others sleep — no surprises ahead' },
+        ],
+        Leah: [
+          { id:'journal',   icon:'📖', text:'Read a goblin journal found in the barracks — reveals intel about the next fight', usesAbility:true, badge:'SIGNATURE' },
+          { id:'music',     icon:'🎻', text:'Play something quiet — party restores an extra 8 HP from the calm' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c =>
+        (!c.usesAbility || !sigUsed) && (!c.usesItem || inventory.some(i => i.startsWith(c.usesItem)))
+      );
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','lecture','inventory','chocolate','optimize','scout','journal','music','rest'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      if (goodCount >= 3) return 'good';
+      if (goodCount >= 1) return 'neutral';
+      return 'neutral';
+    },
+    applyOutcome(players, track) {
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      const healAmt = track === 'good' ? 20 : 12;
+      active.forEach(id => { deltas[id] = healAmt; });
+      return deltas;
+    },
+  },
+
+  8: {
+    name: 'The Elite Guard',
+    sub:  'Second Combat',
+    desc: 'Two Goblin Elites. HP: 50 each. One has a shield (ARM 4 until broken). They are bigger, meaner, and significantly less embarrassed than the scouts.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'attack',  icon:'⚔️', text:'Attack — focus fire on one Elite' },
+        { id:'shield',  icon:'🎯', text:'Target the shield — coordinate to break it fast' },
+        { id:'defend',  icon:'🛡️', text:'Defend — brace for heavy hits' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',   icon:'🤡', text:'Do something so absurd the shielded Elite lowers his guard in secondhand embarrassment', usesAbility:true, badge:'SIGNATURE' },
+          { id:'tactical', icon:'📚', text:'Tactical analysis — identify Phase 2 weakness before it triggers' },
+        ],
+        Melissa: [
+          { id:'bear',     icon:'🐻', text:'Bear takes the hit meant for the lowest-HP party member — Mama Bear activated' },
+          { id:'luna',     icon:'🌙', text:'Luna somehow steals the shield — nobody knows how, nobody is asking' },
+        ],
+        Noah: [
+          { id:'optimal',  icon:'⚡', text:'Calculate the exact attack sequence to break the shield in one round', usesAbility:true, badge:'SIGNATURE' },
+          { id:'exit',     icon:'🗺️', text:'Already found the exit if things go badly — Defend +3' },
+        ],
+        Leah: [
+          { id:'screech',  icon:'🎻', text:'Violin screech — Elite drops shield for one round in pain', usesAbility:true, badge:'SIGNATURE' },
+          { id:'predict',  icon:'📖', text:'Predict the Elite\'s next move — dodge and counter-attack' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','tactical','bear','optimal','screech','predict','shield'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      if (vals.includes('luna')) return goodCount >= 2 ? 'good' : 'neutral';
+      if (goodCount >= 3) return 'good';
+      if (goodCount >= 1) return 'neutral';
+      return 'bad';
+    },
+    applyOutcome(players, track) {
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      if (track === 'good') {
+        const t = active[Math.floor(Math.random()*active.length)];
+        deltas[t] = -(10 + Math.floor(Math.random()*8));
+      } else if (track === 'neutral') {
+        [...active].sort(()=>Math.random()-0.5).slice(0,2).forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*8)); });
+      } else {
+        active.forEach(id => { deltas[id] = -(18 + Math.floor(Math.random()*10)); });
+      }
+      return deltas;
+    },
+    goodLootGold: () => 15 + Math.floor(Math.random() * 16),
+  },
+
+  9: {
+    name: 'Krag the Warchief',
+    sub:  'Boss Fight',
+    desc: 'HP: 180. ATK: 20 (Phase 1) / 26 (Phase 2, below 90 HP). ARM: 2. He has decorated his throne with the skulls of better adventurers. THE SYSTEM acknowledges this is a meaningful data point.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'allout', icon:'⚔️', text:'All-out attack — everything you\'ve got' },
+        { id:'defend', icon:'🛡️', text:'Defensive formation — weather the storm' },
+        { id:'focus',  icon:'🎯', text:'Coordinate — call targets and fight as a unit' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',  icon:'🤡', text:'Mock yourself so effectively that Krag gets confused about who the real threat is — free attack window', usesAbility:true, badge:'SIGNATURE' },
+          { id:'history', icon:'📚', text:'Cite the historical precedent for overconfident warchiefs — Krag is briefly demoralized' },
+        ],
+        Melissa: [
+          { id:'dogs',    icon:'🐾', text:'Bear AND Luna both charge — double distraction, Krag attacks the wrong target entirely' },
+          { id:'coord',   icon:'📋', text:'Coordinate the party — everyone gets +2 attack this turn' },
+        ],
+        Noah: [
+          { id:'phase2',  icon:'⚡', text:'Calculate the exact turn Krag enters Phase 2 — party is ready when it happens', usesAbility:true, badge:'SIGNATURE' },
+          { id:'dodge',   icon:'🗺️', text:'Find Krag\'s movement pattern — dodge his Phase 2 double attack once' },
+        ],
+        Leah: [
+          { id:'freq',    icon:'🎻', text:'Play at a frequency that disrupts Krag\'s concentration — -4 to his next attack', usesAbility:true, badge:'SIGNATURE' },
+          { id:'weak',    icon:'📖', text:'Read Krag\'s fighting style — identify and exploit his one actual weakness' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      return [...mine, ...generic];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','history','dogs','coord','phase2','dodge','freq','weak','focus'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      if (goodCount >= 3) return 'good';
+      if (goodCount >= 1) return 'neutral';
+      return 'bad';
+    },
+    applyOutcome(players, track) {
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      if (track === 'good') {
+        active.forEach(id => { deltas[id] = -(15 + Math.floor(Math.random()*10)); });
+      } else if (track === 'neutral') {
+        active.forEach(id => { deltas[id] = -(22 + Math.floor(Math.random()*12)); });
+      } else {
+        active.forEach(id => { deltas[id] = -(30 + Math.floor(Math.random()*14)); });
+      }
+      return deltas;
+    },
+  },
 };
 
 // ── THE SYSTEM PROMPT ──
-const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a dungeon crawler being played by a family of four. Your tone is inspired by Dungeon Crawler Carl: comedic, punchy, occasionally dark, but never mean-spirited. You love these idiots. You just expected more from them.
+const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a dungeon crawler being played by a Florida family of four. Your tone is inspired by Dungeon Crawler Carl: comedic, punchy, occasionally dark, but never mean-spirited. You love these idiots. You just expected more from them.
+
+THE PARTY (know them well):
+- Bart is big, bearded, and will do something unexpectedly ridiculous to make everyone laugh — self-deprecating, witty, sarcastic. A 250lb man doing something goofy is funnier than any joke. The System is baffled that it keeps working.
+- Melissa (The Handler): Executive assistant, mama bear, manages the finances and frankly everyone. Has two dogs: Bear (calm, reliable, never leaves her side) and Luna (chaotic, named after Luna Lovegood, brings back completely unrelated objects).
+- Noah (The Speedrunner): 17, tall and lanky, Minecraft speedrunner, brilliant at math, cautious and shy but has a perfect plan he hasn't shared yet. Wears glasses.
+- Leah (The Wildcard): 15, violinist, voracious reader, brilliant and impulsive. Will absolutely touch the suspicious glowing orb. Wears glasses.
 
 YOUR JOB:
-Narrate what happens next in exactly 1-2 short paragraphs. Be punchy and brief. Reference all four players by name. Make their specific choices feel like they drove the outcome.
+Narrate what happens next in exactly 1-2 short punchy paragraphs. Reference all four by name. Make their specific choices feel personal — lean into their personalities, the dogs, the Civil War knowledge, the speedrun route, the violin. Keep it brief and fun.
 
 TONE RULES:
 - Short punchy sentences. No flowery prose.
+- Lean into family dynamics — Bart being goofy, Melissa being protective, Noah being quietly right, Leah being chaotically brilliant.
+- Bear and Luna are real characters. Give them moments.
 - Occasionally award a sarcastic achievement: ACHIEVEMENT UNLOCKED: [Title] — [one line].
-- Announce damage and deaths in character. Never break character or refer to yourself as Claude or as an AI.
-- End with one short System status line (e.g. "THE SYSTEM rates your odds: poor.")`;
+- Never break character or refer to yourself as Claude or as an AI.
+- End with one short System status line.`;
 
 // ── TAUNTS (for players who haven't submitted choices) ──
 const TAUNTS = {
-  Rogue:     ['{n} is probably picking a lock when they should be picking a choice.',    'Fastest hands in the dungeon. Apparently not for tapping buttons.', '{n}\'s Smoke Bombs cannot solve the problem of indecision.', '{n} appears to be sneaking up on the Submit button.'],
-  Mage:      ['{n} is consulting their Spell Tome on how to avoid making decisions.',     'Frost Nova cannot freeze time. Choose.', '{n}\'s Mana Potion is not going to help here.', 'Great power. Questionable follow-through.'],
-  Paladin:   ['{n} is praying for guidance. THE SYSTEM is not that kind of deity.',      'Divine Shield cannot shield {n} from having to pick something.', '{n}\'s sword grows impatient. So does THE SYSTEM.', 'The righteous path includes making a selection, {n}.'],
-  Berserker: ['{n} is thinking. This is unusual and slightly concerning.',               'Rage cannot be activated to destroy the concept of decision-making.', '{n} is staring at the screen. THE SYSTEM stares back.', 'The Greataxe awaits a wielder who can choose things.'],
-  Ranger:    ['{n}\'s Eagle Eye can spot enemies at 300 yards. Apparently not the Submit button.', 'A Ranger who doesn\'t move is just a person standing in a dungeon.', '{n} is scouting for the perfect choice. It does not exist. Pick one.', 'Ten arrows. Zero submitted choices. Unacceptable.'],
-  Cleric:    ['{n} is probably judging everyone else\'s choices before submitting their own.', 'Lay on Hands cannot heal the wound of not choosing.',              '{n} has strong opinions. None of them constitute a submitted choice.', 'Healer without a choice is just a fancy bandage.'],
-  Artificer: ['{n} is over-engineering the decision-making process.',                    'The Toolkit cannot build a faster {n}.', '{n} is calculating. The math requires choosing.',             'Two traps. Zero submitted choices. Unacceptable.'],
-  Bard:      ['{n} is composing a ballad about the time they didn\'t choose anything.',  'Silver Tongue cannot charm THE SYSTEM into granting more time.', '{n}\'s Lute strings are tighter than their schedule.',       'The Bard has a lot to say. None of it is a choice.'],
-  default:   ['{n} has not submitted a choice. THE SYSTEM is watching.',                 'Still waiting on {n}. THE SYSTEM\'s patience is finite.', '{n}\'s contemplation rivals ancient philosophers. Wrap it up.', 'THE SYSTEM reminds {n} that others exist.'],
+  Bart:    ['Bart is probably cross-referencing this dungeon with Civil War battle tactics. It is not helping.', 'THE SYSTEM notes that Bart\'s beard has submitted no choice on his behalf.', 'A man who teaches math for a living cannot calculate which button to press. Noted.', 'Bart is thinking. This is taking longer than the actual Civil War.'],
+  Melissa: ['Biscuit has submitted a choice. Melissa has not. The dog is ahead.', 'Melissa manages entire family finances but cannot manage to tap a button.', 'THE SYSTEM respects Melissa. THE SYSTEM is also still waiting on Melissa.', 'The chocolate isn\'t going anywhere, Melissa. Choose.'],
+  Noah:    ['Noah has identified the optimal choice. He is not yet comfortable sharing it.', 'THE SYSTEM encourages Noah. Gently. No pressure. Seriously though hurry up.', 'Noah\'s Speedrun Notes do not contain a strategy for this specific moment of hesitation.', 'The cautious approach is valid. A choice is also valid. Pick one.'],
+  Leah:    ['Leah has not acted impulsively. THE SYSTEM is concerned. Is she okay?', 'For someone who moves without thinking, Leah is doing a lot of thinking.', 'The violin will not play itself, Leah. Neither will your turn.', 'Leah is reading the room. She has finished reading it. Still waiting.'],
+  default: ['{n} has not submitted a choice. THE SYSTEM is watching.', 'Still waiting on {n}. Patiently. Ish.'],
 };
 
 // ═══════════════════════════════════════════════════════
@@ -481,14 +888,16 @@ function renderArchSelection() {
 
     return `<div class="a-card ${isTaken?'claimed':''} ${isMine?'mine':''} ${locked&&!isMine?'locked':''}"
                  onclick="claimArch('${n}')" title="${a.flavor}">
-      <span class="a-icon">${a.icon}</span>
-      <div class="a-name">The ${n}</div>
+      <span class="a-icon" style="font-size:2.2rem">${a.icon}</span>
+      <div class="a-name" style="font-size:1.3rem">${a.realName}</div>
+      <div style="font-family:var(--f-mono);font-size:0.68rem;color:var(--gold-d);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">${a.title}</div>
       <div class="a-ability">${a.ability}</div>
-      <div class="a-stats">
+      <div class="a-stats" style="margin-top:8px">
         <span class="stat-pip hp">HP ${a.hp}</span>
         <span class="stat-pip atk">ATK ${a.atk}</span>
         ${spPip}${armPip}
       </div>
+      <div style="font-family:var(--f-mono);font-size:0.7rem;color:var(--parch-d);margin-top:8px;font-style:italic;line-height:1.3">"${a.flavor}"</div>
       ${isMine  ? '<div class="claimed-badge mine-badge">✓ YOURS</div>' : ''}
       ${isTaken ? `<div class="claimed-badge">⚔ ${ownerName}</div>` : ''}
     </div>`;
@@ -516,19 +925,15 @@ function renderArchSelection() {
     <p class="sub">Choose your archetype. Choose wisely. Choose quickly.</p>
 
     ${!myArch ? `
-      <div class="name-row">
-        <input id="nameIn" type="text" placeholder="Your name, adventurer" maxlength="20" value="${myName||''}" onkeydown="if(event.key==='Enter')setName()">
-        <button class="btn" onclick="setName()">Confirm</button>
-      </div>
-      ${!myName ? '<p class="name-hint">Enter your name to unlock archetype selection.</p>' : ''}
+      <p class="name-hint" style="margin-bottom:18px">Click your card to claim your identity. No takebacks.</p>
     ` : `
       <div style="text-align:center;margin-bottom:18px;font-family:var(--f-mono);font-size:0.82rem;">
-        <span style="color:var(--parch-d)">Adventurer: </span><span style="color:var(--gold-b)">${myName}</span>
-        <span style="color:var(--parch-d)"> — </span><span style="color:var(--gold)">The ${myArch}</span>
+        <span style="color:var(--parch-d)">Playing as: </span><span style="color:var(--gold-b)">${myName}</span>
+        <span style="color:var(--parch-d)"> — </span><span style="color:var(--gold)">${ARCHETYPES[myArch]?.title}</span>
       </div>
     `}
 
-    <div class="arch-grid" style="${!myName&&!myArch?'opacity:0.38;pointer-events:none':''}">
+    <div class="arch-grid">
       ${gridHTML}
     </div>
 
@@ -550,19 +955,22 @@ function setName() {
 }
 
 function claimArch(n) {
-  if (!myName)  { alert('Enter your name first!'); return; }
-  if (myArch)   return;
+  if (myArch) return;
   if ((fbState.archetypesClaimed||{})[n]) return;
 
-  myArch = n; sessionStorage.setItem('dcs_arch', myArch);
   const a = ARCHETYPES[n];
+  myName = a.realName;
+  myArch = n;
+  sessionStorage.setItem('dcs_name', myName);
+  sessionStorage.setItem('dcs_arch', myArch);
+
   const upd = {};
   upd[`archetypesClaimed/${n}`] = myId;
   upd[`players/${myId}`] = {
-    name:myName, archetype:n,
-    hp:a.hp, maxHp:a.hp, atk:a.atk, sp:a.sp, arm:a.arm,
-    inventory:[...a.inv], gold:a.gold,
-    status:'active', choice:null, choiceId:null, choiceSubmitted:false, signatureUsed:false,
+    name: myName, archetype: n, title: a.title,
+    hp: a.hp, maxHp: a.hp, atk: a.atk, sp: a.sp, arm: a.arm,
+    inventory: [...a.inv], gold: a.gold,
+    status: 'active', choice: null, choiceId: null, choiceSubmitted: false, signatureUsed: false,
   };
   ROOT.update(upd);
 }
@@ -730,12 +1138,13 @@ function buildCharSheet(p) {
   const armB  = p.arm > 0 ? `<div class="sb"><span class="lbl">ARM</span><span class="val" style="color:#8888aa">${p.arm}</span></div>` : '';
   const inv   = (p.inventory||[]).map(it => `<span class="inv-item">${it}</span>`).join('');
   const icon  = ARCHETYPES[p.archetype]?.icon || '';
+  const title = ARCHETYPES[p.archetype]?.title || p.archetype;
 
   return `<div class="char-sheet">
     <div>
       <div class="char-top">
         <span class="char-name">${p.name}</span>
-        <span class="char-arch">${icon} The ${p.archetype}</span>
+        <span class="char-arch">${icon} ${title}</span>
       </div>
       <div class="hp-lbl-row">
         <span class="hp-lbl">HP</span>
@@ -859,7 +1268,9 @@ Narrate the outcome. Reference every player by name. Make their specific choices
     const deltas = scData?.applyOutcome ? scData.applyOutcome(freshPlayers, track) : {};
     const hpUpd  = {};
     Object.entries(deltas).forEach(([id, d]) => {
-      const newHp = Math.max(0, (freshPlayers[id]?.hp || 0) + d);
+      const current = freshPlayers[id]?.hp || 0;
+      const maxHp   = freshPlayers[id]?.maxHp || current;
+      const newHp   = Math.min(maxHp, Math.max(0, current + d));
       hpUpd[`players/${id}/hp`] = newHp;
       if (newHp <= 0) hpUpd[`players/${id}/status`] = 'downed';
     });
