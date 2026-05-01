@@ -415,11 +415,31 @@ try {
       sessionStorage.setItem('dcs_token', fbToken);
       sessionStorage.removeItem('dcs_name');
       sessionStorage.removeItem('dcs_arch');
-      // Generate a fresh player ID for the new session
       myId = 'p_' + Math.random().toString(36).substr(2,9);
       sessionStorage.setItem('dcs_id', myId);
       myName = null;
       myArch = null;
+    }
+
+    // Secondary check: if we think we have an archetype but Firebase doesn't know us, clear it
+    // This catches stale state from before the reset token system was in place
+    const phase = fbState.session?.phase || 'archetype_selection';
+    if (myArch && phase === 'archetype_selection') {
+      const knownPlayers = fbState.players || {};
+      if (!knownPlayers[myId]) {
+        sessionStorage.removeItem('dcs_name');
+        sessionStorage.removeItem('dcs_arch');
+        myName = null;
+        myArch = null;
+      }
+    }
+
+    // Only the GM tab fires API calls
+    if (isGM) {
+      const phase = fbState.session?.phase;
+      if (phase === 'waiting_for_narration') {
+        fireSceneNarration(fbState);
+      }
     }
 
     render();
@@ -562,7 +582,9 @@ function beginDungeon() {
     'session/beginInitiated': true,
     'session/phase': 'scene_intro',
     'session/currentScene': 1,
-  }).then(() => fireScene1Narration());
+  }).then(() => {
+    if (isGM) fireScene1Narration();
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -789,7 +811,8 @@ function checkAllSubmitted() {
     const ps = s.players || {};
     const allDone = Object.values(ps).every(p => p.status==='downed' || p.choiceSubmitted);
     if (allDone) {
-      ROOT.update({ 'session/phase':'waiting_for_narration' }).then(() => fireSceneNarration(s));
+      ROOT.update({ 'session/phase':'waiting_for_narration' });
+      // GM tab picks this up via the Firebase listener and fires the API call
     }
   });
 }
@@ -1037,9 +1060,7 @@ function gmForceNarration() {
       upd[`players/${id}/choiceSubmitted`] = true;
     }
   });
-  ROOT.update(upd).then(() => {
-    ROOT.once('value', snap => fireSceneNarration(snap.val()));
-  });
+  ROOT.update(upd);
 }
 
 function gmSaveKey() {
