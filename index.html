@@ -439,6 +439,8 @@ try {
       const phase = fbState.session?.phase;
       if (phase === 'waiting_for_narration') {
         fireSceneNarration(fbState);
+      } else if (phase === 'scene_intro') {
+        fireScene1Narration();
       }
     }
 
@@ -582,8 +584,6 @@ function beginDungeon() {
     'session/beginInitiated': true,
     'session/phase': 'scene_intro',
     'session/currentScene': 1,
-  }).then(() => {
-    if (isGM) fireScene1Narration();
   });
 }
 
