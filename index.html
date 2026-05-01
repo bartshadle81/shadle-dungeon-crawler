@@ -830,12 +830,12 @@ async function fireSceneNarration(state) {
   await lock.transaction(cur => { if (!cur) { acquired=true; return true; } });
   if (!acquired) return;
 
-  ROOT.update({ 'narration/generating':true });
+  // Immediately flip phase to 'narrating' so listener stops retriggering this function
+  await ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
 
   const players = state.players || {};
   const scData  = SCENES[scene];
 
-  // Build choice map { playerId: choiceId }
   const choiceMap = {};
   Object.entries(players).forEach(([id,p]) => { if (p.choiceId) choiceMap[id] = p.choiceId; });
 
@@ -861,7 +861,6 @@ Narrate the outcome. Reference every player by name. Make their specific choices
   try {
     const text = await callClaude(prompt);
 
-    // Apply HP deltas
     const deltas = scData?.applyOutcome ? scData.applyOutcome(players, track) : {};
     const hpUpd  = {};
     Object.entries(deltas).forEach(([id, d]) => {
@@ -870,7 +869,6 @@ Narrate the outcome. Reference every player by name. Make their specific choices
       if (newHp <= 0) hpUpd[`players/${id}/status`] = 'downed';
     });
 
-    // Good track: gold loot
     if (track === 'good' && scData?.goodLootGold) {
       const g = scData.goodLootGold();
       Object.keys(players).forEach(id => {
@@ -887,6 +885,8 @@ Narrate the outcome. Reference every player by name. Make their specific choices
       ...hpUpd,
     });
   } catch(e) {
+    // Clear the lock so Force Narration can retry
+    await lock.remove();
     ROOT.update({
       'narration/text': `THE SYSTEM has experienced a critical malfunction.\n[${e.message}]\nUse GM panel to continue.`,
       'narration/generating': false,
