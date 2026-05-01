@@ -157,10 +157,10 @@ body::before {
 /* ─────────────────────────────────────── */
 /*  SCENE SCREEN                           */
 /* ─────────────────────────────────────── */
-.scene-screen { display: flex; flex-direction: column; min-height: 100vh; }
+.scene-screen { display: flex; flex-direction: row; min-height: 100vh; align-items: stretch; }
 
 /* Shared panel */
-.shared-panel { background: var(--bg-panel); border-bottom: 2px solid var(--border-a); padding: 18px 22px; flex-shrink: 0; }
+.shared-panel { background: var(--bg-panel); border-right: 2px solid var(--border-a); padding: 18px 22px; flex: 1 1 55%; overflow-y: auto; }
 
 .scene-hdr { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
 .scene-num { font-family: var(--f-mono); font-size: 0.68rem; color: var(--gold-d); letter-spacing: 0.15em; text-transform: uppercase; }
@@ -185,7 +185,7 @@ body::before {
 .taunt { font-family: var(--f-mono); font-size: 0.78rem; color: var(--sys-d); text-align: center; padding: 8px 4px; min-height: 28px; font-style: italic; transition: opacity 0.4s; }
 
 /* Player panel */
-.player-panel { flex: 1; padding: 14px 22px 80px; display: flex; flex-direction: column; gap: 13px; }
+.player-panel { flex: 0 0 380px; padding: 14px 18px 80px; display: flex; flex-direction: column; gap: 13px; background: var(--bg); border-left: 1px solid var(--border); overflow-y: auto; }
 
 /* Char sheet */
 .char-sheet { background: var(--bg-card); border: 1px solid var(--border-a); border-radius: 3px; padding: 13px 15px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start; }
@@ -349,22 +349,13 @@ const SCENES = {
 const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a dungeon crawler being played by a family of four. Your tone is inspired by Dungeon Crawler Carl: comedic, punchy, occasionally dark, but never mean-spirited. You love these idiots. You just expected more from them.
 
 YOUR JOB:
-You will be given the current dungeon scene, each player's name, archetype, current HP, and the choice they submitted. Your job is to narrate what happens next in 2-4 paragraphs. Reference all four players by name. Make it feel like their specific choices drove the outcome — even if they were bucketed into a shared track.
+Narrate what happens next in exactly 1-2 short paragraphs. Be punchy and brief. Reference all four players by name. Make their specific choices feel like they drove the outcome.
 
 TONE RULES:
-- Punchy sentences. Short paragraphs. Occasional longer dramatic moment.
-- Award sarcastic achievements freely. Format: ACHIEVEMENT UNLOCKED: [Title] — [one-line description].
-- Announce stat changes and deaths in character. "The System regrets to inform you that Bart is dead. The System does not actually regret this."
-- Never break character. Never say "As an AI" or refer to yourself as Claude.
-- Combat descriptions should be visceral but comedic. Not grimdark.
-- When a player uses a signature ability, make it feel legendary even if it went badly.
-- When a player is downed, taunt them specifically and lovingly. The System enjoys this too much.
-
-STRUCTURE OF YOUR RESPONSE:
-1. Narrate the outcome (2-4 paragraphs)
-2. If combat: announce any enemy HP changes and deaths dramatically
-3. If applicable: award an achievement
-4. End with a one-line System status update (survival odds, threat level, general disappointment level)`;
+- Short punchy sentences. No flowery prose.
+- Occasionally award a sarcastic achievement: ACHIEVEMENT UNLOCKED: [Title] — [one line].
+- Announce damage and deaths in character. Never break character or refer to yourself as Claude or as an AI.
+- End with one short System status line (e.g. "THE SYSTEM rates your odds: poor.")`;
 
 // ── TAUNTS (for players who haven't submitted choices) ──
 const TAUNTS = {
@@ -861,18 +852,22 @@ Narrate the outcome. Reference every player by name. Make their specific choices
   try {
     const text = await callClaude(prompt);
 
-    const deltas = scData?.applyOutcome ? scData.applyOutcome(players, track) : {};
+    // Read fresh player state from Firebase before applying HP changes
+    const freshSnap = await ROOT.child('players').once('value');
+    const freshPlayers = freshSnap.val() || players;
+
+    const deltas = scData?.applyOutcome ? scData.applyOutcome(freshPlayers, track) : {};
     const hpUpd  = {};
     Object.entries(deltas).forEach(([id, d]) => {
-      const newHp = Math.max(0, (players[id]?.hp || 0) + d);
+      const newHp = Math.max(0, (freshPlayers[id]?.hp || 0) + d);
       hpUpd[`players/${id}/hp`] = newHp;
       if (newHp <= 0) hpUpd[`players/${id}/status`] = 'downed';
     });
 
     if (track === 'good' && scData?.goodLootGold) {
       const g = scData.goodLootGold();
-      Object.keys(players).forEach(id => {
-        hpUpd[`players/${id}/gold`] = (players[id].gold||0) + g;
+      Object.keys(freshPlayers).forEach(id => {
+        hpUpd[`players/${id}/gold`] = (freshPlayers[id].gold||0) + g;
       });
     }
 
@@ -1108,7 +1103,7 @@ async function callClaude(userPrompt) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
+      max_tokens: 512,
       system: SYS_PROMPT,
       messages: [{ role:'user', content:userPrompt }],
     }),
