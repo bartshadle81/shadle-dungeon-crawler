@@ -274,7 +274,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "152488119573",
   appId:             "1:152488119573:web:5b09e70923396141b96d1c"
 };
-const ANTHROPIC_KEY = "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";
+const ANTHROPIC_KEY = null; // Key is entered at runtime via GM panel — never stored in this file
 // ═══════════════════════════════════════════════════════
 
 // ── ARCHETYPE DATA ──
@@ -962,6 +962,8 @@ function renderGMPanel() {
   const scene  = fbState.session?.currentScene || '—';
   const pcnt   = Object.keys(fbState.players||{}).length;
 
+  const keySet = !!sessionStorage.getItem('dcs_apikey');
+
   bar.innerHTML = `
     <span class="gm-lbl">⚙ GM</span>
     <button class="btn btn-danger btn-sm" onclick="gmReset()">Reset Session</button>
@@ -975,6 +977,13 @@ function renderGMPanel() {
       ${[3,4,5,6,7,8,9,10].filter(n=>!SCENES[n]).map(n=>`<option value="${n}">Scene ${n} (stub)</option>`).join('')}
     </select>
     <button class="btn btn-sm" onclick="gmJump()">Go</button>
+    <span class="gm-sep">|</span>
+    ${keySet
+      ? `<span style="font-size:0.7rem;color:var(--green-b)">🔑 Key set</span>
+         <button class="btn btn-sm" onclick="gmClearKey()">Clear Key</button>`
+      : `<input id="gmKeyIn" type="password" placeholder="Paste Anthropic API key..." style="font-family:var(--f-mono);font-size:0.7rem;padding:5px 8px;background:var(--bg-card);border:1px solid var(--red);color:var(--parch);border-radius:2px;width:220px;">
+         <button class="btn btn-sm btn-primary" onclick="gmSaveKey()">Set Key</button>`
+    }
     <span class="gm-stat">Phase: ${phase} | Scene: ${scene} | Players: ${pcnt}/4</span>`;
 }
 
@@ -1016,6 +1025,19 @@ function gmForceNarration() {
   });
 }
 
+function gmSaveKey() {
+  const v = document.getElementById('gmKeyIn')?.value.trim();
+  if (!v) return;
+  sessionStorage.setItem('dcs_apikey', v);
+  renderGMPanel();
+}
+
+function gmClearKey() {
+  sessionStorage.removeItem('dcs_apikey');
+  renderGMPanel();
+}
+
+
 function gmJump() {
   const n = parseInt(document.getElementById('gmJump')?.value);
   if (!n) return;
@@ -1034,11 +1056,13 @@ function gmJump() {
 //  ANTHROPIC API
 // ═══════════════════════════════════════════════════════
 async function callClaude(userPrompt) {
+  const key = sessionStorage.getItem('dcs_apikey');
+  if (!key) throw new Error('No API key set. Open the GM panel (?gm=true) and enter your Anthropic API key.');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_KEY,
+      'x-api-key': key,
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true',
     },
