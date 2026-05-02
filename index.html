@@ -341,11 +341,12 @@ body::after {
 
 /* Choices */
 .choice-area { display: flex; flex-direction: column; gap: 8px; }
-.choice-lbl { font-family: var(--f-disp); font-size: 0.8rem; color: var(--parch-d); text-transform: uppercase; letter-spacing: 0.05em; }
+.choice-lbl { font-family: var(--f-disp); font-size: 0.8rem; color: var(--parch-d); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 .c-btn {
   font-family: var(--f-body); font-size: 1rem; padding: 11px 16px;
   background: var(--bg-card); border: 1px solid var(--border-a); border-radius: 2px;
   color: var(--parch); cursor: pointer; text-align: left; transition: all 0.15s; line-height: 1.35;
+  display: block; width: 100%;
 }
 .c-btn:hover:not(:disabled) { border-color: var(--gold); background: var(--bg-card-h); color: var(--gold-b); transform: translateX(4px); }
 .c-btn.selected { border-color: var(--gold-b); background: rgba(200,137,30,0.12); color: var(--gold-b); cursor: default; }
@@ -423,7 +424,7 @@ const ARCHETYPES = {
     realName: 'Bart',
     title: 'The Historian',
     ability: 'Morale Clown — deploys self-deprecating goofiness at exactly the right moment to defuse tension and restore 8 HP to the whole party',
-    flavor: 'Terrifying in stature. Surprisingly ridiculous. The Civil War is somehow always relevant.',
+    flavor: 'Calm in a crisis. Screams at sudden noises. The Civil War is somehow always relevant.',
     sigDesc: 'Morale Clown',
   },
   Melissa: {
@@ -463,12 +464,14 @@ const ARCH_NAMES = Object.keys(ARCHETYPES);
 const SCENES = {
   1: {
     name: 'The Box at Timber Creek',
+    title: 'The End of Tuesday.',
     sub:  'Entry — No Choices',
     desc: '',
     type: 'intro',
   },
   2: {
     name: 'The Antechamber',
+    title: 'Careful now...',
     sub:  'Pressure Plates + Dire Rats',
     desc: 'The first room is the size of a gymnasium — vaulted stone ceiling, iron torch brackets, and a floor that is immediately, obviously wrong. Pressure plates cover every surface between here and the far door, some glowing faint amber, some dark, all of them patient. From somewhere beneath the grating, something skitters. A lot of somethings. A Syndicate maintenance placard is bolted to the wall by the entrance. The fine print is very small. LAST SERVICED: MARCH 2019. A faint trail of small paw prints crosses the room through what appears to be the only safe path. Nobody mentioned a dog coming through here. THE SYSTEM has no comment.',
     type: 'choice',
@@ -532,6 +535,7 @@ const SCENES = {
 
   3: {
     name: 'Grizzuk the Deserter',
+    title: 'You are not alone.',
     sub:  'NPC Encounter',
     desc: 'He\'s wedged into a gap between two barrels, armor askew, a half-eaten piece of something unidentifiable clutched in one clawed hand. His name is Grizzuk. He was supposed to be guarding the eastern corridor. He is not doing that. He sees you see him. He freezes. You can actually watch the moment he decides whether to fight or beg. It is not a long decision.',
     type: 'choice',
@@ -548,7 +552,7 @@ const SCENES = {
         ],
         Melissa: [
           { id:'bear',     icon:'🐻', text:'Let Bear sit with him — calm energy, Grizzuk opens up immediately' },
-          { id:'luna',     icon:'🌙', text:'Luna charges him excitedly — Grizzuk either loves it or flees' },
+          { id:'listen',   icon:'👂', text:'Sit with him quietly and just listen — she volunteers at a shelter, she knows how to do this' },
         ],
         Noah: [
           { id:'calculate',icon:'⚡', text:'Quietly calculate the exact probability this goblin is useful — it\'s 73%', usesAbility:true, badge:'SIGNATURE' },
@@ -565,11 +569,10 @@ const SCENES = {
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const goodChoices = ['befriend','morale','history','bear','calculate','read','violin'];
+      const goodChoices = ['befriend','morale','history','bear','listen','calculate','read','violin'];
       const badChoices  = ['intimidate','ignore'];
       const goodCount = vals.filter(v => goodChoices.includes(v)).length;
       const badCount  = vals.filter(v => badChoices.includes(v)).length;
-      if (vals.includes('luna')) return Math.random() > 0.5 ? 'good' : 'neutral';
       if (goodCount >= 2) return 'good';
       if (badCount >= 2) return 'bad';
       return 'neutral';
@@ -579,6 +582,7 @@ const SCENES = {
 
   4: {
     name: 'Goblin Scout Ambush',
+    title: 'Oh no.',
     sub:  'First Combat',
     desc: 'They come from the ceiling, which in retrospect was the obvious place. Three Goblin Scouts — leather armor, chipped blades, and the specific energy of creatures who have been waiting in a ceiling crack for three hours and are now extremely committed to this ambush. They land in a loose triangle around the party. One of them points dramatically. Another one\'s helmet falls off. The third one looks like he\'d rather be anywhere else. They attack anyway.',
     type: 'choice',
@@ -595,7 +599,7 @@ const SCENES = {
         ],
         Melissa: [
           { id:'bear',     icon:'🐻', text:'Bear blocks for the party — absorbs one hit meant for anyone' },
-          { id:'luna',     icon:'🌙', text:'Luna charges in — chaotic distraction, scouts don\'t know what\'s happening' },
+          { id:'coord',    icon:'📋', text:'Coordinate the party — call positions, assign targets, get everyone moving together' },
         ],
         Noah: [
           { id:'optimal',  icon:'⚡', text:'Eliminate scouts in the mathematically optimal order', usesAbility:true, badge:'SIGNATURE' },
@@ -612,9 +616,8 @@ const SCENES = {
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const goodChoices = ['morale','tactical','bear','optimal','screech','pattern','flank'];
+      const goodChoices = ['morale','tactical','bear','coord','optimal','screech','pattern','flank'];
       const goodCount = vals.filter(v => goodChoices.includes(v)).length;
-      if (vals.includes('luna')) return goodCount >= 1 ? 'good' : 'neutral';
       if (goodCount >= 3) return 'good';
       if (goodCount >= 1) return 'neutral';
       return 'bad';
@@ -644,6 +647,7 @@ const SCENES = {
 
   5: {
     name: 'Mags the Merchant',
+    title: 'A friendly face. Probably.',
     sub:  'Shop',
     desc: 'She appears around a corner with a cart and a smile that has never once been sincere. Her name is Mags. She sells things to dungeon parties and asks zero questions about where they\'ve been or what they\'ve done, a policy that has served her extremely well. The cart is cluttered with bottles and pouches and at least one item wrapped in cloth that she deflects questions about. She spreads her hands wide. "Lovely to see adventurers who are still alive," she says. "For now."',
     type: 'choice',
@@ -688,6 +692,7 @@ const SCENES = {
 
   6: {
     name: 'The Riddle Wall',
+    title: 'Think.',
     sub:  'Split-Clue Puzzle',
     desc: 'The door is solid stone, carved with four runes that glow faintly in colors that don\'t quite exist. There is no handle. There is no keyhole. There is, carved above the arch in letters worn smooth by centuries of frustrated adventurers, a single instruction: ANSWER TOGETHER. Each of you feels something — a pull, a pressure — and suddenly you know: you are each seeing one piece of something larger. The door is waiting. It has been waiting a long time. It is not impressed so far.',
     type: 'choice',
@@ -740,6 +745,7 @@ const SCENES = {
 
   7: {
     name: 'The Goblin Barracks',
+    title: 'Breathe.',
     sub:  'Rest & Recovery',
     desc: 'The barracks is abandoned — bunks tipped over, a card game left mid-hand on an upturned crate, goblin graffiti covering every surface in a language that seems mostly made of complaints. It smells like wet fur and bad decisions. But it\'s quiet. The sounds of the dungeon feel far away for once. There\'s a firepit that still has coals in it. Somebody left a boot. It\'s a moment — not a safe one, but a moment — and the party would be idiots not to take it.',
     type: 'choice',
@@ -792,6 +798,7 @@ const SCENES = {
 
   8: {
     name: 'The Elite Guard',
+    title: 'These are not the scouts.',
     sub:  'Second Combat',
     desc: 'These are not scouts. The Goblin Elites are taller by a full head, armored in actual metal, and standing in the corridor like they own it — because until about thirty seconds ago, they did. One carries a battered tower shield that has deflected things much more dangerous than this party. The other cracks its knuckles one at a time. Slowly. Deliberately. Making eye contact. They do not look embarrassed. They look like they have been waiting for something to hit.',
     type: 'choice',
@@ -853,6 +860,7 @@ const SCENES = {
 
   9: {
     name: 'Krag the Warchief',
+    title: 'Oh no.',
     sub:  'Boss Fight',
     desc: 'The throne room is bigger than it has any right to be. Torches line the walls in iron brackets, casting long shadows across a floor decorated with the actual skulls of people who thought they were ready for this. And there, on a throne made of welded weapons and something that might be spite, sits Krag. Warchief of the Goblin Antechamber. Seven feet of muscle, scar tissue, and deeply personal grievances. He stands when he sees you. He doesn\'t reach for his weapon immediately. He rolls his neck. Slowly. The crack echoes.',
     type: 'choice',
@@ -914,7 +922,7 @@ THE WORLD:
 The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber. Somewhere on the other side of the world, another contestant is already on Floor 2 with a cat. THE SYSTEM finds this comparison useful and will deploy it when morale seems high.
 
 THE PARTY (know them well):
-BART (The Historian): Big bearded math teacher, 6'1", 250lbs. Calm in crises in a way that is either reassuring or concerning. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. A 250lb man doing something goofy lands differently than a quip. Falls asleep embarrassingly early. Easily frightened despite his size. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM finds the gap between his physical presence and his actual threat level deeply instructive.
+BART (The Historian): Bearded math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements.
 
 MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats chocolate or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Luna is a small athletic black dog named after Luna Lovegood — chaotic, was not present at descent, is loose in the dungeon, her paw prints have already been seen.
 
@@ -928,11 +936,15 @@ YOUR JOB:
 Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments. Luna is out there somewhere. THE SYSTEM occasionally references the contestant on Floor 2 with the cat.
 
 TONE RULES:
-- Punchy sentences. No flowery prose. Dark-comedic, not grimdark.
-- THE SYSTEM loves this family and is baffled they're still alive.
-- Occasionally: ACHIEVEMENT UNLOCKED: [Title] — [one line].
-- Never break character. Never say "As an AI" or mention Claude.
-- End with one short THE SYSTEM status line.`;
+- 70% drama, 30% humor. The dungeon is genuinely dangerous. People die in here. The Shadles might.
+- Lead with tension and stakes. Let the humor land as punctuation — a well-placed line after something real, not a constant stream of jokes.
+- THE SYSTEM is sarcastic but not a comedian. It observes. It judges. Occasionally it is darkly funny. It is never performing.
+- Combat should feel visceral and tense first. The funny moment comes after the hit lands, not instead of it.
+- When someone takes damage, make it hurt before making it funny.
+- Punchy sentences. Short paragraphs. No flowery prose.
+- THE SYSTEM loves this family in the way something ancient and indifferent loves the rare thing that surprises it.
+- Occasionally: NEW ACHIEVEMENT! [Title] — [one line]. Use sparingly — once per session max, when truly earned.
+- Never break character. Never mention Claude or AI.`;
 
 // ── TAUNTS (for players who haven't submitted choices) ──
 const TAUNTS = {
@@ -1057,7 +1069,7 @@ function showAchievement(text) {
   if (existing) existing.remove();
   const el = document.createElement('div');
   el.className = 'achieve-pop';
-  el.innerHTML = `<div class="ach-title">⚔ Achievement Unlocked ⚔</div>${esc(text)}`;
+  el.innerHTML = `<div class="ach-title">🏆 New Achievement!</div>${esc(text)}`;
   document.body.appendChild(el);
   setTimeout(() => { el.style.transition = 'opacity 0.6s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 700); }, 4000);
 }
@@ -1067,7 +1079,7 @@ let lastNarrForAchieve = '';
 function checkForAchievement(text) {
   if (!text || text === lastNarrForAchieve) return;
   lastNarrForAchieve = text;
-  const match = text.match(/ACHIEVEMENT UNLOCKED:\s*([^\n]+)/i);
+  const match = text.match(/NEW ACHIEVEMENT!\s*([^\n]+)/i);
   if (match) setTimeout(() => showAchievement(match[1].trim()), 1200);
 }
 
@@ -1151,10 +1163,6 @@ function render() {
 
   // Visual feedback on stat changes
   checkStatChanges(me);
-
-  // Achievement detection
-  const narr = fbState.narration || {};
-  checkForAchievement(narr.text);
 
   if (!fbState.session || phase === 'archetype_selection') {
     renderArchSelection();
@@ -1309,7 +1317,7 @@ The music stopped. Except Leah, who played four more notes before she noticed. T
 The box opened. Stairs descended. THE SYSTEM's voice filled the auditorium at concert volume.
 
 THE PARTY as they descended:
-- Bart: back row, 6'1", large bearded man who was initially calm about this in a way that concerned everyone. He is calm in crises. This is either reassuring or alarming depending on the crisis.
+- Bart: back row, calm and bearded, initially assumed this was a very ambitious intermission activity. He is calm in crises. This is either reassuring or alarming depending on the crisis.
 - Melissa: middle section, said "absolutely not" out loud, then descended anyway because her family was going. Bear appeared beside her from nowhere in the sealed auditorium — a mini black labradoodle, calm as anything, like he had always been sitting there. People nearby looked. Nobody said anything. Bear looked at the box. Bear looked at Melissa. Bear stood up and walked toward the stairs. THE SYSTEM registered him as Contestant 4-Delta. His paw print is on the waiver.
 - Noah: front section. He had been watching his sister perform with the attentive focus he gives things he would never admit matter to him. He was the first of the family to understand what the box was. He did not speak for eleven seconds. Then he said: "We should go down." He was right.
 - Leah: on stage, still holding her violin when she descended. Nobody told her to put it down. She didn't think to. This is why she still has it.
@@ -1328,7 +1336,7 @@ End with THE SYSTEM's official greeting and its assessment of their odds: non-ze
 
   try {
     const text = await callClaude(prompt);
-    ROOT.update({ 'narration/text':text, 'narration/scene':1, 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':text, 'narration/scene':1, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
   } catch(e) {
     ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]\n\nThis is somehow your fault.`, 'narration/generating':false, 'session/phase':'scene1_ready' });
   }
@@ -1389,12 +1397,13 @@ function buildShared(scene, phase, narr, players, scData) {
         <span class="c-icon">${c.icon}</span>${c.text}
         ${c.badge ? `<span class="c-badge">[${c.badge}]</span>` : ''}
       </button>`).join('');
-    choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div>${btns}</div></div>`;
+    choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}</div></div>`;
   } else if (phase === 'choosing' && me?.choiceSubmitted) {
     choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
   }
 
   return `
+    ${scData?.title ? `<div style="font-family:var(--f-disp);font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:0.03em;margin-bottom:14px;text-shadow:var(--glow-g)">${scData.title}</div>` : ''}
     ${scData?.desc ? `<div class="scene-desc">${scData.desc}</div>` : ''}
     ${narrHTML}
     ${choicesHTML}
@@ -1512,30 +1521,34 @@ function getSctx() {
 function playChoiceSound() {
   try {
     const ctx = getSctx();
-    // Short confident "thunk" — low thud + quick metallic shimmer
     const t = ctx.currentTime;
 
-    // Thud
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    osc1.connect(gain1); gain1.connect(ctx.destination);
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(180, t);
-    osc1.frequency.exponentialRampToValueAtTime(60, t + 0.12);
-    gain1.gain.setValueAtTime(0.55, t);
-    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-    osc1.start(t); osc1.stop(t + 0.18);
+    // High ding-dong — two bell tones a fifth apart
+    const notes = [1047, 784]; // C6, G5
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + i * 0.18);
+      gain.gain.setValueAtTime(0, t + i * 0.18);
+      gain.gain.linearRampToValueAtTime(0.28, t + i * 0.18 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.18 + 1.1);
+      osc.start(t + i * 0.18);
+      osc.stop(t + i * 0.18 + 1.2);
 
-    // Shimmer
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    osc2.connect(gain2); gain2.connect(ctx.destination);
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(900, t + 0.02);
-    osc2.frequency.exponentialRampToValueAtTime(600, t + 0.14);
-    gain2.gain.setValueAtTime(0.12, t + 0.02);
-    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-    osc2.start(t + 0.02); osc2.stop(t + 0.2);
+      // Subtle harmonic overtone for bell shimmer
+      const osc2  = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2.756, t + i * 0.18);
+      gain2.gain.setValueAtTime(0, t + i * 0.18);
+      gain2.gain.linearRampToValueAtTime(0.06, t + i * 0.18 + 0.01);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + i * 0.18 + 0.5);
+      osc2.start(t + i * 0.18);
+      osc2.stop(t + i * 0.18 + 0.6);
+    });
   } catch(e) {}
 }
 
@@ -1693,6 +1706,7 @@ Narrate the outcome. Reference every player by name. Make their specific choices
       'narration/text': text,
       'narration/scene': scene,
       'narration/track': track,
+      'narration/timestamp': Date.now(),
       'narration/generating': false,
       'session/phase': 'scene_complete',
       ...hpUpd,
@@ -2404,18 +2418,34 @@ function triggerTypewriteIfNeeded(narr) {
   triggerNarrGlow();
   clearTimeout(typeTimer);
 
-  // Add cursor element
+  const CHAR_DELAY = 16; // ms per character — must match across all tabs
+  const elapsed = narr.timestamp ? Date.now() - narr.timestamp : 0;
+  const startChar = Math.min(Math.floor(elapsed / CHAR_DELAY), full.length);
+
+  // If we're joining late, render everything up to startChar instantly
+  if (startChar > 0) {
+    el.appendChild(document.createTextNode(full.substring(0, startChar)));
+  }
+
+  // If already fully done, show complete text and check achievement
+  if (startChar >= full.length) {
+    checkForAchievement(full);
+    return;
+  }
+
+  // Continue typewriter from current position
   const cursor = document.createElement('span');
   cursor.className = 'narr-cursor';
   el.appendChild(cursor);
 
-  let i = 0;
+  let i = startChar;
   const tick = () => {
     if (i < full.length) {
       el.insertBefore(document.createTextNode(full[i++]), cursor);
-      typeTimer = setTimeout(tick, 16);
+      typeTimer = setTimeout(tick, CHAR_DELAY);
     } else {
       cursor.remove();
+      checkForAchievement(full);
     }
   };
   tick();
@@ -2534,7 +2564,7 @@ async function callClaude(userPrompt) {
       'anthropic-dangerous-direct-browser-access': 'true',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-sonnet-4-6',
       max_tokens: 800,
       system: SYS_PROMPT,
       messages: [{ role:'user', content:userPrompt }],
