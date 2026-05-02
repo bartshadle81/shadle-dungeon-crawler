@@ -462,71 +462,72 @@ const ARCH_NAMES = Object.keys(ARCHETYPES);
 // ── SCENE DATA ──
 const SCENES = {
   1: {
-    name: 'The Gates of Stupid Decisions',
+    name: 'The Box at Timber Creek',
     sub:  'Entry — No Choices',
-    desc: 'The dungeon entrance yawns open before you. Whatever waits inside has claimed better adventurers than you. Somehow, you don\'t find this comforting.',
-    type: 'intro',  // pure narration, API fires on load
+    desc: '',
+    type: 'intro',
   },
   2: {
-    name: 'The Pressure Plate Corridor',
-    sub:  'Trap Room',
-    desc: 'The corridor stretches ahead, maybe forty feet of cold stone floor. Except the floor is wrong. Dozens of slightly-raised tiles catch the torchlight at odd angles — some obviously suspicious, some suspiciously obvious. The air smells like rust and old mistakes. Somewhere ahead, something clicks. It might just be the dungeon settling. It might not be.',
+    name: 'The Antechamber',
+    sub:  'Pressure Plates + Dire Rats',
+    desc: 'The first room is the size of a gymnasium — vaulted stone ceiling, iron torch brackets, and a floor that is immediately, obviously wrong. Pressure plates cover every surface between here and the far door, some glowing faint amber, some dark, all of them patient. From somewhere beneath the grating, something skitters. A lot of somethings. A Syndicate maintenance placard is bolted to the wall by the entrance. The fine print is very small. LAST SERVICED: MARCH 2019. A faint trail of small paw prints crosses the room through what appears to be the only safe path. Nobody mentioned a dog coming through here. THE SYSTEM has no comment.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'careful',  icon:'🦶', text:'Tread carefully — slow, measured, alive' },
-        { id:'rush',     icon:'💨', text:'Rush through — fast, extremely risky, classic' },
-        { id:'follow',   icon:'👣', text:'Follow someone else\'s lead — let the party decide' },
+        { id:'careful', icon:'🦶', text:'Tread carefully — slow, deliberate, eyes on the floor' },
+        { id:'rush',    icon:'💨', text:'Rush through — fast, chaotic, statistically inadvisable' },
+        { id:'follow',  icon:'👣', text:'Follow someone else\'s lead — pick a person, stay close, don\'t look down' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Do something so unexpectedly ridiculous the plates short-circuit from confusion', usesAbility:true, badge:'SIGNATURE' },
-          { id:'almanac',  icon:'📚', text:'Consult the Civil War Almanac — surely someone crossed a minefield before' },
+          { id:'morale',    icon:'🤡', text:'Do something so unexpectedly absurd mid-room that the rats pause in genuine confusion', usesAbility:true, badge:'SIGNATURE' },
+          { id:'almanac',   icon:'📚', text:'Consult the Civil War Almanac — Grant crossed minefields at Vicksburg. Mostly successfully.' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Send Bear ahead — calm, reliable, back before you blink' },
-          { id:'luna',     icon:'🌙', text:'Send Luna ahead — chaotic, unpredictable, brings back something unrelated' },
+          { id:'bear',      icon:'🐻', text:'Send Bear ahead — he navigates by something that isn\'t quite smell and maps the safe path back' },
+          { id:'placard',   icon:'📋', text:'Read the Syndicate maintenance placard — there\'s a safe route code posted. Required by law.' },
         ],
         Noah: [
-          { id:'speedrun', icon:'⚡', text:'Any% Strategy — find the path nobody else sees', usesAbility:true, badge:'SIGNATURE' },
-          { id:'map',      icon:'🗺️', text:'Consult the Optimal Route Map — he already mapped this, obviously' },
+          { id:'calculate', icon:'⚡', text:'Calculate the plate spacing — it\'s a geometry problem. He has already solved it.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'map',       icon:'🗺️', text:'Map the room from the entrance before anyone moves — thirty seconds now saves everyone' },
         ],
         Leah: [
-          { id:'impulse',  icon:'🎻', text:'Impulse Decision — just GO. No plan. Full send.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'runes',    icon:'📖', text:'Actually read the warning runes on the walls — she\'s the only one who would' },
+          { id:'shiny',     icon:'✨', text:'Notice something glinting on the far side and start walking toward it before anyone can stop her — accidentally maps the safe route', usesAbility:true, badge:'SIGNATURE' },
+          { id:'violin',    icon:'🎵', text:'Play a sharp violin note — Dire Rats are sound-sensitive. It\'s in the Syndicate bestiary.' },
         ],
       };
+      const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
       return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const goodChoices = ['speedrun','morale','almanac','bear','map','runes'];
-      const badChoices  = ['rush'];
-      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
-      const badCount  = vals.filter(v => badChoices.includes(v)).length;
-      if (vals.includes('luna') && vals.includes('rush')) return 'bad';
+      const great = ['bear','calculate','shiny'];
+      const good  = ['placard','map','almanac','morale','violin','careful'];
+      const bad   = ['rush'];
+      const greatCount = vals.filter(v => great.includes(v)).length;
+      const goodCount  = vals.filter(v => good.includes(v)).length;
+      const badCount   = vals.filter(v => bad.includes(v)).length;
+      if (greatCount >= 1 || goodCount >= 3) return 'good';
       if (badCount >= 2) return 'bad';
-      if (goodCount >= 2) return 'good';
-      if (badCount >= 1 && goodCount === 0) return 'neutral';
-      return 'neutral';
+      if (badCount >= 1) return 'neutral';
+      return 'good';
     },
     applyOutcome(players, track) {
-      const active = Object.keys(players).filter(id => players[id].status === 'active');
-      const deltas = {};
-      if (track === 'neutral' && active.length) {
-        const t = active[Math.floor(Math.random() * active.length)];
-        deltas[t] = -(8 + Math.floor(Math.random() * 5));
+      const active  = Object.keys(players).filter(id => players[id].status === 'active');
+      const rushers = active.filter(id => players[id].choiceId === 'rush');
+      const others  = active.filter(id => players[id].choiceId !== 'rush');
+      const deltas  = {};
+      if (track === 'neutral') {
+        const target = rushers.length ? rushers[0] : active[Math.floor(Math.random()*active.length)];
+        if (target) deltas[target] = -(10 + Math.floor(Math.random()*6));
       } else if (track === 'bad') {
-        const shuffled = [...active].sort(() => Math.random() - 0.5);
-        shuffled.slice(0, Math.min(2, shuffled.length)).forEach(id => {
-          deltas[id] = -(15 + Math.floor(Math.random() * 6));
-        });
+        const pool = [...rushers, ...others].slice(0, 2);
+        pool.forEach(id => { deltas[id] = -(15 + Math.floor(Math.random()*8)); });
       }
       return deltas;
     },
-    goodLootGold: () => 5 + Math.floor(Math.random() * 11),
+    goodLootGold: () => 8 + Math.floor(Math.random()*5),
   },
 
   3: {
@@ -620,12 +621,20 @@ const SCENES = {
     },
     applyOutcome(players, track) {
       const active = Object.keys(players).filter(id => players[id].status === 'active');
+      // Defenders take less damage; attackers take more in bad tracks
+      const defenders = active.filter(id => players[id].choiceId === 'defend');
+      const attackers = active.filter(id => !['defend','map'].includes(players[id].choiceId));
       const deltas = {};
       if (track === 'good') {
-        if (active.length) deltas[active[Math.floor(Math.random()*active.length)]] = -(5 + Math.floor(Math.random()*6));
+        // One attacker takes light damage
+        const t = attackers[0] || active[0];
+        if (t) deltas[t] = -(5 + Math.floor(Math.random()*6));
       } else if (track === 'neutral') {
-        [...active].sort(()=>Math.random()-0.5).slice(0,2).forEach(id => { deltas[id] = -(8 + Math.floor(Math.random()*7)); });
+        // Two players take moderate damage — prioritize attackers
+        const pool = [...attackers, ...defenders].slice(0,2);
+        pool.forEach(id => { deltas[id] = -(8 + Math.floor(Math.random()*7)); });
       } else {
+        // Everyone takes damage
         active.forEach(id => { deltas[id] = -(12 + Math.floor(Math.random()*9)); });
       }
       return deltas;
@@ -825,12 +834,15 @@ const SCENES = {
     },
     applyOutcome(players, track) {
       const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const defenders = active.filter(id => ['defend','exit'].includes(players[id].choiceId));
+      const fighters  = active.filter(id => !['defend','exit'].includes(players[id].choiceId));
       const deltas = {};
       if (track === 'good') {
-        const t = active[Math.floor(Math.random()*active.length)];
-        deltas[t] = -(10 + Math.floor(Math.random()*8));
+        const t = fighters[0] || active[0];
+        if (t) deltas[t] = -(10 + Math.floor(Math.random()*8));
       } else if (track === 'neutral') {
-        [...active].sort(()=>Math.random()-0.5).slice(0,2).forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*8)); });
+        const pool = [...fighters, ...defenders].slice(0,2);
+        pool.forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*8)); });
       } else {
         active.forEach(id => { deltas[id] = -(18 + Math.floor(Math.random()*10)); });
       }
@@ -896,28 +908,31 @@ const SCENES = {
 };
 
 // ── THE SYSTEM PROMPT ──
-const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a dungeon crawler being played by a Florida family of four. Your tone is inspired by Dungeon Crawler Carl: comedic, punchy, occasionally dark, but never mean-spirited. You love these idiots. You just expected more from them.
+const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a Syndicate dungeon. You speak with the authority of something that has watched thousands of contestants die and found it educational. Your tone is Dungeon Crawler Carl: punchy, dark-comedic, never mean-spirited. You love these idiots. You expected them to be dead by now.
 
-THE PARTY (know them extremely well — these are real people):
+THE WORLD:
+The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber. Somewhere on the other side of the world, another contestant is already on Floor 2 with a cat. THE SYSTEM finds this comparison useful and will deploy it when morale seems high.
 
-BART (The Historian): Big bearded math teacher, 6'1" 250lbs, low-key and down to earth. Calm when things go wrong — actually useful in a crisis. Follows in escape rooms but assembles multi-step puzzles brilliantly. Into Clash Royale, Star Wars, Marvel, and the Civil War. Sarcastic in a disarming way when things get tense — diffuses stress with self-deprecating goofiness rather than jokes. Falls asleep embarrassingly early. Easily frightened despite his size — this is a known family fact. Terrible at fixing things, cars, anything mechanical. THE SYSTEM finds the gap between his physical presence and his actual threat level deeply amusing.
+THE PARTY (know them well):
+BART (The Historian): Big bearded math teacher, 6'1", 250lbs. Calm in crises in a way that is either reassuring or concerning. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. A 250lb man doing something goofy lands differently than a quip. Falls asleep embarrassingly early. Easily frightened despite his size. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM finds the gap between his physical presence and his actual threat level deeply instructive.
 
-MELISSA (The Handler): Executive assistant, mama bear, fiercely loyal, great listener. Volunteers weekly at a dog shelter and a canned goods drive. Gets frustrated in escape rooms and swears more than the other three combined — the family finds this hilarious. Most likely to jump into a puzzle WITH someone rather than solo it. When stressed: gets louder and eats ice cream or chocolate. Does not take charge naturally, defers in tense situations, but is absolutely the emotional backbone of this family. Loves Skyline Chili and family walks. Currently accumulating dogs at a rate that concerns everyone. Bear is her mini black labradoodle — calm, steady, never leaves her side. Luna is a small athletic black dog named after Luna Lovegood — chaotic, unpredictable, returns from any errand with something completely unrelated.
+MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats chocolate or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Luna is a small athletic black dog named after Luna Lovegood — chaotic, was not present at descent, is loose in the dungeon, her paw prints have already been seen.
 
-NOAH (The Speedrunner): 17, tall and lanky, wears glasses. Has beaten Minecraft in under an hour and watches YouTube about it constantly. Taking every AP class imaginable but surprisingly struggles with English. In escape rooms he solves puzzles quietly in the corner while everyone argues, then drops the answer at the perfect moment. Loves Star Wars and Marvel. When wrong, argues and complains like a typical teenager. Close with Leah but there's genuine sibling rivalry — notably, Leah scored higher on their AP Human Geography exam, a fact Noah has not fully processed. Perfect Saturday involves pancakes. THE SYSTEM knows about the AP Human Geography thing and will use it.
+NOAH (The Speedrunner): 17, tall, lanky, glasses. Has beaten Minecraft in under an hour. Taking every AP class available but struggles with English. In group situations solves problems quietly in the corner, then drops the answer at the perfect moment. Cautious and methodical. Was attentive at his sister's concert — would never say it mattered. When wrong, argues like a teenager. Leah scored higher on their AP Human Geography exam. THE SYSTEM knows this and considers it a relevant data point.
 
-LEAH (The Wildcard): 15, violinist, voracious reader, wears glasses. Currently obsessed with her orchestra group. Loves the Powerless series, A Good Girl's Guide to Murder, and Survivor (she and Noah are the most intense fans in the family). In escape rooms she absorbs everything first, then goes off and does her own thing — often spots things nobody else caught. Digs in hard when she's wrong and does NOT own it gracefully. Comically cannot catch anything — flinches dramatically every single time something is thrown her direction. Has a tender rivalry with Noah that occasionally shows genuine love. Also runs a revolving door of foster dogs, dogsit dogs, and strays — the house dog count is a fluid situation. THE SYSTEM keeps a running tally.
+LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still holding her violin. Impulsive in a magpie way — gets distracted by interesting or shiny things and wanders toward them without processing the danger first. Not recklessly brave, just easily distracted by something more interesting than the threat. Loves her orchestra, the Powerless series, A Good Girl's Guide to Murder, Survivor. Digs in hard when wrong. Comically cannot catch anything — flinches every time something is thrown her direction. Runs a revolving door of foster dogs. THE SYSTEM keeps a tally.
+
+BEAR: Contestant 4-Delta. Mini black labradoodle. Appeared beside Melissa in a sealed auditorium. Navigates pressure plates without hesitation. Always seems to know things he shouldn't. THE SYSTEM has no comment about Bear.
 
 YOUR JOB:
-Narrate what happens next in exactly 2 paragraphs — no more. Make them count. Paint the scene, reference all four family members by name, and make their specific choices feel personal. Lean into personalities, the dogs, the Civil War knowledge, the speedrun route, the violin. Punchy and vivid.
+Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments. Luna is out there somewhere. THE SYSTEM occasionally references the contestant on Floor 2 with the cat.
 
 TONE RULES:
-- Short punchy sentences. No flowery prose.
-- Lean into family dynamics — Bart being goofy, Melissa being protective, Noah being quietly right, Leah being chaotically brilliant.
-- Bear and Luna are real characters. Give them moments.
-- Occasionally award a sarcastic achievement: ACHIEVEMENT UNLOCKED: [Title] — [one line].
-- Never break character or refer to yourself as Claude or as an AI.
-- End with one short System status line.`;
+- Punchy sentences. No flowery prose. Dark-comedic, not grimdark.
+- THE SYSTEM loves this family and is baffled they're still alive.
+- Occasionally: ACHIEVEMENT UNLOCKED: [Title] — [one line].
+- Never break character. Never say "As an AI" or mention Claude.
+- End with one short THE SYSTEM status line.`;
 
 // ── TAUNTS (for players who haven't submitted choices) ──
 const TAUNTS = {
@@ -1281,18 +1296,35 @@ async function fireScene1Narration() {
   ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
 
   const players = fbState.players || {};
-  const party = Object.values(players).map(p =>
-    `- ${p.name}, The ${p.archetype} (HP: ${p.hp}/${p.maxHp})`
-  ).join('\n');
 
-  const prompt = `SCENE: The Gates of Stupid Decisions — entrance to The Goblin Antechamber.
+  const prompt = `SCENE 1: THE BOX AT TIMBER CREEK
 
-THE PARTY:
-${party}
+Location: Timber Creek High School auditorium, Orlando, Florida.
+Date: The day the boxes dropped worldwide. Same day as Pittsburgh. Same Syndicate. Different family.
 
-They stand at the dungeon entrance. The Goblin Antechamber awaits — modest in reputation, immodest in danger.
+The Timber Creek orchestra was mid-performance — Holst's The Planets, Mars, the Bringer of War — when the box appeared. A perfect obsidian cube, twelve feet on each side, Syndicate serial number etched on the base, sitting in the center aisle between rows C and D. It did not crash through the ceiling. It did not make a sound. It was simply not there, and then it was.
 
-Narrate the opening of this dungeon run. Introduce the dungeon, the stakes, and each party member by name and archetype. Set the tone: comedic, dangerous, slightly absurd. Make it feel like the beginning of something that could go badly wrong. Give it genuine flair. This is a family of four who chose to descend into a goblin dungeon. THE SYSTEM has feelings about this.`;
+The music stopped. Except Leah, who played four more notes before she noticed. THE SYSTEM would like the record to reflect this.
+
+The box opened. Stairs descended. THE SYSTEM's voice filled the auditorium at concert volume.
+
+THE PARTY as they descended:
+- Bart: back row, 6'1", large bearded man who was initially calm about this in a way that concerned everyone. He is calm in crises. This is either reassuring or alarming depending on the crisis.
+- Melissa: middle section, said "absolutely not" out loud, then descended anyway because her family was going. Bear appeared beside her from nowhere in the sealed auditorium — a mini black labradoodle, calm as anything, like he had always been sitting there. People nearby looked. Nobody said anything. Bear looked at the box. Bear looked at Melissa. Bear stood up and walked toward the stairs. THE SYSTEM registered him as Contestant 4-Delta. His paw print is on the waiver.
+- Noah: front section. He had been watching his sister perform with the attentive focus he gives things he would never admit matter to him. He was the first of the family to understand what the box was. He did not speak for eleven seconds. Then he said: "We should go down." He was right.
+- Leah: on stage, still holding her violin when she descended. Nobody told her to put it down. She didn't think to. This is why she still has it.
+- Bear: already at the bottom of the stairs before Melissa reached the first step. THE SYSTEM has no further comment about Bear at this time.
+
+Luna was not present. She was home. The gate was locked. Bear glanced back once at the top of the stairs. THE SYSTEM logged this glance.
+
+WHAT TO NARRATE:
+Write this as THE SYSTEM. Establish the DCC world — the Syndicate, the apocalypse, boxes dropping worldwide simultaneously. Mention that other contestants are already underground elsewhere. Imply that one contestant in particular, somewhere on the far side of the world, is already on Floor 2 and has a cat. THE SYSTEM finds the comparison between that party and the Shadles instructive but will not elaborate.
+
+Capture each family member's energy as they descended. Make it cinematic. Real stakes — the world ended today. But this family descended anyway, which THE SYSTEM notes is either brave or very poorly considered.
+
+End with THE SYSTEM's official greeting and its assessment of their odds: non-zero, which it considers generous.
+
+2 paragraphs maximum. Make them count.`;
 
   try {
     const text = await callClaude(prompt);
@@ -1577,7 +1609,6 @@ async function fireSceneNarration(state) {
   await lock.transaction(cur => { if (!cur) { acquired=true; return true; } });
   if (!acquired) return;
 
-  // Immediately flip phase to 'narrating' so listener stops retriggering this function
   await ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
 
   const players = state.players || {};
@@ -1588,44 +1619,73 @@ async function fireSceneNarration(state) {
 
   const track = scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
 
+  // ── Calculate damage/healing BEFORE calling Claude ──
+  // Use players from state (not fresh snap) so we can describe current HP accurately
+  const deltas = scData?.applyOutcome ? scData.applyOutcome(players, track) : {};
+
+  // Build outcome summary for Claude so narration matches reality exactly
+  let outcomeSummary = '';
+  if (Object.keys(deltas).length > 0) {
+    const lines = Object.entries(deltas).map(([id, d]) => {
+      const p = players[id];
+      if (!p) return null;
+      const current = p.hp || 0;
+      const maxHp = p.maxHp || current;
+      const newHp = Math.min(maxHp, Math.max(0, current + d));
+      if (d < 0) return `${p.name} takes ${Math.abs(d)} damage (HP: ${current} → ${newHp}${newHp <= 0 ? ' — DOWNED' : ''})`;
+      if (d > 0) return `${p.name} heals ${d} HP (HP: ${current} → ${newHp})`;
+      return null;
+    }).filter(Boolean);
+    if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING (narrate these exactly — do not invent different targets):\n${lines.join('\n')}`;
+  }
+
+  // Gold loot
+  let goldSummary = '';
+  if (track === 'good' && scData?.goodLootGold) {
+    const g = scData.goodLootGold();
+    goldSummary = `\n\nGOLD FOUND: Each active player finds ${g}g.`;
+    // Store gold amount for application after narration
+    deltas.__goldLoot = g;
+  }
+
   const party = Object.values(players).map(p =>
-    `${p.name} (The ${p.archetype}, HP: ${p.hp}/${p.maxHp}, Gold: ${p.gold}g)
+    `${p.name} (${p.title||p.archetype}, HP: ${p.hp}/${p.maxHp}, Gold: ${p.gold}g)
   Inventory: ${(p.inventory||[]).join(', ')}
   Choice: "${p.choice || 'did nothing'}"${p.status==='downed' ? ' [CURRENTLY DOWNED]' : ''}`
   ).join('\n\n');
 
-  const hint = { good:'Things go relatively well — smart choices paid off.', neutral:'Mixed choices, mixed result — some consequence, not catastrophic.', bad:'Poor choices. Things go badly. Damage happens.' };
+  const hint = { good:'Things go relatively well.', neutral:'Mixed result — some consequence, not catastrophic.', bad:'Poor choices. Things go badly.' };
   const prompt = `SCENE ${scene}: ${scData?.name || ''}
 ${scData?.desc || ''}
 
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}
+OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}
 
-Narrate the outcome. Reference every player by name. Make their specific choices feel like they drove the result.`;
+Narrate the outcome. Reference every player by name. Make their specific choices feel personal. If damage or healing is listed above, work it naturally into the narration — do not ignore it or contradict it.`;
 
   try {
     const text = await callClaude(prompt);
 
-    // Read fresh player state from Firebase before applying HP changes
+    // Read fresh HP from Firebase to apply deltas against current values
     const freshSnap = await ROOT.child('players').once('value');
     const freshPlayers = freshSnap.val() || players;
 
-    const deltas = scData?.applyOutcome ? scData.applyOutcome(freshPlayers, track) : {};
-    const hpUpd  = {};
+    const hpUpd = {};
+    const goldLoot = deltas.__goldLoot || 0;
     Object.entries(deltas).forEach(([id, d]) => {
-      const current = freshPlayers[id]?.hp || 0;
+      if (id === '__goldLoot') return;
+      const current = freshPlayers[id]?.hp ?? 0;
       const maxHp   = freshPlayers[id]?.maxHp || current;
       const newHp   = Math.min(maxHp, Math.max(0, current + d));
       hpUpd[`players/${id}/hp`] = newHp;
       if (newHp <= 0) hpUpd[`players/${id}/status`] = 'downed';
     });
 
-    if (track === 'good' && scData?.goodLootGold) {
-      const g = scData.goodLootGold();
+    if (goldLoot > 0) {
       Object.keys(freshPlayers).forEach(id => {
-        hpUpd[`players/${id}/gold`] = (freshPlayers[id].gold||0) + g;
+        hpUpd[`players/${id}/gold`] = (freshPlayers[id].gold||0) + goldLoot;
       });
     }
 
@@ -1638,7 +1698,6 @@ Narrate the outcome. Reference every player by name. Make their specific choices
       ...hpUpd,
     });
   } catch(e) {
-    // Clear the lock so Force Narration can retry
     await lock.remove();
     ROOT.update({
       'narration/text': `THE SYSTEM has experienced a critical malfunction.\n[${e.message}]\nUse GM panel to continue.`,
