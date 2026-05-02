@@ -496,7 +496,7 @@ const SCENES = {
     name: 'The Antechamber',
     title: 'Careful now...',
     sub:  'Pressure Plates + Dire Rats',
-    desc: 'The first room is the size of a gymnasium — vaulted stone ceiling, iron torch brackets, and a floor that is immediately, obviously wrong. Pressure plates cover every surface between here and the far door, some glowing faint amber, some dark, all of them patient. From somewhere beneath the grating, something skitters. A lot of somethings. A Syndicate maintenance placard is bolted to the wall by the entrance. The fine print is very small. LAST SERVICED: MARCH 2019. A faint trail of small paw prints crosses the room through what appears to be the only safe path. Nobody mentioned a dog coming through here. THE SYSTEM has no comment.',
+    desc: 'The first room beyond the stairs is vast and silent and immediately wrong. The floor is a grid of stone tiles, some hair-raised from their seating, some glowing faint amber at the edges. Pressure plates. Dozens of them, stretching to a far door that is very far away. From somewhere beneath the grating, something skitters. Then more somethings. The torches along the walls are dim and patient. So is whatever is down there. One detail, near the entrance: a trail of small paw prints crosses the room in a single unbroken line, through the only path that does not glow. Nobody put them there. THE SYSTEM has no comment.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -511,7 +511,6 @@ const SCENES = {
         ],
         Melissa: [
           { id:'bear',      icon:'🐻', text:'Send Bear ahead' },
-          { id:'placard',   icon:'📋', text:'Read the Syndicate maintenance placard' },
         ],
         Noah: [
           { id:'calculate', icon:'⚡', text:'Calculate the plate spacing', usesAbility:true, badge:null },
@@ -529,7 +528,7 @@ const SCENES = {
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
       const great = ['bear','calculate','shiny'];
-      const good  = ['placard','map','almanac','morale','violin','careful'];
+      const good  = ['map','almanac','morale','violin','careful'];
       const bad   = ['rush'];
       const greatCount = vals.filter(v => great.includes(v)).length;
       const goodCount  = vals.filter(v => good.includes(v)).length;
@@ -560,7 +559,7 @@ const SCENES = {
     name: 'The Survivor',
     title: 'You are not alone.',
     sub:  'NPC Encounter',
-    desc: 'He is wedged into a gap between two barrels, knees pulled up, a half-eaten granola bar in one hand and a partial floor map in the other. Late forties. Business casual, or what remains of it. He gave himself a dungeon name when he descended — Gorgath the Undying — but his name is Gerald. He was an accountant in Savannah. His family did not make it to their box in time. He went in alone six hours ago and has been in this corner ever since. He sees you and freezes. You can watch the exact moment he decides not to run.',
+    desc: 'Past the antechamber the corridor narrows, and that is where they find him — wedged into an alcove between two supply barrels, knees to his chest, a half-eaten granola bar in one hand and a hand-drawn map in the other. Late forties. What was once business casual. He has been down here for six hours. He gave himself a dungeon name when he descended — Gorgath the Undying — but his real name is Gerald. He was an accountant in Savannah. His family did not make it to their box in time. He went in alone. He has been in this alcove ever since, watching the corridor, hoping for almost anything except more goblins. He sees the party. He freezes. He looks at Bear. Bear looks back. Gerald exhales for what might be the first time in hours.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -607,7 +606,7 @@ const SCENES = {
     name: 'First Blood',
     title: 'Oh no.',
     sub:  'Goblin Grunt Patrol',
-    desc: 'The corridor opens into a wider chamber and the party walks straight into four Goblin Grunts in the middle of a heated argument. About dental coverage. Syndicate-issue dental coverage, specifically, and whether it applies to beings with seventeen teeth. They are not expecting anyone from this entrance. For one frozen second both sides stare at each other. Then one grunt points. Another drops his sword — still in the packaging. A third is wearing a hardhat that does nothing. The fourth one, slowly and with great dignity, raises his hands. His name is Splurt. He would like to be helpful.',
+    desc: 'The corridor opens into a guard chamber, and the party has about one second to take it in: four Goblin Grunts, mid-argument, completely unprepared for company. They are stationed here. They were not expecting anyone from this entrance. One of them is wearing a hardhat. Another\'s sword is still in its Syndicate-issue packaging. For one suspended moment, both sides look at each other. Then the grunts reach the same conclusion at roughly the same time. One of them — smaller than the others, holding up both hands immediately — does not. His name is Splurt. He would very much like to discuss a peaceful resolution. The other three would not.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -674,7 +673,7 @@ const SCENES = {
     name: 'Ambush in the Dark',
     title: 'Something\'s wrong.',
     sub:  'Kobold Skirmishers',
-    desc: 'The torches go out. All of them. Simultaneously. The darkness is immediate and total — not the dimness of a cloudy night but the specific absolute black of underground with no light source. A cheerful notification from THE SYSTEM: this feature was added in the 2.3 patch. THE SYSTEM approved it in beta. From the dark, something moves. Fast. More than one something. Reptilian clicking sounds. Five sets of them. The Kobold Skirmishers have been waiting in the walls. They can see perfectly. The party cannot see anything. From their perspective, this is an ideal situation.',
+    desc: 'The torches go out. All of them. At once. The darkness that follows is not the soft dark of a cloudy night — it is the specific, total black of underground with no light source and no way to make one. Somewhere in the walls, something clicks. Reptilian, precise, coordinated. Five sets. The Kobold Skirmishers have been in the walls since before the party entered the corridor. They can see in the dark. They have been waiting. Whatever warned them the party was coming, THE SYSTEM neither confirms nor denies. The clicking gets closer.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -741,7 +740,7 @@ const SCENES = {
     name: 'Mags the Merchant',
     title: 'A friendly face. Probably.',
     sub:  'Checkpoint — Shop + Rest',
-    desc: 'The Syndicate Rest Alcove is carved into the wall like someone decided a dungeon needed a bus stop. Magically lit. One bench (uncomfortable). One vending machine (broken — it takes Syndicate credits, which nobody has). And Mags. She has a folding table, a badge that says LICENSED SYNDICATE MERCHANT, and a smile she deploys professionally. She has been down here three weeks. She finds the Shadles genuinely interesting, which she expresses by immediately trying to sell them things.',
+    desc: 'The alcove in the corridor wall is magically lit — warm, steady light that feels almost wrong after everything since the antechamber. There is a bench. A folding table covered in organized merchandise. A broken vending machine. And Mags, who has been down here for three weeks and has opinions about it. She is a licensed Syndicate merchant — the badge is real, the smile is professional, and she is genuinely pleased to see people who are not goblins. Gerald, if he made it this far, has already claimed the far end of the bench. He is staring at nothing. He will accept a granola bar if offered. The rest alcove is mandatory under Syndicate charter. Even the dungeon cannot skip it. Take a breath.',
     type: 'shop',
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -764,7 +763,7 @@ const SCENES = {
     name: 'The Puzzle Lock',
     title: 'Think.',
     sub:  'Syndicate Class-3 Security Door',
-    desc: 'The door is solid stone, three feet thick, with a keypad and a screen. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. A smaller notice below: Unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. Each member of the party feels a strange pressure — and suddenly knows one line of something the others do not. The door has been here longer than the goblins. The door has seen better parties fail.',
+    desc: 'The corridor ends at a door that has no business being here — solid stone, three feet thick, with a keypad set into the face and a screen above it. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. Below that, smaller: unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. The moment the party reads it, something shifts — a pressure, not quite a sound, like a word on the tip of the tongue. Each person holds one line of something. The others hold the rest. The door predates the goblins. The door has seen parties stand here and not make it through. It is waiting to see what this one does.',
     type: 'riddle',
     riddleLines: {
       Bart:    'I fell on the South in eighteen sixty-five,',
@@ -790,7 +789,7 @@ const SCENES = {
     name: 'The Elite Guard',
     title: 'These are not the scouts.',
     sub:  'Second Combat',
-    desc: 'These are not scouts. The Goblin Elites are taller by a full head, armored in actual metal, and standing in the corridor like they own it — because until about thirty seconds ago, they did. One carries a battered tower shield that has deflected things much more dangerous than this party. The other cracks its knuckles one at a time. Slowly. Deliberately. Making eye contact. They do not look embarrassed. They look like they have been waiting for something to hit.',
+    desc: 'The corridor beyond the door opens wider, and the change is immediate. The torches are better here. The floor is cleaner. The walls have been worked deliberately, not hacked out. This is Krag\'s wing — maintained, intentional, guarded. Two Goblin Elites stand in the passage ahead, and they are not what the party has faced before. Taller. Armored in real metal, not salvaged scraps. One carries a tower shield that has absorbed things far more dangerous than this. The other has already drawn its weapon and is making no effort to look threatening. It does not need to. Standing slightly behind them, arms crossed, not making eye contact with anyone, is Splurt. He looks like someone who made a decision he is not entirely at peace with. And somewhere nearby — a sound. Small claws on stone. Getting closer.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -852,7 +851,7 @@ const SCENES = {
     name: 'Krag the Warchief',
     title: 'Oh no.',
     sub:  'Boss Fight',
-    desc: 'The throne room is bigger than it has any right to be. Torches line the walls in iron brackets, casting long shadows across a floor decorated with the actual skulls of people who thought they were ready for this. And there, on a throne made of welded weapons and something that might be spite, sits Krag. Warchief of the Goblin Antechamber. Seven feet of muscle, scar tissue, and deeply personal grievances. He stands when he sees you. He doesn\'t reach for his weapon immediately. He rolls his neck. Slowly. The crack echoes.',
+    desc: 'The throne room opens at the end of the corridor and it is deliberately, architecturally, meant to make whoever enters feel small. High vaulted ceiling. Torches in iron brackets running the length of both walls. A floor that has seen things. And at the far end, on a throne assembled from weapons and intention, sits Krag. Warchief of the Goblin Antechamber. Floor Boss, certified by the Syndicate, eleven years in the role. He is large and scarred and has a speech prepared. He stands when the door opens. He rolls his neck. The crack fills the room. He opens his mouth — and he is going to say something genuinely menacing.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
