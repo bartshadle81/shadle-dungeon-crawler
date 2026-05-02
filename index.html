@@ -354,7 +354,23 @@ body::after {
 .c-icon { margin-right: 9px; }
 .c-badge { font-family: var(--f-mono); font-size: 0.68rem; color: var(--gold-d); margin-left: 6px; }
 
-/* Submitted / waiting / ready states */
+/* Shop */
+.shop-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.shop-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+  background: var(--bg-card); border: 1px solid var(--border-a); border-radius: 2px;
+  cursor: pointer; transition: all 0.15s;
+}
+.shop-item:hover:not(.cant-afford):not(.purchased) { border-color: var(--gold); background: var(--bg-card-h); }
+.shop-item.cant-afford { opacity: 0.35; cursor: not-allowed; }
+.shop-item.purchased { border-color: var(--green); background: rgba(58,122,58,0.1); cursor: default; }
+.shop-icon { font-size: 1.3rem; flex-shrink: 0; }
+.shop-name { font-family: var(--f-body); font-size: 1rem; color: var(--parch); flex: 1; line-height: 1.3; }
+.shop-desc { font-size: 0.78rem; color: var(--parch-d); margin-top: 2px; }
+.shop-price { font-family: var(--f-mono); font-size: 0.88rem; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+.shop-pass { margin-top: 6px; width: 100%; text-align: center; padding: 10px; font-family: var(--f-mono); font-size: 0.78rem; color: var(--parch-d); cursor: pointer; border: 1px dashed var(--border-a); border-radius: 2px; background: transparent; transition: all 0.15s; }
+.shop-pass:hover { border-color: var(--gold-d); color: var(--parch); }
+.shop-gold { font-family: var(--f-mono); font-size: 0.82rem; color: var(--gold); margin-bottom: 10px; padding: 6px 10px; border: 1px solid var(--gold-d); border-radius: 2px; background: rgba(0,0,0,0.3); display: inline-block; }
 .state-msg { text-align: center; padding: 18px; font-family: var(--f-mono); color: var(--green-b); font-size: 0.82rem; }
 .state-msg .sub { color: var(--sys-d); font-size: 0.76rem; margin-top: 5px; font-style: italic; }
 .state-msg.dim { color: var(--sys-d); }
@@ -534,37 +550,37 @@ const SCENES = {
   },
 
   3: {
-    name: 'Grizzuk the Deserter',
+    name: 'The Survivor',
     title: 'You are not alone.',
     sub:  'NPC Encounter',
-    desc: 'He\'s wedged into a gap between two barrels, armor askew, a half-eaten piece of something unidentifiable clutched in one clawed hand. His name is Grizzuk. He was supposed to be guarding the eastern corridor. He is not doing that. He sees you see him. He freezes. You can actually watch the moment he decides whether to fight or beg. It is not a long decision.',
+    desc: 'He is wedged into a gap between two barrels, knees pulled up, a half-eaten granola bar in one hand and a partial floor map in the other. Late forties. Business casual, or what remains of it. He gave himself a dungeon name when he descended — Gorgath the Undying — but his name is Gerald. He was an accountant in Savannah. His family did not make it to their box in time. He went in alone six hours ago and has been in this corner ever since. He sees you and freezes. You can watch the exact moment he decides not to run.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'intimidate', icon:'😤', text:'Intimidate him — get information the hard way' },
-        { id:'befriend',   icon:'🤝', text:'Befriend him — kindness might actually pay off' },
+        { id:'intimidate', icon:'😤', text:'Intimidate him — get the information the hard way' },
+        { id:'befriend',   icon:'🤝', text:'Befriend him — he might be more useful than he looks' },
         { id:'ignore',     icon:'🏃', text:'Ignore him and keep moving' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Make a self-deprecating comment about your own size — Grizzuk visibly relaxes when the giant laughs at himself', usesAbility:true, badge:'SIGNATURE' },
-          { id:'history',  icon:'📚', text:'Share historical context about deserters — surprisingly disarming' },
+          { id:'morale',   icon:'🤡', text:'Say something self-deprecating — Gerald visibly relaxes when the bearded math teacher laughs at himself', usesAbility:true, badge:'SIGNATURE' },
+          { id:'history',  icon:'📚', text:'Share historical context about survivors — be the steady, calm presence he needs right now' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Let Bear sit with him — calm energy, Grizzuk opens up immediately' },
-          { id:'listen',   icon:'👂', text:'Sit with him quietly and just listen — she volunteers at a shelter, she knows how to do this' },
+          { id:'bear',     icon:'🐻', text:'Let Bear sit with him — Bear settles beside Gerald like he has known him for years. Gerald exhales.' },
+          { id:'listen',   icon:'👂', text:'Sit with him quietly and just listen — she volunteers at a shelter. She knows how to do this.' },
         ],
         Noah: [
-          { id:'calculate',icon:'⚡', text:'Quietly calculate the exact probability this goblin is useful — it\'s 73%', usesAbility:true, badge:'SIGNATURE' },
-          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit in case this goes sideways' },
+          { id:'calculate',icon:'⚡', text:'Calculate the exact probability Gerald is useful with or without the party — it is 73%. He goes with the party.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit from this alcove in case things go sideways — just in case' },
         ],
         Leah: [
-          { id:'read',     icon:'📖', text:'Read his body language like a book — she\'s already three steps ahead' },
-          { id:'violin',   icon:'🎻', text:'Play a few violin notes — weirdly soothing to goblins apparently', usesAbility:true, badge:'SIGNATURE' },
+          { id:'read',     icon:'📖', text:'Read him immediately — body language, micro-expressions, the granola bar. She knows within ten seconds.' },
+          { id:'violin',   icon:'🎻', text:'Play a few quiet notes — Gerald stops trembling. Nobody expected that to work.', usesAbility:true, badge:'SIGNATURE' },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
       return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
@@ -581,219 +597,186 @@ const SCENES = {
   },
 
   4: {
-    name: 'Goblin Scout Ambush',
+    name: 'First Blood',
     title: 'Oh no.',
-    sub:  'First Combat',
-    desc: 'They come from the ceiling, which in retrospect was the obvious place. Three Goblin Scouts — leather armor, chipped blades, and the specific energy of creatures who have been waiting in a ceiling crack for three hours and are now extremely committed to this ambush. They land in a loose triangle around the party. One of them points dramatically. Another one\'s helmet falls off. The third one looks like he\'d rather be anywhere else. They attack anyway.',
+    sub:  'Goblin Grunt Patrol',
+    desc: 'The corridor opens into a wider chamber and the party walks straight into four Goblin Grunts in the middle of a heated argument. About dental coverage. Syndicate-issue dental coverage, specifically, and whether it applies to beings with seventeen teeth. They are not expecting anyone from this entrance. For one frozen second both sides stare at each other. Then one grunt points. Another drops his sword — still in the packaging. A third is wearing a hardhat that does nothing. The fourth one, slowly and with great dignity, raises his hands. His name is Splurt. He would like to be helpful.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'attack',   icon:'⚔️', text:'Attack — standard, reliable, violent' },
-        { id:'defend',   icon:'🛡️', text:'Defend — brace and reduce incoming damage' },
-        { id:'flank',    icon:'🔄', text:'Flank around the side — coordinate with the party' },
+        { id:'attack',  icon:'⚔️', text:'Attack — standard, reliable, violent' },
+        { id:'defend',  icon:'🛡️', text:'Defend — brace and reduce incoming damage' },
+        { id:'flank',   icon:'🔄', text:'Flank — coordinate with the party, hit from two sides' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Do something so unexpectedly absurd mid-fight that a scout just stops', usesAbility:true, badge:'SIGNATURE' },
-          { id:'tactical', icon:'📚', text:'Tactical analysis — identify the weakest scout and call it out' },
+          { id:'morale',   icon:'🤡', text:'Do something so physically unexpected mid-combat that a grunt stops attacking to process it', usesAbility:true, badge:'SIGNATURE' },
+          { id:'tactical', icon:'📚', text:'Tactical — identify the weakest grunt, call it out loud, coordinate the attack' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Bear blocks for the party — absorbs one hit meant for anyone' },
-          { id:'coord',    icon:'📋', text:'Coordinate the party — call positions, assign targets, get everyone moving together' },
+          { id:'bear',     icon:'🐻', text:'Bear blocks — puts himself between the party and whoever is about to get hit' },
+          { id:'coord',    icon:'📋', text:'Coordinate — call positions, assign targets, get everyone moving as a unit' },
         ],
         Noah: [
-          { id:'optimal',  icon:'⚡', text:'Eliminate scouts in the mathematically optimal order', usesAbility:true, badge:'SIGNATURE' },
-          { id:'map',      icon:'🗺️', text:'Already identified the escape route before the fight started — Defend +2' },
+          { id:'optimal',  icon:'⚡', text:'Calculate optimal elimination order — four targets, specific sequence, already done the math', usesAbility:true, badge:'SIGNATURE' },
+          { id:'map',      icon:'🗺️', text:'Map the room exits before engaging — know where this goes if it goes badly' },
         ],
         Leah: [
-          { id:'screech',  icon:'🎻', text:'Violin screech — stuns one scout for a full turn', usesAbility:true, badge:'SIGNATURE' },
-          { id:'pattern',  icon:'📖', text:'Read the scouts\' attack pattern — +3 damage this round' },
+          { id:'screech',  icon:'🎻', text:'Violin screech — goblins have sensitive ears, Syndicate bestiary confirmed, she read it', usesAbility:true, badge:'SIGNATURE' },
+          { id:'shiny',    icon:'✨', text:'Notice the hardhat grunt is wearing something interesting — she is already walking toward it' },
         ],
       };
+      const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
       return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
       const goodChoices = ['morale','tactical','bear','coord','optimal','screech','pattern','flank'];
       const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      // Leah walking toward shiny thing on its own is risky
+      if (vals.includes('shiny') && goodCount === 0) return 'neutral';
       if (goodCount >= 3) return 'good';
       if (goodCount >= 1) return 'neutral';
       return 'bad';
     },
     applyOutcome(players, track) {
       const active = Object.keys(players).filter(id => players[id].status === 'active');
-      // Defenders take less damage; attackers take more in bad tracks
-      const defenders = active.filter(id => players[id].choiceId === 'defend');
+      const defenders = active.filter(id => ['defend','map'].includes(players[id].choiceId));
       const attackers = active.filter(id => !['defend','map'].includes(players[id].choiceId));
+      // Leah walking toward shiny gets hit if things go badly
+      const leah = active.find(id => players[id].choiceId === 'shiny');
       const deltas = {};
       if (track === 'good') {
-        // One attacker takes light damage
         const t = attackers[0] || active[0];
         if (t) deltas[t] = -(5 + Math.floor(Math.random()*6));
       } else if (track === 'neutral') {
-        // Two players take moderate damage — prioritize attackers
         const pool = [...attackers, ...defenders].slice(0,2);
-        pool.forEach(id => { deltas[id] = -(8 + Math.floor(Math.random()*7)); });
+        pool.forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*7)); });
+        if (leah && !deltas[leah]) deltas[leah] = -(8 + Math.floor(Math.random()*5));
       } else {
-        // Everyone takes damage
-        active.forEach(id => { deltas[id] = -(12 + Math.floor(Math.random()*9)); });
+        active.forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*7)); });
+        if (leah) deltas[leah] = Math.min(-18, (deltas[leah]||0) - 4);
       }
       return deltas;
     },
-    goodLootGold: () => 8 + Math.floor(Math.random() * 12),
+    goodLootGold: () => 6 + Math.floor(Math.random()*10),
   },
 
   5: {
-    name: 'Mags the Merchant',
-    title: 'A friendly face. Probably.',
-    sub:  'Shop',
-    desc: 'She appears around a corner with a cart and a smile that has never once been sincere. Her name is Mags. She sells things to dungeon parties and asks zero questions about where they\'ve been or what they\'ve done, a policy that has served her extremely well. The cart is cluttered with bottles and pouches and at least one item wrapped in cloth that she deflects questions about. She spreads her hands wide. "Lovely to see adventurers who are still alive," she says. "For now."',
+    name: 'Ambush in the Dark',
+    title: 'Something\'s wrong.',
+    sub:  'Kobold Skirmishers',
+    desc: 'The torches go out. All of them. Simultaneously. The darkness is immediate and total — not the dimness of a cloudy night but the specific absolute black of underground with no light source. A cheerful notification from THE SYSTEM: this feature was added in the 2.3 patch. THE SYSTEM approved it in beta. From the dark, something moves. Fast. More than one something. Reptilian clicking sounds. Five sets of them. The Kobold Skirmishers have been waiting in the walls. They can see perfectly. The party cannot see anything. From their perspective, this is an ideal situation.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'buy',    icon:'🛍️', text:'Browse and buy something' },
-        { id:'haggle', icon:'💬', text:'Haggle — try to get a better price' },
-        { id:'pass',   icon:'🚶', text:'Pass — saving gold for later' },
+        { id:'defend',   icon:'🛡️', text:'Hold position and defend — don\'t move, don\'t give them a target' },
+        { id:'retreat',  icon:'🏃', text:'Retreat toward the entrance — back the way you came' },
+        { id:'blind',    icon:'⚔️', text:'Fight blind — charge the sounds and hope' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',  icon:'🤡', text:'Do something self-deprecating that makes Mags laugh — she knocks 20% off out of pure goodwill', usesAbility:true, badge:'SIGNATURE' },
-          { id:'history', icon:'📚', text:'Ask Mags if she has anything historically significant — she does, weirdly' },
+          { id:'morale',   icon:'🤡', text:'Do something so unexpected in complete darkness the kobolds pause — nobody knows what he did. Not even Bart.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'steady',   icon:'📚', text:'Steady voice in the dark — call everyone\'s name, keep the party together, his calm is a weapon right now' },
         ],
         Melissa: [
-          { id:'budget',  icon:'📋', text:'Review party finances before anyone spends anything — responsible and correct' },
-          { id:'bear',    icon:'🐻', text:'Bear sits on Mags\' foot — Mags gives Melissa a discount out of sheer delight' },
+          { id:'bear',     icon:'🐻', text:'Bear navigates to the threat by something that isn\'t smell — he\'s right every time' },
+          { id:'coord',    icon:'📋', text:'Bark positions in the dark — organize everyone verbally, deny the kobolds the chaos they need' },
         ],
         Noah: [
-          { id:'optimal', icon:'⚡', text:'Calculate exactly what the party needs — optimal purchase list, no waste', usesAbility:true, badge:'SIGNATURE' },
-          { id:'value',   icon:'🗺️', text:'Instantly identify the best value item in the shop' },
+          { id:'mapped',   icon:'⚡', text:'He mapped this room before the lights went out — he knows exactly where everyone is and where the exits are', usesAbility:true, badge:'SIGNATURE' },
+          { id:'sound',    icon:'🗺️', text:'Track kobolds by sound — calculate positions from the clicking, build a mental map in real time' },
         ],
         Leah: [
-          { id:'spot',    icon:'📖', text:'Spot something in Mags\' inventory nobody else noticed' },
-          { id:'perform', icon:'🎻', text:'Barter with a quick performance — Mags is moved, prices drop 15%', usesAbility:true, badge:'SIGNATURE' },
+          { id:'music',    icon:'🎻', text:'Play in the dark — the kobolds\' coordination breaks apart. They were not expecting music.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'grab',     icon:'✨', text:'Something moved near her face and she grabbed it instinctively — it is a kobold\'s tail. This is now a situation.' },
         ],
       };
+      const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
       return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const smartChoices = ['morale','history','budget','bear','optimal','value','spot','perform','haggle'];
-      const smartCount = vals.filter(v => smartChoices.includes(v)).length;
-      if (smartCount >= 3) return 'good';
-      if (smartCount >= 1) return 'neutral';
-      return 'neutral';
-    },
-    applyOutcome(players, track) { return {}; },
-  },
-
-  6: {
-    name: 'The Riddle Wall',
-    title: 'Think.',
-    sub:  'Split-Clue Puzzle',
-    desc: 'The door is solid stone, carved with four runes that glow faintly in colors that don\'t quite exist. There is no handle. There is no keyhole. There is, carved above the arch in letters worn smooth by centuries of frustrated adventurers, a single instruction: ANSWER TOGETHER. Each of you feels something — a pull, a pressure — and suddenly you know: you are each seeing one piece of something larger. The door is waiting. It has been waiting a long time. It is not impressed so far.',
-    type: 'choice',
-    getChoices(archetype, inventory, sigUsed) {
-      const generic = [
-        { id:'read_aloud', icon:'📢', text:'Read your line aloud to the party immediately' },
-        { id:'alone',      icon:'🤔', text:'Try to solve it alone first' },
-        { id:'holdback',   icon:'🤫', text:'Hold your line — see what others say first' },
-      ];
-      const personal = {
-        Bart: [
-          { id:'morale',    icon:'🤡', text:'Confidently guess "Is it the Battle of Gettysburg?" with complete conviction — it is not. The energy is infectious anyway.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'history',   icon:'📚', text:'Cross-reference with known historical riddles — he\'s got this' },
-        ],
-        Melissa: [
-          { id:'organize',  icon:'📋', text:'Organize everyone\'s lines systematically — she\'s solved harder puzzles at work' },
-          { id:'bear',      icon:'🐻', text:'Let Bear sniff the door — unhelpful but somehow calming for everyone' },
-        ],
-        Noah: [
-          { id:'solve',     icon:'⚡', text:'Solve it in his head before anyone finishes reading', usesAbility:true, badge:'SIGNATURE' },
-          { id:'map',       icon:'🗺️', text:'Map the logical structure of all four clues simultaneously' },
-        ],
-        Leah: [
-          { id:'recognize', icon:'📖', text:'Immediately recognize this type of riddle — she\'s read enough books', usesAbility:true, badge:'SIGNATURE' },
-          { id:'shout',     icon:'🎻', text:'Shout the answer before everyone\'s finished reading — she\'s probably right' },
-        ],
-      };
-      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
-      return [...mine, ...filteredGeneric];
-    },
-    outcomeTrack(choiceMap) {
-      const vals = Object.values(choiceMap);
-      const goodChoices = ['morale','history','organize','solve','recognize','shout','read_aloud','map'];
-      const badChoices  = ['alone','holdback'];
+      const goodChoices = ['morale','steady','bear','coord','mapped','sound','music'];
+      const badChoices  = ['blind'];
       const goodCount = vals.filter(v => goodChoices.includes(v)).length;
       const badCount  = vals.filter(v => badChoices.includes(v)).length;
       if (goodCount >= 3) return 'good';
-      if (badCount >= 3) return 'bad';
-      return 'neutral';
+      if (badCount >= 2) return 'bad';
+      if (badCount >= 1 || vals.includes('grab')) return 'neutral';
+      return goodCount >= 1 ? 'neutral' : 'bad';
     },
     applyOutcome(players, track) {
-      if (track !== 'bad') return {};
       const active = Object.keys(players).filter(id => players[id].status === 'active');
-      const deltas = {};
-      active.forEach(id => { deltas[id] = -10; });
+      const fighters = active.filter(id => players[id].choiceId === 'blind');
+      const others   = active.filter(id => players[id].choiceId !== 'blind');
+      const leah     = active.find(id => players[id].choiceId === 'grab');
+      const deltas   = {};
+      if (track === 'good') {
+        // 1-2 players take light damage
+        active.slice(0,2).forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*7)); });
+      } else if (track === 'neutral') {
+        active.forEach(id => { deltas[id] = -(16 + Math.floor(Math.random()*9)); });
+        if (leah) deltas[leah] = (deltas[leah]||0) - 6; // extra for grabbing the tail
+      } else {
+        active.forEach(id => { deltas[id] = -(22 + Math.floor(Math.random()*9)); });
+        fighters.forEach(id => { deltas[id] = (deltas[id]||0) - 8; }); // charging blind costs extra
+        if (leah) deltas[leah] = (deltas[leah]||0) - 6;
+      }
       return deltas;
     },
+    goodLootGold: () => 8 + Math.floor(Math.random()*10),
   },
 
-  7: {
-    name: 'The Goblin Barracks',
-    title: 'Breathe.',
-    sub:  'Rest & Recovery',
-    desc: 'The barracks is abandoned — bunks tipped over, a card game left mid-hand on an upturned crate, goblin graffiti covering every surface in a language that seems mostly made of complaints. It smells like wet fur and bad decisions. But it\'s quiet. The sounds of the dungeon feel far away for once. There\'s a firepit that still has coals in it. Somebody left a boot. It\'s a moment — not a safe one, but a moment — and the party would be idiots not to take it.',
-    type: 'choice',
-    getChoices(archetype, inventory, sigUsed) {
-      const generic = [
-        { id:'rest',   icon:'😴', text:'Rest — restore 15 HP' },
-        { id:'search', icon:'🔍', text:'Search for loot' },
-        { id:'watch',  icon:'👀', text:'Stand watch — no ambush disadvantage next scene' },
-      ];
-      const personal = {
-        Bart: [
-          { id:'morale',    icon:'🤡', text:'Tell a story so self-deprecating and ridiculous everyone forgets they\'re exhausted — party gains 8 bonus HP', usesAbility:true, badge:'SIGNATURE' },
-          { id:'lecture',   icon:'📚', text:'Lecture everyone about goblin military history — weirdly relaxing, +5 HP to all' },
-        ],
-        Melissa: [
-          { id:'inventory', icon:'📋', text:'Full inventory check — organize everything, nothing gets missed' },
-          { id:'chocolate', icon:'🍫', text:'Share a Chocolate Bar — restores 12 HP to one party member', usesItem:'Chocolate Bar' },
-        ],
-        Noah: [
-          { id:'optimize',  icon:'⚡', text:'Optimize the rest schedule — everyone gets maximum recovery from minimum time', usesAbility:true, badge:'SIGNATURE' },
-          { id:'scout',     icon:'🗺️', text:'Map the route to the next area while others sleep — no surprises ahead' },
-        ],
-        Leah: [
-          { id:'journal',   icon:'📖', text:'Read a goblin journal found in the barracks — reveals intel about the next fight', usesAbility:true, badge:'SIGNATURE' },
-          { id:'music',     icon:'🎻', text:'Play something quiet — party restores an extra 8 HP from the calm' },
-        ],
-      };
-      const mine = (personal[archetype] || []).filter(c =>
-        (!c.usesAbility || !sigUsed) && (!c.usesItem || inventory.some(i => i.startsWith(c.usesItem)))
-      );
-      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
-      return [...mine, ...filteredGeneric];
-    },
+  6: {
+    name: 'Mags the Merchant',
+    title: 'A friendly face. Probably.',
+    sub:  'Checkpoint — Shop + Rest',
+    desc: 'The Syndicate Rest Alcove is carved into the wall like someone decided a dungeon needed a bus stop. Magically lit. One bench (uncomfortable). One vending machine (broken — it takes Syndicate credits, which nobody has). And Mags. She has a folding table, a badge that says LICENSED SYNDICATE MERCHANT, and a smile she deploys professionally. She has been down here three weeks. She finds the Shadles genuinely interesting, which she expresses by immediately trying to sell them things.',
+    type: 'shop',
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const goodChoices = ['morale','lecture','inventory','chocolate','optimize','scout','journal','music','rest'];
-      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      const goodBuys = ['health_potion','bandage','smoke_bomb','antidote','rope','mystery_sack','torch'];
+      const goodCount = vals.filter(v => goodBuys.includes(v)).length;
       if (goodCount >= 3) return 'good';
       if (goodCount >= 1) return 'neutral';
       return 'neutral';
     },
     applyOutcome(players, track) {
+      // Everyone gets a small HP recovery from the rest alcove
       const active = Object.keys(players).filter(id => players[id].status === 'active');
       const deltas = {};
-      const healAmt = track === 'good' ? 20 : 12;
-      active.forEach(id => { deltas[id] = healAmt; });
+      active.forEach(id => { deltas[id] = track === 'good' ? 10 : 6; });
       return deltas;
     },
+  },
+
+  7: {
+    name: 'The Puzzle Lock',
+    title: 'Think.',
+    sub:  'Syndicate Class-3 Security Door',
+    desc: 'The door is solid stone, three feet thick, with a keypad and a screen. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. A smaller notice below: Unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. Each member of the party feels a strange pressure — and suddenly knows one line of something the others do not. The door has been here longer than the goblins. The door has seen better parties fail.',
+    type: 'riddle',
+    riddleLines: {
+      Bart:    'I fell on the South in eighteen sixty-five,',
+      Melissa: 'I keep your coffee warm and fill the morning bright,',
+      Noah:    'My speed is measured — runners know me well,',
+      Leah:    'What silences a room and fills a concert hall?',
+    },
+    // Each answer is the player's own first name
+    getAnswer(archetype) { return archetype.toLowerCase(); },
+    applyOutcome(players, track) {
+      if (track === 'bad') {
+        const active = Object.keys(players).filter(id => players[id].status === 'active');
+        const deltas = {};
+        active.forEach(id => { deltas[id] = -8; });
+        return deltas;
+      }
+      return {};
+    },
+    goodLootGold: () => 18 + Math.floor(Math.random()*10),
   },
 
   8: {
@@ -1386,20 +1369,26 @@ function buildShared(scene, phase, narr, players, scData) {
     narrHTML = `<div class="narr-box"><div class="narr-text" id="narrText">${esc(narr.text)}</div></div>`;
   }
 
-  // Choices in shared panel (when choosing and not yet submitted)
+  // Choices / shop in shared panel
   let choicesHTML = '';
   const me = (fbState.players||{})[myId];
-  if (phase === 'choosing' && me && !me.choiceSubmitted && me.status !== 'downed') {
-    const choices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
-    currentChoices = choices;
-    const btns = choices.map((c,i) => `
-      <button class="c-btn" onclick="submitByIdx(${i})">
-        <span class="c-icon">${c.icon}</span>${c.text}
-        ${c.badge ? `<span class="c-badge">[${c.badge}]</span>` : ''}
-      </button>`).join('');
-    choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}</div></div>`;
-  } else if (phase === 'choosing' && me?.choiceSubmitted) {
-    choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
+  if (phase === 'choosing' && me && me.status !== 'downed') {
+    if (scData?.type === 'shop') {
+      choicesHTML = buildShopUI(me);
+    } else if (scData?.type === 'riddle') {
+      choicesHTML = buildRiddleUI(me, scData);
+    } else if (!me.choiceSubmitted) {
+      const choices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
+      currentChoices = choices;
+      const btns = choices.map((c,i) => `
+        <button class="c-btn" onclick="submitByIdx(${i})">
+          <span class="c-icon">${c.icon}</span>${c.text}
+          ${c.badge ? `<span class="c-badge">[${c.badge}]</span>` : ''}
+        </button>`).join('');
+      choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}</div></div>`;
+    } else {
+      choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
+    }
   }
 
   return `
@@ -1573,6 +1562,202 @@ function playAllReadySound() {
   } catch(e) {}
 }
 
+// ═══════════════════════════════════════════════════════
+//  SHOP SYSTEM
+// ═══════════════════════════════════════════════════════
+const SHOP_ITEMS = [
+  { id:'health_potion', icon:'🧪', name:'Health Potion',        desc:'+25 HP',                          cost:15, inv:'Health Potion' },
+  { id:'bandage',       icon:'🩹', name:'Bandage',              desc:'+12 HP',                          cost:8,  inv:'Bandage' },
+  { id:'torch',         icon:'🔦', name:'Torch ×3',             desc:'Required. Scene 5 made this clear.', cost:5, inv:'Torch ×3' },
+  { id:'smoke_bomb',    icon:'💨', name:'Smoke Bomb',           desc:'Escape combat or stun one enemy',  cost:10, inv:'Smoke Bomb' },
+  { id:'antidote',      icon:'💊', name:'Antidote',             desc:'Cure poison',                     cost:12, inv:'Antidote' },
+  { id:'rope',          icon:'🪢', name:'Rope',                 desc:'Useful later. Mags won\'t say why.', cost:12, inv:'Rope' },
+  { id:'mystery_sack',  icon:'🎁', name:'Mystery Sack',         desc:'THE SYSTEM\'s favorite. Nobody will say what\'s in it.', cost:20, inv:'Mystery Sack' },
+  { id:'granola_bar',   icon:'🍫', name:'Gerald\'s Granola Bar', desc:'The last one. He needs the gold more than the calories.', cost:2, inv:'Granola Bar (Gerald\'s)' },
+];
+
+function buildShopUI(me) {
+  if (me.choiceSubmitted) {
+    const bought = me.choiceId === 'pass' ? 'Passed on the shop.' : 'Purchased: ' + me.choice;
+    return '<div class="state-msg" style="text-align:left;padding:12px 0;">✓ ' + esc(bought) + '</div>';
+  }
+
+  const rows = SHOP_ITEMS.map(item => {
+    const canAfford = me.gold >= item.cost;
+    const cls = canAfford ? 'shop-item' : 'shop-item cant-afford';
+    const data = canAfford ? ' data-itemid="' + item.id + '"' : '';
+    const tip  = canAfford ? '' : ' title="Not enough gold"';
+    return '<div class="' + cls + '"' + data + tip + '>' +
+      '<span class="shop-icon">' + item.icon + '</span>' +
+      '<div style="flex:1">' +
+        '<div class="shop-name">' + item.name + '</div>' +
+        '<div class="shop-desc">' + item.desc + '</div>' +
+      '</div>' +
+      '<div class="shop-price">' + item.cost + 'g</div></div>';
+  }).join('');
+
+  // Attach delegated click handler after render
+  setTimeout(() => {
+    const grid = document.querySelector('.shop-grid');
+    if (grid) {
+      grid.addEventListener('click', e => {
+        const el = e.target.closest('[data-itemid]');
+        if (el) buyItem(el.dataset.itemid);
+      });
+    }
+    const passBtn = document.querySelector('.shop-pass');
+    if (passBtn) passBtn.addEventListener('click', () => buyItem('pass'));
+  }, 0);
+
+  return '<div class="choice-lbl" style="margin-top:14px;">Mags\u2019 Wares</div>' +
+    '<div class="shop-gold">\u{1F4B0} Your gold: ' + me.gold + 'g</div>' +
+    '<div class="shop-grid">' + rows + '</div>' +
+    '<button class="shop-pass">Pass \u2014 save gold for later</button>';
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  RIDDLE WALL (Scene 7)
+// ═══════════════════════════════════════════════════════
+function buildRiddleUI(me, scData) {
+  const myLine = scData.riddleLines?.[me.archetype] || '';
+  const attempts = fbState.riddleAttempts || 0;
+  const solved   = fbState.riddleSolved || false;
+
+  if (solved) {
+    return `<div class="state-msg">✓ The door is open.<div class="sub">Well done.</div></div>`;
+  }
+  if (me.choiceSubmitted) {
+    return `<div class="state-msg">✓ Answer submitted.<div class="sub">Waiting for the others...</div></div>`;
+  }
+
+  const attemptsLeft = 2 - attempts;
+  const warn = attemptsLeft === 1
+    ? `<div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--red-b);margin-bottom:10px;">⚠ One attempt remaining. Wrong answer discharges 8 damage to all.</div>`
+    : '';
+
+  return `
+    <div style="margin-top:14px;">
+      <div class="choice-lbl">Your line</div>
+      <div style="font-family:var(--f-mono);font-size:1rem;color:var(--sys);padding:14px 16px;background:rgba(0,0,0,0.4);border:1px solid var(--border-a);border-radius:2px;margin-bottom:14px;line-height:1.7;text-shadow:0 0 8px rgba(240,192,64,0.25)">
+        "${esc(myLine)}"
+      </div>
+      <div class="choice-lbl" style="margin-bottom:6px;">Your answer</div>
+      ${warn}
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="riddleInput" type="text" placeholder="Enter your answer..."
+          style="flex:1;font-family:var(--f-disp);font-size:1rem;padding:10px 14px;
+                 background:var(--bg-card);border:1px solid var(--border-a);border-radius:2px;
+                 color:var(--parch);letter-spacing:0.05em;"
+          onkeydown="if(event.key==='Enter')submitRiddleAnswer()"
+          autocomplete="off" />
+        <button class="btn btn-primary" onclick="submitRiddleAnswer()" style="white-space:nowrap;">Submit</button>
+      </div>
+      <div style="font-family:var(--f-mono);font-size:0.7rem;color:var(--parch-d);margin-top:10px;">
+        Talk to the rest of your party. Each of you holds one line.
+      </div>
+    </div>`;
+}
+
+async function submitRiddleAnswer() {
+  const me = (fbState.players||{})[myId];
+  if (!me || me.choiceSubmitted) return;
+  const input = document.getElementById('riddleInput');
+  if (!input) return;
+  const answer = input.value.trim().toLowerCase();
+  if (!answer) return;
+
+  const scData = SCENES[7];
+  const correct = scData.getAnswer(me.archetype);
+  const isRight = answer === correct;
+
+  const upd = {
+    [`players/${myId}/choice`]:          isRight ? `Answered correctly: "${input.value.trim()}"` : `Answered: "${input.value.trim()}"`,
+    [`players/${myId}/choiceId`]:        isRight ? 'correct' : 'wrong',
+    [`players/${myId}/choiceSubmitted`]: true,
+  };
+  await ROOT.update(upd);
+  playChoiceSound();
+
+  // Check if all have submitted
+  ROOT.once('value', snap => {
+    const s = snap.val() || {};
+    const ps = s.players || {};
+    const allDone = Object.values(ps).every(p => p.status === 'downed' || p.choiceSubmitted);
+    if (!allDone) return;
+
+    // Check if all answered correctly
+    const allCorrect = Object.entries(ps).every(([id, p]) => {
+      if (p.status === 'downed') return true;
+      return p.choiceId === 'correct';
+    });
+
+    if (allCorrect) {
+      // Door opens — write solved state and advance
+      const attempts = s.riddleAttempts || 0;
+      ROOT.update({ riddleSolved: true, 'session/phase': 'waiting_for_narration' });
+    } else {
+      // Wrong answer — apply damage, increment attempts, reset submissions
+      const attempts = (s.riddleAttempts || 0) + 1;
+      const resetUpd = { riddleAttempts: attempts, 'session/phase': 'choosing' };
+      Object.keys(ps).forEach(id => {
+        resetUpd[`players/${id}/choiceSubmitted`] = false;
+        resetUpd[`players/${id}/choice`] = null;
+        resetUpd[`players/${id}/choiceId`] = null;
+      });
+      if (attempts >= 2) {
+        // Used all attempts — fire narration anyway (bad track)
+        resetUpd['session/phase'] = 'waiting_for_narration';
+      } else {
+        // Apply 8 damage immediately so bars update
+        Object.keys(ps).filter(id => ps[id].status === 'active').forEach(id => {
+          const newHp = Math.max(0, (ps[id].hp || 0) - 8);
+          resetUpd[`players/${id}/hp`] = newHp;
+          if (newHp <= 0) resetUpd[`players/${id}/status`] = 'downed';
+        });
+      }
+      ROOT.update(resetUpd);
+    }
+  });
+}
+
+
+async function buyItem(itemId) {
+  const me = (fbState.players||{})[myId];
+  if (!me || me.choiceSubmitted) return;
+
+  let choiceText, choiceDisplay, goldCost = 0, newItem = null;
+
+  if (itemId === 'pass') {
+    choiceText = 'Passed on the shop';
+    choiceDisplay = 'pass';
+  } else {
+    const item = SHOP_ITEMS.find(i => i.id === itemId);
+    if (!item) return;
+    if (me.gold < item.cost) return;
+    goldCost = item.cost;
+    newItem  = item.inv;
+    choiceText    = `Bought ${item.name} from Mags (${item.cost}g)`;
+    choiceDisplay = itemId;
+  }
+
+  const newGold = me.gold - goldCost;
+  const newInv  = newItem ? [...(me.inventory||[]), newItem] : [...(me.inventory||[])];
+
+  const upd = {
+    [`players/${myId}/choice`]:          choiceText,
+    [`players/${myId}/choiceId`]:        choiceDisplay,
+    [`players/${myId}/choiceSubmitted`]: true,
+    [`players/${myId}/gold`]:            newGold,
+    [`players/${myId}/inventory`]:       newInv,
+  };
+
+  await ROOT.update(upd);
+  playChoiceSound();
+  triggerGoldBounce();
+  checkAllSubmitted();
+}
+
 function submitByIdx(i) {
   const c = currentChoices[i];
   if (!c) return;
@@ -1630,7 +1815,9 @@ async function fireSceneNarration(state) {
   const choiceMap = {};
   Object.entries(players).forEach(([id,p]) => { if (p.choiceId) choiceMap[id] = p.choiceId; });
 
-  const track = scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
+  const track = scData?.type === 'riddle'
+    ? (state.riddleSolved ? 'good' : 'bad')
+    : scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
 
   // ── Calculate damage/healing BEFORE calling Claude ──
   // Use players from state (not fresh snap) so we can describe current HP accurately
@@ -1668,13 +1855,20 @@ async function fireSceneNarration(state) {
   ).join('\n\n');
 
   const hint = { good:'Things go relatively well.', neutral:'Mixed result — some consequence, not catastrophic.', bad:'Poor choices. Things go badly.' };
+  const shopNote = scData?.type === 'shop'
+    ? '\n\nThis is the merchant checkpoint scene. Each player either bought one item or passed. Reference what each person bought (or did not) and how they interacted with Mags. The rest alcove gives everyone a small HP recovery — work that in naturally. Gerald is in the corner if he survived.'
+    : '';
+  const riddleNote = scData?.type === 'riddle'
+    ? `\n\nThis is the Syndicate Puzzle Lock scene. Each player was shown one personal line of a riddle and had to communicate out loud to solve it. The answer is that each line describes something personal to that family member — and each player submits their own first name. ${fbState.riddleSolved ? 'They solved it correctly. The door opened. Narrate the triumph — make it feel earned.' : 'They failed to solve it correctly (used all attempts). The door discharged 8 damage to everyone and then opened anyway because the Syndicate has a liability clause. Narrate the failure with appropriate System commentary.'}`
+    : '';
+
   const prompt = `SCENE ${scene}: ${scData?.name || ''}
 ${scData?.desc || ''}
 
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}
+OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}
 
 Narrate the outcome. Reference every player by name. Make their specific choices feel personal. If damage or healing is listed above, work it naturally into the narration — do not ignore it or contradict it.`;
 
@@ -1736,8 +1930,8 @@ function showTransition(toScene, callback) {
   const animDuration = 3200;   // animation phase
   const holdDuration  = 400;   // hold black after animation
   const fadeDuration  = 700;   // fade out to reveal new scene
-  const draws = { 2:txTrapCorridor, 3:txGrizzuk, 4:txAmbush, 5:txMerchant,
-                  6:txRiddleWall,   7:txBarracks, 8:txElites, 9:txBoss, 10:txVictory };
+  const draws = { 2:txTrapCorridor, 3:txGerald,   4:txAmbush,   5:txDarkness,
+                  6:txMags,         7:txBarracks,  8:txElites,   9:txBoss, 10:txVictory };
   const draw = draws[toScene] || txCorridorRush;
   let raf;
   let phase = 'anim'; // 'anim' → 'hold' → 'fadeout'
@@ -1891,36 +2085,64 @@ function txTrapCorridor(ctx, t, W, H, now) {
   txText(ctx,'...',W/2,H*0.15);
 }
 
-// ── SCENE 3: Grizzuk ──
-function txGrizzuk(ctx, t, W, H, now) {
+// ── SCENE 3: Gerald ──
+function txGerald(ctx, t, W, H, now) {
   txFillBg(ctx,W,H,'#030201');
   // Alcove walls
   ctx.fillStyle='#0e0a06';
-  ctx.beginPath(); ctx.roundRect(W*0.15,H*0.1,W*0.7,H*0.8,20); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(W*0.1,H*0.05,W*0.8,H*0.88,16); ctx.fill();
   ctx.fillStyle='#060402';
-  ctx.beginPath(); ctx.roundRect(W*0.2,H*0.15,W*0.6,H*0.7,14); ctx.fill();
-  // Torch flicker on ceiling
-  txTorch(ctx,W/2,H*0.22,80,now);
-  // Goblin silhouette — small, cowering in corner
-  const gx=W*0.62, gy=H*0.72;
-  const wobble = Math.sin(now*0.008)*3;
-  ctx.fillStyle='#1a1208';
-  // Body
-  ctx.beginPath(); ctx.ellipse(gx,gy,18,28,0,0,Math.PI*2); ctx.fill();
-  // Head peeking out
-  ctx.beginPath(); ctx.arc(gx-8+wobble,gy-32,14,0,Math.PI*2); ctx.fill();
-  // Big eyes (whites showing)
-  ctx.fillStyle=`rgba(220,200,150,${0.5+Math.sin(now*0.005)*0.3})`;
-  ctx.beginPath(); ctx.ellipse(gx-14+wobble,gy-35,4,5,0.3,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(gx-4+wobble,gy-34,4,5,-0.3,0,Math.PI*2); ctx.fill();
-  // Armor glint
-  ctx.fillStyle='rgba(100,80,40,0.6)';
-  ctx.beginPath(); ctx.ellipse(gx,gy-10,12,16,0.2,0,Math.PI*2); ctx.fill();
-  // Text
-  const opacity = t > 0.5 ? Math.min((t-0.5)/0.25,1) : 0;
-  txText(ctx,'Something is hiding in there.',W/2,H*0.9,`rgba(200,150,50,${opacity})`,18);
+  ctx.beginPath(); ctx.roundRect(W*0.15,H*0.1,W*0.7,H*0.78,10); ctx.fill();
+  // Torch flicker
+  txTorch(ctx,W/2,H*0.18,70,now);
+  // Two barrels in corner
+  const bx=W*0.65, by=H*0.62;
+  ctx.fillStyle='#1e1408';
+  ctx.beginPath(); ctx.ellipse(bx,by,28,38,0.15,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(bx+30,by+8,24,32,-0.1,0,Math.PI*2); ctx.fill();
+  // Barrel rings
+  ctx.strokeStyle='rgba(80,55,25,0.6)'; ctx.lineWidth=2;
+  [-12,0,12].forEach(dy => {
+    ctx.beginPath(); ctx.ellipse(bx,by+dy,28,8,0.15,0,Math.PI*2); ctx.stroke();
+  });
+  // Gerald — sitting figure between/beside barrels, knees up
+  const gx=W*0.58, gy=H*0.7;
+  const breathe = Math.sin(now*0.004)*2;
+  ctx.fillStyle='#1c1510'; // clothes — business casual, ruined
+  // Body slumped
+  ctx.beginPath(); ctx.ellipse(gx,gy+breathe,20,28,-0.2,0,Math.PI*2); ctx.fill();
+  // Knees drawn up
+  ctx.beginPath(); ctx.ellipse(gx-8,gy-16+breathe,14,10,0.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(gx+10,gy-14+breathe,14,10,-0.3,0,Math.PI*2); ctx.fill();
+  // Head, slightly bowed
+  ctx.fillStyle='#c8986a'; // skin tone
+  ctx.beginPath(); ctx.arc(gx-4,gy-38+breathe,16,0,Math.PI*2); ctx.fill();
+  // Hair — thinning, disheveled
+  ctx.fillStyle='#3a2a18';
+  ctx.beginPath(); ctx.ellipse(gx-4,gy-46+breathe,14,8,0,0,Math.PI); ctx.fill();
+  // Granola bar in hand — small rectangle
+  const gbt = Math.min(t*3, 1);
+  if(gbt > 0) {
+    ctx.fillStyle=`rgba(180,140,60,${gbt*0.9})`;
+    ctx.fillRect(gx+12, gy-22+breathe, 18, 10);
+    ctx.strokeStyle=`rgba(120,90,30,${gbt*0.7})`; ctx.lineWidth=1;
+    ctx.strokeRect(gx+12, gy-22+breathe, 18, 10);
+  }
+  // Partial map on his lap — paper
+  const mt = Math.min((t-0.2)*3, 1);
+  if(mt > 0) {
+    ctx.fillStyle=`rgba(200,180,120,${mt*0.7})`;
+    ctx.beginPath(); ctx.roundRect(gx-18,gy-10+breathe,28,20,2); ctx.fill();
+    // Map lines
+    ctx.strokeStyle=`rgba(80,60,30,${mt*0.5})`; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(gx-14,gy-4+breathe); ctx.lineTo(gx+6,gy-4+breathe); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx-14,gy+2+breathe); ctx.lineTo(gx,gy+2+breathe); ctx.stroke();
+  }
+  // Text fade in
+  const opacity = t > 0.55 ? Math.min((t-0.55)/0.25,1) : 0;
+  txText(ctx,'His name is Gerald.',W/2,H*0.9,`rgba(200,160,80,${opacity})`,18);
   // Vignette
-  const vig=ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.7);
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.72);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.92)');
   ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 }
@@ -1974,25 +2196,88 @@ function txAmbush(ctx, t, W, H, now) {
   ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 }
 
-// ── SCENE 5: Merchant ──
-function txMerchant(ctx, t, W, H, now) {
+// ── SCENE 5: Darkness / Kobold Ambush ──
+function txDarkness(ctx, t, W, H, now) {
+  // Start lit, then lights go out
+  const lightOut = t > 0.25 ? Math.min((t-0.25)/0.18, 1) : 0;
+  const darkness = lightOut;
+
+  // Room when lit
+  if (lightOut < 1) {
+    const lit = 1 - lightOut;
+    txFillBg(ctx, W, H, `rgb(${Math.floor(14*lit)},${Math.floor(10*lit)},${Math.floor(6*lit)})`);
+    // Torches on walls
+    [W*0.15, W*0.85].forEach(tx2 => {
+      txTorch(ctx, tx2, H*0.3, 60*(1-lightOut*0.8), now);
+    });
+    // Wall lines
+    ctx.strokeStyle=`rgba(50,35,18,${lit*0.4})`; ctx.lineWidth=1;
+    for(let i=0;i<6;i++){
+      ctx.beginPath(); ctx.moveTo(0,H*0.15*i); ctx.lineTo(W,H*0.15*i); ctx.stroke();
+    }
+  }
+
+  // Darkness taking over
+  if (lightOut > 0) {
+    ctx.fillStyle=`rgba(0,0,0,${lightOut*0.98})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  // Glowing reptilian eyes appearing in the dark
+  if (t > 0.5) {
+    const eyeT = (t - 0.5) / 0.5;
+    const eyePairs = [
+      {x:W*0.2, y:H*0.45}, {x:W*0.75, y:H*0.38},
+      {x:W*0.5, y:H*0.55}, {x:W*0.35, y:H*0.32},
+      {x:W*0.65, y:H*0.6},
+    ];
+    eyePairs.forEach(({x,y}, i) => {
+      const delay = i * 0.12;
+      const et = Math.max(0, Math.min((eyeT - delay) / 0.2, 1));
+      if (et <= 0) return;
+      // Blink
+      const blink = Math.sin(now*0.007 + i*1.4) > 0.85 ? 0 : 1;
+      const alpha = et * blink * 0.9;
+      // Glow
+      const gl = ctx.createRadialGradient(x,y,0,x,y,30);
+      gl.addColorStop(0,`rgba(120,220,60,${alpha*0.3})`);
+      gl.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=gl; ctx.fillRect(x-35,y-35,70,70);
+      // Eyes
+      ctx.fillStyle=`rgba(120,220,60,${alpha})`;
+      ctx.shadowBlur=8*et; ctx.shadowColor=`rgba(100,200,50,0.8)`;
+      ctx.beginPath(); ctx.ellipse(x-7,y,5,3,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x+7,y,5,3,0,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+    });
+  }
+
+  // Syndicate notification text
+  const msgT = t > 0.35 && t < 0.55 ? Math.min((t-0.35)/0.08, 1) * (1-Math.max(0,(t-0.45)/0.08)) : 0;
+  if (msgT > 0) {
+    txText(ctx,'[ TORCH TIMER: 0:00 — Feature added in patch 2.3 ]',W/2,H*0.12,
+      `rgba(180,220,180,${msgT*0.8})`,14,'Share Tech Mono,monospace');
+  }
+
+  const opacity = t > 0.7 ? Math.min((t-0.7)/0.2,1) : 0;
+  txText(ctx,'They can see in the dark.',W/2,H*0.88,`rgba(120,220,60,${opacity})`,20);
+}
+
+// ── SCENE 6: Mags the Merchant ──
+function txMags(ctx, t, W, H, now) {
   txFillBg(ctx,W,H,'#060402');
-  // Warm light bloom
   const warmT = Math.min(t*1.5,1);
   const g=ctx.createRadialGradient(W/2,H*0.55,0,W/2,H*0.55,H*0.6);
   g.addColorStop(0,`rgba(200,130,40,${warmT*0.25})`);
   g.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // Cart silhouette rolling in from right
+  // Cart rolling in from right
   const cartX = W*1.1 - t*W*0.52;
   ctx.fillStyle='#1a1008';
-  // Cart body
   ctx.beginPath(); ctx.roundRect(cartX-60,H*0.52,120,60,6); ctx.fill();
-  // Wheel
   ctx.strokeStyle='#2a1a08'; ctx.lineWidth=4;
   ctx.beginPath(); ctx.arc(cartX-35,H*0.62,22,0,Math.PI*2); ctx.stroke();
   ctx.beginPath(); ctx.arc(cartX+35,H*0.62,22,0,Math.PI*2); ctx.stroke();
-  // Spokes
   for(let i=0;i<6;i++){
     const a=(i/6)*Math.PI*2 + now*0.004;
     ctx.beginPath(); ctx.moveTo(cartX-35,H*0.62); ctx.lineTo(cartX-35+Math.cos(a)*20,H*0.62+Math.sin(a)*20); ctx.stroke();
@@ -2004,14 +2289,7 @@ function txMerchant(ctx, t, W, H, now) {
   const coinW = 28*Math.abs(Math.cos(now*0.018));
   ctx.fillStyle=`rgba(220,170,40,${coinT*0.9})`;
   ctx.beginPath(); ctx.ellipse(coinX,coinY,Math.max(1,coinW),28,0,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=`rgba(255,210,80,${coinT*0.7})`; ctx.lineWidth=2;
-  ctx.stroke();
-  // Glint
-  if(coinW > 10) {
-    const gl=ctx.createRadialGradient(coinX,coinY-8,0,coinX,coinY,28);
-    gl.addColorStop(0,`rgba(255,240,180,${coinT*0.6})`); gl.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=gl; ctx.fillRect(coinX-30,coinY-30,60,60);
-  }
+  ctx.strokeStyle=`rgba(255,210,80,${coinT*0.7})`; ctx.lineWidth=2; ctx.stroke();
   const opacity = t > 0.55 ? Math.min((t-0.55)/0.2,1) : 0;
   txText(ctx,'"Lovely to see adventurers still alive."',W/2,H*0.88,`rgba(200,160,70,${opacity})`,17);
   const vig=ctx.createRadialGradient(W/2,H*0.5,H*0.15,W/2,H*0.5,H*0.75);
@@ -2019,7 +2297,7 @@ function txMerchant(ctx, t, W, H, now) {
   ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 }
 
-// ── SCENE 6: Riddle Wall ──
+// ── SCENE 6 (old): Riddle Wall — kept for potential future use ──
 function txRiddleWall(ctx, t, W, H, now) {
   txFillBg(ctx,W,H,'#040302');
   const cx=W/2, cy=H*0.48;
@@ -2349,7 +2627,7 @@ function advanceToNextScene() {
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/scene':null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/scene':null, riddleAttempts:null, riddleSolved:null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
@@ -2383,8 +2661,7 @@ function manageTaunts(phase, players) {
   const el = document.getElementById('tauntEl');
   if (!el) return;
 
-  if (phase !== 'choosing') {
-    clearInterval(tauntTimer); tauntTimer = null; el.textContent = ''; return;
+  if (phase !== 'choosing') {    clearInterval(tauntTimer); tauntTimer = null; el.textContent = ''; return;
   }
 
   const waiting = Object.values(players).filter(p => !p.choiceSubmitted && p.status !== 'downed');
