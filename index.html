@@ -493,26 +493,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'careful', icon:'🦶', text:'Tread carefully — slow, deliberate, eyes on the floor' },
-        { id:'rush',    icon:'💨', text:'Rush through — fast, chaotic, statistically inadvisable' },
-        { id:'follow',  icon:'👣', text:'Follow someone else\'s lead — pick a person, stay close, don\'t look down' },
+        { id:'careful', icon:'🦶', text:'Move one step at a time, testing each tile before committing your weight' },
+        { id:'rush',    icon:'💨', text:'Cross fast — commit to a line and don\'t stop moving' },
+        { id:'study',   icon:'🔦', text:'Hold position and study the pattern before anyone moves' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',    icon:'🤡', text:'Do something so unexpectedly absurd mid-room that the rats pause in genuine confusion', usesAbility:true, badge:'SIGNATURE' },
-          { id:'almanac',   icon:'📚', text:'Consult the Civil War Almanac — Grant crossed minefields at Vicksburg. Mostly successfully.' },
+          { id:'morale',    icon:'🤡', text:'Do something so unexpectedly absurd mid-room that the rats pause', usesAbility:true, badge:null },
+          { id:'almanac',   icon:'📚', text:'Consult the Civil War Almanac' },
         ],
         Melissa: [
-          { id:'bear',      icon:'🐻', text:'Send Bear ahead — he navigates by something that isn\'t quite smell and maps the safe path back' },
-          { id:'placard',   icon:'📋', text:'Read the Syndicate maintenance placard — there\'s a safe route code posted. Required by law.' },
+          { id:'bear',      icon:'🐻', text:'Send Bear ahead' },
+          { id:'placard',   icon:'📋', text:'Read the Syndicate maintenance placard' },
         ],
         Noah: [
-          { id:'calculate', icon:'⚡', text:'Calculate the plate spacing — it\'s a geometry problem. He has already solved it.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'map',       icon:'🗺️', text:'Map the room from the entrance before anyone moves — thirty seconds now saves everyone' },
+          { id:'calculate', icon:'⚡', text:'Calculate the plate spacing', usesAbility:true, badge:null },
+          { id:'map',       icon:'🗺️', text:'Map the room from the entrance before anyone moves' },
         ],
         Leah: [
-          { id:'shiny',     icon:'✨', text:'Notice something glinting on the far side and start walking toward it before anyone can stop her — accidentally maps the safe route', usesAbility:true, badge:'SIGNATURE' },
-          { id:'violin',    icon:'🎵', text:'Play a sharp violin note — Dire Rats are sound-sensitive. It\'s in the Syndicate bestiary.' },
+          { id:'shiny',     icon:'✨', text:'Notice something glinting on the far side and start walking toward it', usesAbility:true, badge:null },
+          { id:'violin',    icon:'🎵', text:'Play a sharp violin note' },
         ],
       };
       const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
@@ -557,26 +557,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'intimidate', icon:'😤', text:'Intimidate him — get the information the hard way' },
-        { id:'befriend',   icon:'🤝', text:'Befriend him — he might be more useful than he looks' },
-        { id:'ignore',     icon:'🏃', text:'Ignore him and keep moving' },
+        { id:'intimidate', icon:'😤', text:'Step forward and make clear you\'re the one asking questions here' },
+        { id:'befriend',   icon:'🤝', text:'Crouch down to his level and ask his name' },
+        { id:'ignore',     icon:'🗺️', text:'Walk past — but take the partial map sticking out of his pocket' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Say something self-deprecating — Gerald visibly relaxes when the bearded math teacher laughs at himself', usesAbility:true, badge:'SIGNATURE' },
-          { id:'history',  icon:'📚', text:'Share historical context about survivors — be the steady, calm presence he needs right now' },
+          { id:'morale',   icon:'🤡', text:'Say something self-deprecating', usesAbility:true, badge:null },
+          { id:'history',  icon:'📚', text:'Share historical context about survivors' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Let Bear sit with him — Bear settles beside Gerald like he has known him for years. Gerald exhales.' },
-          { id:'listen',   icon:'👂', text:'Sit with him quietly and just listen — she volunteers at a shelter. She knows how to do this.' },
+          { id:'bear',     icon:'🐻', text:'Let Bear sit with him' },
+          { id:'listen',   icon:'👂', text:'Sit with him quietly and just listen' },
         ],
         Noah: [
-          { id:'calculate',icon:'⚡', text:'Calculate the exact probability Gerald is useful with or without the party — it is 73%. He goes with the party.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit from this alcove in case things go sideways — just in case' },
+          { id:'calculate',icon:'⚡', text:'Calculate the exact probability Gerald is useful with or without the party', usesAbility:true, badge:null },
+          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit from this alcove' },
         ],
         Leah: [
-          { id:'read',     icon:'📖', text:'Read him immediately — body language, micro-expressions, the granola bar. She knows within ten seconds.' },
-          { id:'violin',   icon:'🎻', text:'Play a few quiet notes — Gerald stops trembling. Nobody expected that to work.', usesAbility:true, badge:'SIGNATURE' },
+          { id:'read',     icon:'📖', text:'Read him immediately' },
+          { id:'violin',   icon:'🎻', text:'Play a few quiet notes', usesAbility:true, badge:null },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
@@ -604,26 +604,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'attack',  icon:'⚔️', text:'Attack — standard, reliable, violent' },
-        { id:'defend',  icon:'🛡️', text:'Defend — brace and reduce incoming damage' },
-        { id:'flank',   icon:'🔄', text:'Flank — coordinate with the party, hit from two sides' },
+        { id:'attack',  icon:'⚔️', text:'Go straight at them before they recover from the surprise' },
+        { id:'talk',    icon:'🤝', text:'Try to talk Splurt down before the others engage' },
+        { id:'funnel',  icon:'🏃', text:'Fall back and funnel them into a choke point' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Do something so physically unexpected mid-combat that a grunt stops attacking to process it', usesAbility:true, badge:'SIGNATURE' },
-          { id:'tactical', icon:'📚', text:'Tactical — identify the weakest grunt, call it out loud, coordinate the attack' },
+          { id:'morale',   icon:'🤡', text:'Do something so unexpected mid-combat that a grunt stops', usesAbility:true, badge:null },
+          { id:'tactical', icon:'📚', text:'Identify the weakest grunt and call it out' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Bear blocks — puts himself between the party and whoever is about to get hit' },
-          { id:'coord',    icon:'📋', text:'Coordinate — call positions, assign targets, get everyone moving as a unit' },
+          { id:'bear',     icon:'🐻', text:'Put Bear between the party and whoever is about to get hit' },
+          { id:'coord',    icon:'📋', text:'Call positions and assign targets' },
         ],
         Noah: [
-          { id:'optimal',  icon:'⚡', text:'Calculate optimal elimination order — four targets, specific sequence, already done the math', usesAbility:true, badge:'SIGNATURE' },
-          { id:'map',      icon:'🗺️', text:'Map the room exits before engaging — know where this goes if it goes badly' },
+          { id:'optimal',  icon:'⚡', text:'Calculate the optimal elimination order', usesAbility:true, badge:null },
+          { id:'map',      icon:'🗺️', text:'Map the room exits before engaging' },
         ],
         Leah: [
-          { id:'screech',  icon:'🎻', text:'Violin screech — goblins have sensitive ears, Syndicate bestiary confirmed, she read it', usesAbility:true, badge:'SIGNATURE' },
-          { id:'shiny',    icon:'✨', text:'Notice the hardhat grunt is wearing something interesting — she is already walking toward it' },
+          { id:'screech',  icon:'🎻', text:'Violin screech', usesAbility:true, badge:null },
+          { id:'shiny',    icon:'✨', text:'Notice what the hardhat grunt is wearing and walk toward it' },
         ],
       };
       const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
@@ -671,26 +671,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'defend',   icon:'🛡️', text:'Hold position and defend — don\'t move, don\'t give them a target' },
-        { id:'retreat',  icon:'🏃', text:'Retreat toward the entrance — back the way you came' },
-        { id:'blind',    icon:'⚔️', text:'Fight blind — charge the sounds and hope' },
+        { id:'wall',     icon:'🧱', text:'Press your back to the wall and don\'t move' },
+        { id:'retreat',  icon:'🏃', text:'Move toward the entrance — feel the wall and go' },
+        { id:'call',     icon:'🗣️', text:'Call out positions to the party out loud' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Do something so unexpected in complete darkness the kobolds pause — nobody knows what he did. Not even Bart.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'steady',   icon:'📚', text:'Steady voice in the dark — call everyone\'s name, keep the party together, his calm is a weapon right now' },
+          { id:'morale',   icon:'🤡', text:'Do something in the dark that stops everything for a moment', usesAbility:true, badge:null },
+          { id:'steady',   icon:'📚', text:'Call everyone\'s name in the dark and keep talking' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Bear navigates to the threat by something that isn\'t smell — he\'s right every time' },
-          { id:'coord',    icon:'📋', text:'Bark positions in the dark — organize everyone verbally, deny the kobolds the chaos they need' },
+          { id:'bear',     icon:'🐻', text:'Let Bear navigate' },
+          { id:'coord',    icon:'📋', text:'Bark positions and organize everyone verbally' },
         ],
         Noah: [
-          { id:'mapped',   icon:'⚡', text:'He mapped this room before the lights went out — he knows exactly where everyone is and where the exits are', usesAbility:true, badge:'SIGNATURE' },
-          { id:'sound',    icon:'🗺️', text:'Track kobolds by sound — calculate positions from the clicking, build a mental map in real time' },
+          { id:'mapped',   icon:'⚡', text:'He mapped this room before the lights went out', usesAbility:true, badge:null },
+          { id:'sound',    icon:'🗺️', text:'Track kobold positions by sound' },
         ],
         Leah: [
-          { id:'music',    icon:'🎻', text:'Play in the dark — the kobolds\' coordination breaks apart. They were not expecting music.', usesAbility:true, badge:'SIGNATURE' },
-          { id:'grab',     icon:'✨', text:'Something moved near her face and she grabbed it instinctively — it is a kobold\'s tail. This is now a situation.' },
+          { id:'music',    icon:'🎻', text:'Play in the dark', usesAbility:true, badge:null },
+          { id:'grab',     icon:'✨', text:'Grab whatever just moved near her face' },
         ],
       };
       const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
@@ -787,26 +787,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'attack',  icon:'⚔️', text:'Attack — focus fire on one Elite' },
-        { id:'shield',  icon:'🎯', text:'Target the shield — coordinate to break it fast' },
-        { id:'defend',  icon:'🛡️', text:'Defend — brace for heavy hits' },
+        { id:'attack',  icon:'⚔️', text:'Drive hard at the nearest Elite' },
+        { id:'shield',  icon:'🎯', text:'Focus everything on the shield before engaging the Troll' },
+        { id:'fire',    icon:'🔥', text:'Find something flammable in the room and use it on the Troll' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',   icon:'🤡', text:'Do something so absurd the shielded Elite lowers his guard in secondhand embarrassment', usesAbility:true, badge:'SIGNATURE' },
-          { id:'tactical', icon:'📚', text:'Tactical analysis — identify Phase 2 weakness before it triggers' },
+          { id:'morale',   icon:'🤡', text:'Do something so absurd the shielded Elite loses focus', usesAbility:true, badge:null },
+          { id:'tactical', icon:'📚', text:'Call out the Troll\'s regeneration and coordinate who deals with it' },
         ],
         Melissa: [
-          { id:'bear',     icon:'🐻', text:'Bear takes the hit meant for the lowest-HP party member — Mama Bear activated' },
-          { id:'luna',     icon:'🌙', text:'Luna somehow steals the shield — nobody knows how, nobody is asking' },
+          { id:'bear',     icon:'🐻', text:'Put Bear in front of whoever needs it most' },
+          { id:'dogs',     icon:'🐾', text:'Send Bear and Luna in together' },
         ],
         Noah: [
-          { id:'optimal',  icon:'⚡', text:'Calculate the exact attack sequence to break the shield in one round', usesAbility:true, badge:'SIGNATURE' },
-          { id:'exit',     icon:'🗺️', text:'Already found the exit if things go badly — Defend +3' },
+          { id:'optimal',  icon:'⚡', text:'Calculate the exact attack sequence', usesAbility:true, badge:null },
+          { id:'exit',     icon:'🗺️', text:'Clock the exit before engaging' },
         ],
         Leah: [
-          { id:'screech',  icon:'🎻', text:'Violin screech — Elite drops shield for one round in pain', usesAbility:true, badge:'SIGNATURE' },
-          { id:'predict',  icon:'📖', text:'Predict the Elite\'s next move — dodge and counter-attack' },
+          { id:'screech',  icon:'🎻', text:'Violin screech at the shielded Elite', usesAbility:true, badge:null },
+          { id:'predict',  icon:'📖', text:'Watch the Elite\'s pattern and predict the next move' },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
@@ -815,9 +815,9 @@ const SCENES = {
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
-      const goodChoices = ['morale','tactical','bear','optimal','screech','predict','shield'];
+      const goodChoices = ['morale','tactical','bear','dogs','optimal','screech','predict','shield'];
       const goodCount = vals.filter(v => goodChoices.includes(v)).length;
-      if (vals.includes('luna')) return goodCount >= 2 ? 'good' : 'neutral';
+      if (vals.includes('dogs')) return goodCount >= 2 ? 'good' : 'neutral';
       if (goodCount >= 3) return 'good';
       if (goodCount >= 1) return 'neutral';
       return 'bad';
@@ -849,26 +849,26 @@ const SCENES = {
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
-        { id:'allout', icon:'⚔️', text:'All-out attack — everything you\'ve got' },
-        { id:'defend', icon:'🛡️', text:'Defensive formation — weather the storm' },
-        { id:'focus',  icon:'🎯', text:'Coordinate — call targets and fight as a unit' },
+        { id:'allout', icon:'⚔️', text:'Hit him now, hard, before his speech finishes' },
+        { id:'read',   icon:'🛡️', text:'Let him come to you — read his opening move first' },
+        { id:'focus',  icon:'🎯', text:'Call a target and make sure everyone is hitting the same thing' },
       ];
       const personal = {
         Bart: [
-          { id:'morale',  icon:'🤡', text:'Mock yourself so effectively that Krag gets confused about who the real threat is — free attack window', usesAbility:true, badge:'SIGNATURE' },
-          { id:'history', icon:'📚', text:'Cite the historical precedent for overconfident warchiefs — Krag is briefly demoralized' },
+          { id:'morale',  icon:'🤡', text:'Mock yourself until Krag gets confused about who the real threat is', usesAbility:true, badge:null },
+          { id:'history', icon:'📚', text:'Cite the historical precedent for overconfident warchiefs' },
         ],
         Melissa: [
-          { id:'dogs',    icon:'🐾', text:'Bear AND Luna both charge — double distraction, Krag attacks the wrong target entirely' },
-          { id:'coord',   icon:'📋', text:'Coordinate the party — everyone gets +2 attack this turn' },
+          { id:'dogs',    icon:'🐾', text:'Send Bear and Luna at him together' },
+          { id:'coord',   icon:'📋', text:'Coordinate the party' },
         ],
         Noah: [
-          { id:'phase2',  icon:'⚡', text:'Calculate the exact turn Krag enters Phase 2 — party is ready when it happens', usesAbility:true, badge:'SIGNATURE' },
-          { id:'dodge',   icon:'🗺️', text:'Find Krag\'s movement pattern — dodge his Phase 2 double attack once' },
+          { id:'phase2',  icon:'⚡', text:'Calculate the exact turn Krag enters Phase 2', usesAbility:true, badge:null },
+          { id:'dodge',   icon:'🗺️', text:'Study Krag\'s movement pattern' },
         ],
         Leah: [
-          { id:'freq',    icon:'🎻', text:'Play at a frequency that disrupts Krag\'s concentration — -4 to his next attack', usesAbility:true, badge:'SIGNATURE' },
-          { id:'weak',    icon:'📖', text:'Read Krag\'s fighting style — identify and exploit his one actual weakness' },
+          { id:'freq',    icon:'🎻', text:'Play at a frequency that disrupts Krag\'s concentration', usesAbility:true, badge:null },
+          { id:'weak',    icon:'📖', text:'Read Krag\'s fighting style' },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
@@ -1058,7 +1058,38 @@ function showAchievement(text) {
 }
 
 // ── Watch for achievement text in narration ──
-let lastNarrForAchieve = '';
+let lastVerdictKey = null;
+let verdictTimer   = null;
+
+function triggerVerdictTypewrite(narr) {
+  if (!narr.verdict || !narr.scene) return;
+  const key = `v${narr.scene}`;
+  if (key === lastVerdictKey) return;
+  lastVerdictKey = key;
+
+  const el = document.getElementById('verdictText');
+  if (!el) return;
+  const full = el.textContent;
+  el.textContent = '';
+  triggerNarrGlow();
+  clearTimeout(verdictTimer);
+
+  const cursor = document.createElement('span');
+  cursor.className = 'narr-cursor';
+  el.appendChild(cursor);
+
+  let i = 0;
+  const tick = () => {
+    if (i < full.length) {
+      el.insertBefore(document.createTextNode(full[i++]), cursor);
+      verdictTimer = setTimeout(tick, 22); // slightly slower than narration for weight
+    } else {
+      cursor.remove();
+      checkForAchievement(full);
+    }
+  };
+  tick();
+}
 function checkForAchievement(text) {
   if (!text || text === lastNarrForAchieve) return;
   lastNarrForAchieve = text;
@@ -1354,7 +1385,25 @@ function renderSceneScreen(phase) {
   </div>`;
 
   manageTaunts(phase, players);
-  triggerTypewriteIfNeeded(narr);
+
+  // Narrative: fade in (no typewriter)
+  if (phase === 'scene_complete' || phase === 'scene1_ready') {
+    const el = document.getElementById('narrText');
+    if (el) {
+      const key = `fade_s${narr.scene}`;
+      if (key !== lastNarrKey) {
+        lastNarrKey = key;
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.7s ease';
+        setTimeout(() => { el.style.opacity = '1'; }, 30);
+      }
+    }
+  }
+
+  // Verdict: typewriter effect on THE SYSTEM screen
+  if (phase === 'system_verdict') {
+    triggerVerdictTypewrite(narr);
+  }
 }
 
 function buildShared(scene, phase, narr, players, scData) {
@@ -1365,8 +1414,16 @@ function buildShared(scene, phase, narr, players, scData) {
   let narrHTML = '';
   if (narr.generating || (phase==='scene_intro' && !narr.text)) {
     narrHTML = `<div class="narr-box"><div class="narr-loading">⟳ THE SYSTEM IS NARRATING...</div></div>`;
+  } else if (phase === 'system_verdict') {
+    // THE SYSTEM verdict screen — terminal voice, typewriter
+    const verdictText = narr.verdict || '';
+    narrHTML = `
+      <div style="font-family:var(--f-disp);font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:0.05em;margin-bottom:16px;text-shadow:var(--glow-g)">— THE SYSTEM —</div>
+      <div class="narr-box" id="verdictBox" style="border-color:var(--gold-d)">
+        <div class="narr-text" id="verdictText">${esc(verdictText)}</div>
+      </div>`;
   } else if (narr.text) {
-    narrHTML = `<div class="narr-box"><div class="narr-text" id="narrText">${esc(narr.text)}</div></div>`;
+    narrHTML = `<div class="narr-box"><div class="narr-text" id="narrText" style="font-family:var(--f-body);font-size:1.05rem;color:var(--parch);line-height:1.75;text-shadow:none;">${esc(narr.text)}</div></div>`;
   }
 
   // Choices / shop in shared panel
@@ -1383,7 +1440,7 @@ function buildShared(scene, phase, narr, players, scData) {
       const btns = choices.map((c,i) => `
         <button class="c-btn" onclick="submitByIdx(${i})">
           <span class="c-icon">${c.icon}</span>${c.text}
-          ${c.badge ? `<span class="c-badge">[${c.badge}]</span>` : ''}
+          
         </button>`).join('');
       choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}</div></div>`;
     } else {
@@ -1431,8 +1488,14 @@ function buildPlayerPanel(phase, me, scData, players) {
   } else if (phase === 'scene_complete') {
     const ready = (fbState.readiness||{})[myId];
     action = ready
-      ? `<div class="state-msg">Waiting for the party to continue...</div>`
-      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setContinue()">Continue to Next Scene →</button></div>`;
+      ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
+      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setContinue()">Continue →</button></div>`;
+
+  } else if (phase === 'system_verdict') {
+    const ready = (fbState.readiness||{})[myId];
+    action = ready
+      ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
+      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">Continue to Next Scene →</button></div>`;
 
   } else if (phase === 'demo_end') {
     action = `<div style="text-align:center;padding:22px;font-family:var(--f-mono);color:var(--sys-d);">
@@ -1612,7 +1675,7 @@ function buildShopUI(me) {
   return '<div class="choice-lbl" style="margin-top:14px;">Mags\u2019 Wares</div>' +
     '<div class="shop-gold">\u{1F4B0} Your gold: ' + me.gold + 'g</div>' +
     '<div class="shop-grid">' + rows + '</div>' +
-    '<button class="shop-pass">Pass \u2014 save gold for later</button>';
+    '<button class="shop-pass">Walk past — keep the gold</button>';
 }
 
 
@@ -1870,10 +1933,29 @@ ${party}
 
 OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}
 
-Narrate the outcome. Reference every player by name. Make their specific choices feel personal. If damage or healing is listed above, work it naturally into the narration — do not ignore it or contradict it.`;
+YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
+
+SECTION 1 — THE NARRATIVE (2 paragraphs):
+Tell the story of what happened. Reference every player by name. Make their choices feel real. No mechanical announcements here — just the scene unfolding. Do not mention damage numbers or gold amounts in this section.
+
+---SYSTEM---
+
+SECTION 2 — THE SYSTEM VERDICT (3-6 lines, terminal voice):
+THE SYSTEM delivers its verdict. Use this format:
+- One line per player who took damage: "DAMAGE: [Name] — [amount] damage. HP: [new]/[max]."
+- One line if gold was found: "GOLD: Each survivor finds [amount]g."
+- One line if anyone is downed: "[Name] is down. THE SYSTEM notes this."
+- One optional achievement if truly earned: "NEW ACHIEVEMENT! [Title] — [one line]."
+- One final status line: dry, blunt, THE SYSTEM voice.
+If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 
   try {
-    const text = await callClaude(prompt);
+    const raw = await callClaude(prompt);
+
+    // Split on separator
+    const sepIdx = raw.indexOf('---SYSTEM---');
+    const narrative = sepIdx > -1 ? raw.substring(0, sepIdx).trim() : raw.trim();
+    const verdict   = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : '';
 
     // Read fresh HP from Firebase to apply deltas against current values
     const freshSnap = await ROOT.child('players').once('value');
@@ -1897,12 +1979,13 @@ Narrate the outcome. Reference every player by name. Make their specific choices
     }
 
     await ROOT.update({
-      'narration/text': text,
-      'narration/scene': scene,
-      'narration/track': track,
+      'narration/text':      narrative,
+      'narration/verdict':   verdict,
+      'narration/scene':     scene,
+      'narration/track':     track,
       'narration/timestamp': Date.now(),
       'narration/generating': false,
-      'session/phase': 'scene_complete',
+      'session/phase':       'scene_complete',
       ...hpUpd,
     });
   } catch(e) {
@@ -1927,9 +2010,9 @@ resizeTx(); window.addEventListener('resize', resizeTx);
 
 function showTransition(toScene, callback) {
   const W = txCanvas.width, H = txCanvas.height;
-  const animDuration = 3200;   // animation phase
-  const holdDuration  = 400;   // hold black after animation
-  const fadeDuration  = 700;   // fade out to reveal new scene
+  const animDuration = 4800;   // animation phase — longer, more cinematic
+  const holdDuration  = 800;   // hold black after animation
+  const fadeDuration  = 900;   // fade out to reveal new scene
   const draws = { 2:txTrapCorridor, 3:txGerald,   4:txAmbush,   5:txDarkness,
                   6:txMags,         7:txBarracks,  8:txElites,   9:txBoss, 10:txVictory };
   const draw = draws[toScene] || txCorridorRush;
@@ -1945,7 +2028,7 @@ function showTransition(toScene, callback) {
       const t = Math.min(elapsed / animDuration, 1);
       // Fade in over first 8%, hold full, fade to black over last 12%
       const alpha = t < 0.08 ? t/0.08 : t > 0.88 ? 1 : 1;
-      const toBlack = t > 0.88 ? (t - 0.88) / 0.12 : 0;
+      const toBlack = t > 0.92 ? (t - 0.92) / 0.08 : 0;
       txCtx.clearRect(0,0,W,H);
       txCtx.save(); txCtx.globalAlpha = alpha;
       draw(txCtx, t, W, H, now);
@@ -2139,7 +2222,7 @@ function txGerald(ctx, t, W, H, now) {
     ctx.beginPath(); ctx.moveTo(gx-14,gy+2+breathe); ctx.lineTo(gx,gy+2+breathe); ctx.stroke();
   }
   // Text fade in
-  const opacity = t > 0.55 ? Math.min((t-0.55)/0.25,1) : 0;
+  const opacity = t > 0.38 ? Math.min((t-0.38)/0.22,1) : 0;
   txText(ctx,'His name is Gerald.',W/2,H*0.9,`rgba(200,160,80,${opacity})`,18);
   // Vignette
   const vig=ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.72);
@@ -2189,7 +2272,7 @@ function txAmbush(ctx, t, W, H, now) {
     ctx.fillStyle=`rgba(255,80,20,${(0.5-t)*0.5})`;
     ctx.fillRect(0,0,W,H);
   }
-  const opacity = t > 0.6 ? Math.min((t-0.6)/0.2,1) : 0;
+  const opacity = t > 0.42 ? Math.min((t-0.42)/0.22,1) : 0;
   txText(ctx,'AMBUSH.',W/2,H*0.88,`rgba(220,80,40,${opacity})`,28);
   const vig=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.8);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.88)');
@@ -2259,7 +2342,7 @@ function txDarkness(ctx, t, W, H, now) {
       `rgba(180,220,180,${msgT*0.8})`,14,'Share Tech Mono,monospace');
   }
 
-  const opacity = t > 0.7 ? Math.min((t-0.7)/0.2,1) : 0;
+  const opacity = t > 0.45 ? Math.min((t-0.45)/0.22,1) : 0;
   txText(ctx,'They can see in the dark.',W/2,H*0.88,`rgba(120,220,60,${opacity})`,20);
 }
 
@@ -2290,7 +2373,7 @@ function txMags(ctx, t, W, H, now) {
   ctx.fillStyle=`rgba(220,170,40,${coinT*0.9})`;
   ctx.beginPath(); ctx.ellipse(coinX,coinY,Math.max(1,coinW),28,0,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle=`rgba(255,210,80,${coinT*0.7})`; ctx.lineWidth=2; ctx.stroke();
-  const opacity = t > 0.55 ? Math.min((t-0.55)/0.2,1) : 0;
+  const opacity = t > 0.38 ? Math.min((t-0.38)/0.22,1) : 0;
   txText(ctx,'"Lovely to see adventurers still alive."',W/2,H*0.88,`rgba(200,160,70,${opacity})`,17);
   const vig=ctx.createRadialGradient(W/2,H*0.5,H*0.15,W/2,H*0.5,H*0.75);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
@@ -2343,7 +2426,7 @@ function txRiddleWall(ctx, t, W, H, now) {
     dg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=dg; ctx.fillRect(0,0,W,H);
   }
-  const opacity = t > 0.6 ? Math.min((t-0.6)/0.2,1) : 0;
+  const opacity = t > 0.40 ? Math.min((t-0.40)/0.22,1) : 0;
   txText(ctx,'ANSWER TOGETHER.',W/2,H*0.9,`rgba(180,200,255,${opacity})`,20);
   const vig=ctx.createRadialGradient(cx,cy,dh*0.2,cx,cy,H*0.85);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
@@ -2393,7 +2476,7 @@ function txBarracks(ctx, t, W, H, now) {
     ctx.save(); ctx.translate(x,y); ctx.rotate(r);
     ctx.fillRect(-10,-14,20,28); ctx.restore();
   });
-  const opacity = t > 0.5 ? Math.min((t-0.5)/0.25,1) : 0;
+  const opacity = t > 0.35 ? Math.min((t-0.35)/0.22,1) : 0;
   txText(ctx,'A moment to breathe.',W/2,H*0.92,`rgba(200,160,80,${opacity})`,18);
   const vig=ctx.createRadialGradient(fireX,fireY,H*0.05,W/2,H/2,H*0.75);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.88)');
@@ -2451,7 +2534,7 @@ function txElites(ctx, t, W, H, now) {
       ctx.beginPath(); ctx.ellipse(x+8,H*0.34,4,3,0,0,Math.PI*2); ctx.fill();
     });
   }
-  const opacity = t > 0.65 ? Math.min((t-0.65)/0.2,1) : 0;
+  const opacity = t > 0.42 ? Math.min((t-0.42)/0.22,1) : 0;
   txText(ctx,'They are not embarrassed.',W/2,H*0.9,`rgba(200,80,60,${opacity})`,20);
   const vig=ctx.createRadialGradient(W/2,H*0.45,H*0.1,W/2,H/2,H*0.75);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
@@ -2530,7 +2613,7 @@ function txBoss(ctx, t, W, H, now) {
     rg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
   }
-  const opacity = t > 0.7 ? Math.min((t-0.7)/0.15,1) : 0;
+  const opacity = t > 0.45 ? Math.min((t-0.45)/0.2,1) : 0;
   txText(ctx,'KRAG THE WARCHIEF.',W/2,H*0.9,`rgba(220,80,50,${opacity})`,24);
   const vig=ctx.createRadialGradient(cx,H*0.6,H*0.08,cx,H/2,H*0.8);
   vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.92)');
@@ -2615,7 +2698,17 @@ function advanceToScene2() {
 }
 
 function setContinue() {
+  // First continue: go to system_verdict screen
   ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', () => {
+    playAllReadySound();
+    triggerReadyFlash();
+    ROOT.update({ 'session/phase': 'system_verdict', readiness: null });
+  }));
+}
+
+function setVerdictContinue() {
+  // Second continue: advance to next scene
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('system_verdict', () => {
     playAllReadySound();
     triggerReadyFlash();
     advanceToNextScene();
