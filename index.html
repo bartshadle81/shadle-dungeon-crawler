@@ -331,13 +331,13 @@ const SCENES = {
   2: {
     name: 'The Pressure Plate Corridor',
     sub:  'Trap Room',
-    desc: 'A hallway of pressure plates stretches ahead. The obvious ones are clearly traps. The non-obvious ones are the fun ones.',
+    desc: 'The corridor stretches ahead, maybe forty feet of cold stone floor. Except the floor is wrong. Dozens of slightly-raised tiles catch the torchlight at odd angles — some obviously suspicious, some suspiciously obvious. The air smells like rust and old mistakes. Somewhere ahead, something clicks. It might just be the dungeon settling. It might not be.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
         { id:'careful',  icon:'🦶', text:'Tread carefully — slow, measured, alive' },
         { id:'rush',     icon:'💨', text:'Rush through — fast, extremely risky, classic' },
-        { id:'follow',   icon:'👣', text:'Follow Melissa\'s lead — she seems like she has a plan' },
+        { id:'follow',   icon:'👣', text:'Follow someone else\'s lead — let the party decide' },
       ];
       const personal = {
         Bart: [
@@ -358,7 +358,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -392,7 +393,7 @@ const SCENES = {
   3: {
     name: 'Grizzuk the Deserter',
     sub:  'NPC Encounter',
-    desc: 'A wounded goblin huddles in an alcove, armor half-off, absolutely not looking at you. He abandoned his post. He is pathetic. He might be useful.',
+    desc: 'He\'s wedged into a gap between two barrels, armor askew, a half-eaten piece of something unidentifiable clutched in one clawed hand. His name is Grizzuk. He was supposed to be guarding the eastern corridor. He is not doing that. He sees you see him. He freezes. You can actually watch the moment he decides whether to fight or beg. It is not a long decision.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -419,7 +420,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -438,7 +440,7 @@ const SCENES = {
   4: {
     name: 'Goblin Scout Ambush',
     sub:  'First Combat',
-    desc: 'Three Goblin Scouts drop from the ceiling. HP: 25 each. They look embarrassed about the ceiling thing. They are still going to attack you.',
+    desc: 'They come from the ceiling, which in retrospect was the obvious place. Three Goblin Scouts — leather armor, chipped blades, and the specific energy of creatures who have been waiting in a ceiling crack for three hours and are now extremely committed to this ambush. They land in a loose triangle around the party. One of them points dramatically. Another one\'s helmet falls off. The third one looks like he\'d rather be anywhere else. They attack anyway.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -465,7 +467,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -494,7 +497,7 @@ const SCENES = {
   5: {
     name: 'Mags the Merchant',
     sub:  'Shop',
-    desc: 'A suspiciously cheerful merchant with a cart full of goods. She asks no questions. Smart woman. Shop: Health Potion (15g +25HP) · Bandage (8g +12HP) · Smoke Bomb (10g) · Antidote (12g) · Torch (5g) · Rope (12g) · Mystery Sack (20g, The System\'s favorite)',
+    desc: 'She appears around a corner with a cart and a smile that has never once been sincere. Her name is Mags. She sells things to dungeon parties and asks zero questions about where they\'ve been or what they\'ve done, a policy that has served her extremely well. The cart is cluttered with bottles and pouches and at least one item wrapped in cloth that she deflects questions about. She spreads her hands wide. "Lovely to see adventurers who are still alive," she says. "For now."',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -521,7 +524,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -537,7 +541,7 @@ const SCENES = {
   6: {
     name: 'The Riddle Wall',
     sub:  'Split-Clue Puzzle',
-    desc: 'A stone door. Four runes. Each of you sees one line of a riddle on your screen. You must communicate out loud to solve it.',
+    desc: 'The door is solid stone, carved with four runes that glow faintly in colors that don\'t quite exist. There is no handle. There is no keyhole. There is, carved above the arch in letters worn smooth by centuries of frustrated adventurers, a single instruction: ANSWER TOGETHER. Each of you feels something — a pull, a pressure — and suddenly you know: you are each seeing one piece of something larger. The door is waiting. It has been waiting a long time. It is not impressed so far.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -564,7 +568,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -588,7 +593,7 @@ const SCENES = {
   7: {
     name: 'The Goblin Barracks',
     sub:  'Rest & Recovery',
-    desc: 'An abandoned barracks. Goblin bunks, goblin smell, goblin graffiti. But it\'s quiet. Take a breath. The worst is still ahead.',
+    desc: 'The barracks is abandoned — bunks tipped over, a card game left mid-hand on an upturned crate, goblin graffiti covering every surface in a language that seems mostly made of complaints. It smells like wet fur and bad decisions. But it\'s quiet. The sounds of the dungeon feel far away for once. There\'s a firepit that still has coals in it. Somebody left a boot. It\'s a moment — not a safe one, but a moment — and the party would be idiots not to take it.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -617,7 +622,8 @@ const SCENES = {
       const mine = (personal[archetype] || []).filter(c =>
         (!c.usesAbility || !sigUsed) && (!c.usesItem || inventory.some(i => i.startsWith(c.usesItem)))
       );
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -639,7 +645,7 @@ const SCENES = {
   8: {
     name: 'The Elite Guard',
     sub:  'Second Combat',
-    desc: 'Two Goblin Elites. HP: 50 each. One has a shield (ARM 4 until broken). They are bigger, meaner, and significantly less embarrassed than the scouts.',
+    desc: 'These are not scouts. The Goblin Elites are taller by a full head, armored in actual metal, and standing in the corridor like they own it — because until about thirty seconds ago, they did. One carries a battered tower shield that has deflected things much more dangerous than this party. The other cracks its knuckles one at a time. Slowly. Deliberately. Making eye contact. They do not look embarrassed. They look like they have been waiting for something to hit.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -666,7 +672,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -696,7 +703,7 @@ const SCENES = {
   9: {
     name: 'Krag the Warchief',
     sub:  'Boss Fight',
-    desc: 'HP: 180. ATK: 20 (Phase 1) / 26 (Phase 2, below 90 HP). ARM: 2. He has decorated his throne with the skulls of better adventurers. THE SYSTEM acknowledges this is a meaningful data point.',
+    desc: 'The throne room is bigger than it has any right to be. Torches line the walls in iron brackets, casting long shadows across a floor decorated with the actual skulls of people who thought they were ready for this. And there, on a throne made of welded weapons and something that might be spite, sits Krag. Warchief of the Goblin Antechamber. Seven feet of muscle, scar tissue, and deeply personal grievances. He stands when he sees you. He doesn\'t reach for his weapon immediately. He rolls his neck. Slowly. The crack echoes.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -723,7 +730,8 @@ const SCENES = {
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
-      return [...mine, ...generic];
+      const filteredGeneric = archetype === "Melissa" ? generic.filter(c => c.id !== "follow") : generic;
+      return [...mine, ...filteredGeneric];
     },
     outcomeTrack(choiceMap) {
       const vals = Object.values(choiceMap);
@@ -758,7 +766,7 @@ THE PARTY (know them well):
 - Leah (The Wildcard): 15, violinist, voracious reader, brilliant and impulsive. Will absolutely touch the suspicious glowing orb. Wears glasses.
 
 YOUR JOB:
-Narrate what happens next in exactly 1-2 short punchy paragraphs. Reference all four by name. Make their specific choices feel personal — lean into their personalities, the dogs, the Civil War knowledge, the speedrun route, the violin. Keep it brief and fun.
+Narrate what happens next in 3-4 punchy paragraphs. Paint the scene vividly — what does it look like, smell like, feel like? Reference all four family members by name and make their specific choices feel personal. Lean into personalities, the dogs, the Civil War knowledge, the speedrun route, the violin. Make it feel like a real moment in a real adventure, told with sarcasm and love.
 
 TONE RULES:
 - Short punchy sentences. No flowery prose.
@@ -1044,8 +1052,8 @@ function renderSceneScreen(phase) {
     : buildPlayerPanel(phase, me, scData, players);
 
   APP.innerHTML = `<div class="scene-screen" style="display:flex;flex-direction:row;min-height:100vh;align-items:stretch;">
-    <div class="shared-panel" style="flex:1 1 55%;overflow-y:auto;border-right:2px solid var(--border-a);border-bottom:none;">${sharedHTML}</div>
-    <div class="player-panel" style="flex:0 0 360px;overflow-y:auto;">${playerHTML}</div>
+    <div class="shared-panel" style="flex:1 1 50%;overflow-y:auto;border-right:2px solid var(--border-a);border-bottom:none;">${sharedHTML}</div>
+    <div class="player-panel" style="flex:0 0 480px;overflow-y:auto;">${playerHTML}</div>
   </div>`;
 
   manageTaunts(phase, players);
@@ -1514,7 +1522,7 @@ async function callClaude(userPrompt) {
     },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
+      max_tokens: 800,
       system: SYS_PROMPT,
       messages: [{ role:'user', content:userPrompt }],
     }),
