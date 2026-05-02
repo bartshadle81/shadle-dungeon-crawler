@@ -445,7 +445,7 @@ const ARCHETYPES = {
   },
   Melissa: {
     icon: '🐕', hp: 100, atk: 15, sp: 8, arm: 0,
-    inv: ['Bear (companion)', 'Luna (companion)', 'Expense Report', 'Chocolate Bar ×2', 'Organizer'],
+    inv: ['Bear (companion)', 'Expense Report', 'Soft Batch Cookies ×2', 'Organizer'],
     gold: 20,
     realName: 'Melissa',
     title: 'The Handler',
@@ -465,7 +465,7 @@ const ARCHETYPES = {
   },
   Leah: {
     icon: '🎻', hp: 85, atk: 12, sp: 22, arm: 0,
-    inv: ['Violin (weapon)', 'Spell Tome', 'Impulse Charge ×3', 'Reading Glasses'],
+    inv: ['Violin', 'Spell Tome', 'Impulse Charge ×3', 'Reading Glasses'],
     gold: 10,
     realName: 'Leah',
     title: 'The Wildcard',
@@ -479,13 +479,20 @@ const ARCH_NAMES = Object.keys(ARCHETYPES);
 // ── SCENE DATA ──
 const SCENES = {
   1: {
+    name: 'Mars',
+    title: 'Mars.',
+    sub:  'The Concert — No Choices',
+    desc: '',
+    type: 'intro',
+  },
+  2: {
     name: 'The Box at Timber Creek',
     title: 'The End of Tuesday.',
     sub:  'Entry — No Choices',
     desc: '',
     type: 'intro',
   },
-  2: {
+  3: {
     name: 'The Antechamber',
     title: 'Careful now...',
     sub:  'Pressure Plates + Dire Rats',
@@ -549,7 +556,7 @@ const SCENES = {
     goodLootGold: () => 8 + Math.floor(Math.random()*5),
   },
 
-  3: {
+  4: {
     name: 'The Survivor',
     title: 'You are not alone.',
     sub:  'NPC Encounter',
@@ -596,7 +603,7 @@ const SCENES = {
     applyOutcome(players, track) { return {}; },
   },
 
-  4: {
+  5: {
     name: 'First Blood',
     title: 'Oh no.',
     sub:  'Goblin Grunt Patrol',
@@ -663,7 +670,7 @@ const SCENES = {
     goodLootGold: () => 6 + Math.floor(Math.random()*10),
   },
 
-  5: {
+  6: {
     name: 'Ambush in the Dark',
     title: 'Something\'s wrong.',
     sub:  'Kobold Skirmishers',
@@ -730,7 +737,7 @@ const SCENES = {
     goodLootGold: () => 8 + Math.floor(Math.random()*10),
   },
 
-  6: {
+  7: {
     name: 'Mags the Merchant',
     title: 'A friendly face. Probably.',
     sub:  'Checkpoint — Shop + Rest',
@@ -753,7 +760,7 @@ const SCENES = {
     },
   },
 
-  7: {
+  8: {
     name: 'The Puzzle Lock',
     title: 'Think.',
     sub:  'Syndicate Class-3 Security Door',
@@ -779,7 +786,7 @@ const SCENES = {
     goodLootGold: () => 18 + Math.floor(Math.random()*10),
   },
 
-  8: {
+  9: {
     name: 'The Elite Guard',
     title: 'These are not the scouts.',
     sub:  'Second Combat',
@@ -841,7 +848,7 @@ const SCENES = {
     goodLootGold: () => 15 + Math.floor(Math.random() * 16),
   },
 
-  9: {
+  10: {
     name: 'Krag the Warchief',
     title: 'Oh no.',
     sub:  'Boss Fight',
@@ -907,11 +914,11 @@ The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadl
 THE PARTY (know them well):
 BART (The Historian): Bearded math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements.
 
-MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats chocolate or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Luna is a small athletic black dog named after Luna Lovegood — chaotic, was not present at descent, is loose in the dungeon, her paw prints have already been seen.
+MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats soft batch cookies or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Luna is a small athletic black dog named after Luna Lovegood — chaotic, was not present at descent, is loose in the dungeon, her paw prints have already been seen.
 
 NOAH (The Speedrunner): 17, tall, lanky, glasses. Has beaten Minecraft in under an hour. Taking every AP class available but struggles with English. In group situations solves problems quietly in the corner, then drops the answer at the perfect moment. Cautious and methodical. Was attentive at his sister's concert — would never say it mattered. When wrong, argues like a teenager. Leah scored higher on their AP Human Geography exam. THE SYSTEM knows this and considers it a relevant data point.
 
-LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still holding her violin. Impulsive in a magpie way — gets distracted by interesting or shiny things and wanders toward them without processing the danger first. Not recklessly brave, just easily distracted by something more interesting than the threat. Loves her orchestra, the Powerless series, A Good Girl's Guide to Murder, Survivor. Digs in hard when wrong. Comically cannot catch anything — flinches every time something is thrown her direction. Runs a revolving door of foster dogs. THE SYSTEM keeps a tally.
+LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still holding her violin — not a weapon in any conventional sense. When she plays, things happen: enemies lose coordination, goblins freeze, the air changes at frequencies the Syndicate bestiary only partially explains. THE SYSTEM is monitoring this. Impulsive in a magpie way — gets distracted by interesting or shiny things and wanders toward them without processing the danger first. Not recklessly brave, just easily distracted by something more interesting than the threat. Loves her orchestra, the Powerless series, A Good Girl's Guide to Murder, Survivor. Digs in hard when wrong. Comically cannot catch anything — flinches every time something is thrown her direction. Runs a revolving door of foster dogs. THE SYSTEM keeps a tally.
 
 BEAR: Contestant 4-Delta. Mini black labradoodle. Appeared beside Melissa in a sealed auditorium. Navigates pressure plates without hesitation. Always seems to know things he shouldn't. THE SYSTEM has no comment about Bear.
 
@@ -1150,10 +1157,12 @@ try {
     // Only the GM tab fires API calls
     if (isGM) {
       const phase = fbState.session?.phase;
+      const scene = fbState.session?.currentScene;
       if (phase === 'waiting_for_narration') {
         fireSceneNarration(fbState);
       } else if (phase === 'scene_intro') {
-        fireScene1Narration();
+        if (scene === 1) fireScene1Narration();
+        else if (scene === 2) fireScene2Narration();
       }
     }
 
@@ -1317,48 +1326,81 @@ async function fireScene1Narration() {
 
   ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
 
-  const players = fbState.players || {};
+  const prompt = `SCENE 1: MARS
 
-  const prompt = `SCENE 1: THE BOX AT TIMBER CREEK
+Timber Creek High School auditorium, Tuesday evening. A full house. The school orchestra is mid-performance — Holst's The Planets, Mars, the Bringer of War. The piece is building toward something enormous.
 
-Location: Timber Creek High School auditorium, Orlando, Florida.
-Date: The day the boxes dropped worldwide. Same day as Pittsburgh. Same Syndicate. Different family.
+Bart, Melissa, and Noah are seated together in the middle section, eight rows back. They are trying to spot Leah among forty musicians on stage. Melissa believes she is second violin, third from the left. Noah has already confirmed this. Bart is just enjoying the music.
 
-The Timber Creek orchestra was mid-performance — Holst's The Planets, Mars, the Bringer of War — when the box appeared. A perfect obsidian cube, twelve feet on each side, Syndicate serial number etched on the base, sitting in the center aisle between rows C and D. It did not crash through the ceiling. It did not make a sound. It was simply not there, and then it was.
+Then every phone in the auditorium buzzes simultaneously.
 
-The music stopped. Except Leah, who played four more notes before she noticed. THE SYSTEM would like the record to reflect this.
+A perfect obsidian cube — twelve feet on each side — appears in the center aisle between rows C and D. It makes no sound. It is simply not there, and then it is. People begin standing, backing away, voices rising over the music as instruments stop mid-phrase one by one. In the chaos, Bart, Melissa, and Noah lose track of Leah on stage.
 
-The box opened. Stairs descended. THE SYSTEM's voice filled the auditorium at concert volume.
+The box opens. Stairs descend.
 
-THE PARTY as they descended:
-- Bart: back row, calm and bearded, initially assumed this was a very ambitious intermission activity. He is calm in crises. This is either reassuring or alarming depending on the crisis.
-- Melissa: middle section, said "absolutely not" out loud, then descended anyway because her family was going. Bear appeared beside her from nowhere in the sealed auditorium — a mini black labradoodle, calm as anything, like he had always been sitting there. People nearby looked. Nobody said anything. Bear looked at the box. Bear looked at Melissa. Bear stood up and walked toward the stairs. THE SYSTEM registered him as Contestant 4-Delta. His paw print is on the waiver.
-- Noah: front section. He had been watching his sister perform with the attentive focus he gives things he would never admit matter to him. He was the first of the family to understand what the box was. He did not speak for eleven seconds. Then he said: "We should go down." He was right.
-- Leah: on stage, still holding her violin when she descended. Nobody told her to put it down. She didn't think to. This is why she still has it.
-- Bear: already at the bottom of the stairs before Melissa reached the first step. THE SYSTEM has no further comment about Bear at this time.
+Bear is beside Melissa. Just there. In a sealed auditorium, in the middle of a crowd of panicking strangers, sitting perfectly still while everything around him is chaos. Melissa looks at him. He looks at the box. He stands up.
 
-Luna was not present. She was home. The gate was locked. Bear glanced back once at the top of the stairs. THE SYSTEM logged this glance.
+On stage, through the noise and the scrambling crowd, they find Leah — still holding her bow, violin in hand, staring at the box. Her expression is not fear. It is interest.
 
-WHAT TO NARRATE:
-Write this as THE SYSTEM. Establish the DCC world — the Syndicate, the apocalypse, boxes dropping worldwide simultaneously. Mention that other contestants are already underground elsewhere. Imply that one contestant in particular, somewhere on the far side of the world, is already on Floor 2 and has a cat. THE SYSTEM finds the comparison between that party and the Shadles instructive but will not elaborate.
+The stairs wait.
 
-Capture each family member's energy as they descended. Make it cinematic. Real stakes — the world ended today. But this family descended anyway, which THE SYSTEM notes is either brave or very poorly considered.
+WHAT TO WRITE:
+Narrate this opening moment as THE SYSTEM — but restrained. THE SYSTEM is watching, not yet speaking directly to the party. Let the image breathe: the music stopping, the box, Bear appearing from nowhere, Leah's face on stage. This is the last moment before everything changes. End at the top of the stairs — they have not descended yet. No humor. No stats. No greeting. Just the world ending on a Tuesday evening in Orlando.
 
-End with THE SYSTEM's official greeting and its assessment of their odds: non-zero, which it considers generous.
-
-2 paragraphs maximum. Make them count.`;
+2 paragraphs. Cinematic. Present tense feels right here.`;
 
   try {
     const text = await callClaude(prompt);
-    ROOT.update({ 'narration/text':text, 'narration/scene':1, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':1, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
   } catch(e) {
-    ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]\n\nThis is somehow your fault.`, 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene1_ready' });
   }
 }
 
 // ═══════════════════════════════════════════════════════
-//  SCREEN: SCENE
+//  SCENE 2 API CALL (the descent — intro narration)
 // ═══════════════════════════════════════════════════════
+async function fireScene2Narration() {
+  if (!isGM) return;
+  const lock = ROOT.child('narrationLock/scene2');
+  let acquired = false;
+  await lock.transaction(cur => { if (!cur) { acquired=true; return true; } });
+  if (!acquired) return;
+
+  ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
+
+  const players = fbState.players || {};
+  const party = Object.values(players).map(p =>
+    `- ${p.name} (${p.title||p.archetype}, HP: ${p.hp}/${p.maxHp})`
+  ).join('\n');
+
+  const prompt = `SCENE 2: THE END OF TUESDAY
+
+The Shadle family is at the bottom of the stairs. The dungeon is real. The box sealed above them. The auditorium is gone.
+
+THE PARTY:
+${party}
+- Bear (Contestant 4-Delta): present, paw print on waiver, THE SYSTEM has no comment
+
+This is where THE SYSTEM introduces itself properly — not the ambient presence from Scene 1, but the actual voice of the dungeon. Sardonic. Omniscient. Faintly disappointed by what it's been assigned to manage today.
+
+Establish the DCC world: the Syndicate, the boxes dropping worldwide simultaneously, Floor 1 of the Goblin Antechamber. Mention that other contestants are already underground elsewhere in the world. Imply one in particular is already on Floor 2 with a cat. THE SYSTEM finds this comparison instructive.
+
+Note that Luna was home when the box appeared. The gate was locked. Bear glanced back once at the top of the stairs. THE SYSTEM logged this glance and has no comment.
+
+THE SYSTEM greets the party. Gives its official assessment of their survival odds: non-zero, which it considers generous.
+
+Reference each family member by name and what THE SYSTEM has already clocked about them. End with the dungeon ahead of them — the Goblin Antechamber, Floor 1, and whatever that means for four people from Orlando who had concert tickets tonight.
+
+2 paragraphs. THE SYSTEM's full voice now — this is the real introduction.`;
+
+  try {
+    const text = await callClaude(prompt);
+    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':2, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
+  } catch(e) {
+    ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene1_ready' });
+  }
+}
 function renderSceneScreen(phase) {
   const scene   = fbState.session?.currentScene || 1;
   const players = fbState.players || {};
@@ -1413,7 +1455,7 @@ function buildShared(scene, phase, narr, players, scData) {
   // Narration box
   let narrHTML = '';
   if (narr.generating || (phase==='scene_intro' && !narr.text)) {
-    narrHTML = `<div class="narr-box"><div class="narr-loading">⟳ THE SYSTEM IS NARRATING...</div></div>`;
+    narrHTML = `<div class="narr-box"><div class="narr-loading">⟳ The dungeon stirs...</div></div>`;
   } else if (phase === 'system_verdict') {
     // THE SYSTEM verdict screen — terminal voice, typewriter
     const verdictText = narr.verdict || '';
@@ -1471,7 +1513,7 @@ function buildPlayerPanel(phase, me, scData, players) {
   }
 
   if (phase === 'scene_intro' || phase === 'narrating') {
-    action = `<div class="state-msg dim">⟳ The System is setting the stage...</div>${waitHTML}`;
+    action = `<div class="state-msg dim">⟳ The dungeon stirs...</div>${waitHTML}`;
 
   } else if (phase === 'scene1_ready') {
     const ready = (fbState.readiness||{})[myId];
@@ -1730,7 +1772,7 @@ async function submitRiddleAnswer() {
   const answer = input.value.trim().toLowerCase();
   if (!answer) return;
 
-  const scData = SCENES[7];
+  const scData = SCENES[8];
   const correct = scData.getAnswer(me.archetype);
   const isRight = answer === correct;
 
@@ -2687,7 +2729,7 @@ function setReady() {
 function advanceToScene2() {
   showTransition(2, () => {
     const ps = fbState.players || {};
-    const upd = { readiness:null, 'session/currentScene':2, 'session/phase':'choosing', 'narration/text':null, 'narration/scene':null };
+    const upd = { readiness:null, 'session/currentScene':2, 'session/phase':'scene_intro', 'narration/text':null, 'narration/verdict':null, 'narration/scene':null };
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
@@ -2720,7 +2762,7 @@ function advanceToNextScene() {
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/scene':null, riddleAttempts:null, riddleSolved:null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, riddleAttempts:null, riddleSolved:null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
@@ -2730,6 +2772,15 @@ function advanceToNextScene() {
     if (SCENES[next]) {
       upd['session/currentScene'] = next;
       upd['session/phase'] = SCENES[next].type === 'intro' ? 'scene_intro' : 'choosing';
+      // Luna reunion — add her to Melissa's inventory at Scene 8
+      if (next === 9) {
+        const melissaId = Object.keys(ps).find(id => ps[id].archetype === 'Melissa');
+        if (melissaId) {
+          const inv = [...(ps[melissaId].inventory || [])];
+          if (!inv.includes('Luna (companion)')) inv.push('Luna (companion)');
+          upd[`players/${melissaId}/inventory`] = inv;
+        }
+      }
     } else {
       upd['session/phase'] = 'demo_end';
     }
@@ -2844,7 +2895,7 @@ function renderGMPanel() {
     <select id="gmJump">
       <option value="">Jump to Scene...</option>
       ${Object.entries(SCENES).map(([n,s])=>`<option value="${n}" ${n==scene?'selected':''}>Scene ${n}: ${s.name}</option>`).join('')}
-      ${[3,4,5,6,7,8,9,10].filter(n=>!SCENES[n]).map(n=>`<option value="${n}">Scene ${n} (stub)</option>`).join('')}
+      ${[4,5,6,7,8,9,10,11].filter(n=>!SCENES[n]).map(n=>`<option value="${n}">Scene ${n} (stub)</option>`).join('')}
     </select>
     <button class="btn btn-sm" onclick="gmJump()">Go</button>
     <span class="gm-sep">|</span>
