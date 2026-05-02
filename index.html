@@ -1072,6 +1072,7 @@ function checkStatChanges(me) {
 // ═══════════════════════════════════════════════════════
 //  FIREBASE INIT
 // ═══════════════════════════════════════════════════════
+let ROOT;
 try {
   if (typeof firebase === 'undefined') throw new Error('Firebase SDK scripts did not load. Check your internet connection or open DevTools → Network to see if the CDN requests are failing.');
   firebase.initializeApp(FIREBASE_CONFIG);
