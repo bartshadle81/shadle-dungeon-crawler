@@ -165,11 +165,148 @@ body::before {
 .scene-title { font-family: var(--f-disp); font-size: 1.25rem; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; }
 .scene-desc { color: var(--parch); font-size: 1.05rem; margin-bottom: 14px; line-height: 1.65; }
 
-/* Narration */
-.narr-box { min-height: 100px; padding: 14px 16px; background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 2px; margin-bottom: 10px; }
-.narr-text { font-family: var(--f-mono); font-size: 0.85rem; color: var(--sys); line-height: 1.85; white-space: pre-wrap; }
-.narr-loading { font-family: var(--f-mono); color: var(--sys-d); font-size: 0.82rem; animation: blink 1.3s ease-in-out infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+/* ── OPTION A: ATMOSPHERIC ── */
+
+/* Torchlight flicker on background */
+@keyframes torchFlicker {
+  0%,100% { opacity: 1; }
+  8%       { opacity: 0.94; }
+  15%      { opacity: 0.98; }
+  22%      { opacity: 0.91; }
+  35%      { opacity: 0.97; }
+  48%      { opacity: 0.93; }
+  60%      { opacity: 0.99; }
+  75%      { opacity: 0.92; }
+  88%      { opacity: 0.96; }
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(200,120,20,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 30%, rgba(200,100,10,0.05) 0%, transparent 55%);
+  animation: torchFlicker 4.5s ease-in-out infinite;
+}
+
+/* Ember particles canvas */
+#emberCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.5; }
+
+/* Narration glow-in when new text arrives */
+@keyframes narrGlow {
+  0%   { box-shadow: 0 0 0px rgba(240,192,64,0); border-color: var(--border); }
+  30%  { box-shadow: 0 0 22px rgba(240,192,64,0.35); border-color: var(--gold-d); }
+  100% { box-shadow: 0 0 8px rgba(240,192,64,0.12); border-color: var(--border-a); }
+}
+.narr-box.glow { animation: narrGlow 1.8s ease-out forwards; }
+
+/* ── OPTION B: FEEDBACK MOMENTS ── */
+
+/* HP bar damage flash */
+@keyframes hpFlash {
+  0%   { filter: brightness(1) drop-shadow(0 0 0px #cc3333); }
+  25%  { filter: brightness(1.6) drop-shadow(0 0 8px #cc3333); }
+  100% { filter: brightness(1) drop-shadow(0 0 0px #cc3333); }
+}
+.hp-wrap.flash { animation: hpFlash 0.55s ease-out; }
+
+/* HP bar heal pulse */
+@keyframes hpHeal {
+  0%   { filter: brightness(1) drop-shadow(0 0 0px #66dd66); }
+  30%  { filter: brightness(1.5) drop-shadow(0 0 10px #66dd66); }
+  100% { filter: brightness(1) drop-shadow(0 0 0px #66dd66); }
+}
+.hp-wrap.heal { animation: hpHeal 0.7s ease-out; }
+
+/* Gold bounce */
+@keyframes goldBounce {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.28); color: var(--gold-b); }
+  70%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.gold-badge.bounce { animation: goldBounce 0.5s ease-out; }
+
+/* Choice button press */
+.c-btn:active:not(:disabled) { transform: translateX(6px) scale(0.97); background: rgba(200,137,30,0.1); }
+
+/* Scene fade-in */
+@keyframes sceneFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.scene-screen { animation: sceneFadeIn 0.5s ease-out; }
+
+/* All-ready flash overlay */
+#readyFlash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 500;
+  background: rgba(240,192,64,0); transition: background 0.08s;
+}
+@keyframes readyFlashAnim {
+  0%   { background: rgba(240,192,64,0); }
+  15%  { background: rgba(240,192,64,0.18); }
+  100% { background: rgba(240,192,64,0); }
+}
+#readyFlash.flash { animation: readyFlashAnim 0.7s ease-out forwards; }
+
+/* ── OPTION D: THE SYSTEM VOICE ── */
+
+/* Scanline overlay on narration box */
+.narr-box {
+  position: relative;
+  min-height: 100px; padding: 14px 16px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid var(--border-a); border-radius: 2px; margin-bottom: 10px;
+  overflow: hidden;
+}
+.narr-box::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+  );
+}
+
+/* Narration text — terminal feel with cursor */
+.narr-text {
+  font-family: var(--f-mono); font-size: 0.87rem;
+  color: var(--sys); line-height: 1.9; white-space: pre-wrap;
+  text-shadow: 0 0 8px rgba(240,192,64,0.3);
+  position: relative; z-index: 1;
+}
+.narr-cursor {
+  display: inline-block; width: 2px; height: 1.1em;
+  background: var(--sys); margin-left: 2px; vertical-align: text-bottom;
+  animation: blink 0.8s step-end infinite;
+}
+
+/* Achievement unlock flash */
+@keyframes achieveIn {
+  0%   { opacity: 0; transform: translateY(-12px) scale(0.95); }
+  60%  { opacity: 1; transform: translateY(2px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.achieve-pop {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(10,8,4,0.97); border: 1px solid var(--gold);
+  padding: 10px 22px; border-radius: 3px; z-index: 600;
+  font-family: var(--f-mono); font-size: 0.78rem; color: var(--gold-b);
+  box-shadow: 0 0 24px rgba(240,192,64,0.3); text-align: center;
+  animation: achieveIn 0.4s ease-out forwards;
+  max-width: 480px; line-height: 1.5;
+}
+.achieve-pop .ach-title { color: var(--gold); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 3px; }
+
+/* Loading state — pulsing terminal prompt */
+.narr-loading {
+  font-family: var(--f-mono); color: var(--sys-d); font-size: 0.82rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.narr-loading::before {
+  content: '▋'; color: var(--sys-d);
+  animation: blink 0.8s step-end infinite;
+}
+
+
 
 /* Wait status pills */
 .wait-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
@@ -250,6 +387,8 @@ body::before {
 </head>
 
 <body>
+<canvas id="emberCanvas"></canvas>
+<div id="readyFlash"></div>
 <div id="app">
   <div class="loading-screen">
     <div class="loading-title">DUNGEON CRAWLER SHADLES</div>
@@ -808,9 +947,131 @@ let typeTimer  = null;
 let lastNarrKey = null;    // prevents re-typewriting same narration
 
 // ═══════════════════════════════════════════════════════
+//  VISUAL EFFECTS
+// ═══════════════════════════════════════════════════════
+
+// ── Ember particles ──
+const emberCanvas = document.getElementById('emberCanvas');
+const eCtx = emberCanvas.getContext('2d');
+let embers = [];
+
+function resizeEmberCanvas() {
+  emberCanvas.width  = window.innerWidth;
+  emberCanvas.height = window.innerHeight;
+}
+resizeEmberCanvas();
+window.addEventListener('resize', resizeEmberCanvas);
+
+function spawnEmber() {
+  return {
+    x: Math.random() * window.innerWidth,
+    y: window.innerHeight + 4,
+    vx: (Math.random() - 0.5) * 0.6,
+    vy: -(0.5 + Math.random() * 1.2),
+    life: 1,
+    decay: 0.004 + Math.random() * 0.006,
+    size: 1 + Math.random() * 1.5,
+    warm: Math.random() > 0.5,
+  };
+}
+
+function animateEmbers() {
+  eCtx.clearRect(0, 0, emberCanvas.width, emberCanvas.height);
+  if (Math.random() < 0.18) embers.push(spawnEmber());
+  embers = embers.filter(e => e.life > 0);
+  embers.forEach(e => {
+    e.x  += e.vx + Math.sin(Date.now() * 0.001 + e.y) * 0.2;
+    e.y  += e.vy;
+    e.life -= e.decay;
+    const alpha = e.life * 0.7;
+    const color = e.warm ? `rgba(240,140,40,${alpha})` : `rgba(255,200,80,${alpha})`;
+    eCtx.beginPath();
+    eCtx.arc(e.x, e.y, Math.max(0.01, e.size * e.life), 0, Math.PI * 2);
+    eCtx.fillStyle = color;
+    eCtx.shadowBlur = 6;
+    eCtx.shadowColor = color;
+    eCtx.fill();
+  });
+  requestAnimationFrame(animateEmbers);
+}
+animateEmbers();
+
+// ── Ready flash ──
+function triggerReadyFlash() {
+  const el = document.getElementById('readyFlash');
+  if (!el) return;
+  el.classList.remove('flash');
+  void el.offsetWidth; // reflow
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 800);
+}
+
+// ── Narration glow ──
+function triggerNarrGlow() {
+  const box = document.querySelector('.narr-box');
+  if (!box) return;
+  box.classList.remove('glow');
+  void box.offsetWidth;
+  box.classList.add('glow');
+}
+
+// ── HP flash ──
+function triggerHpFlash(type = 'damage') {
+  const wrap = document.querySelector('.hp-wrap');
+  if (!wrap) return;
+  const cls = type === 'heal' ? 'heal' : 'flash';
+  wrap.classList.remove('flash','heal');
+  void wrap.offsetWidth;
+  wrap.classList.add(cls);
+  setTimeout(() => wrap.classList.remove(cls), 700);
+}
+
+// ── Gold bounce ──
+function triggerGoldBounce() {
+  const el = document.querySelector('.gold-badge');
+  if (!el) return;
+  el.classList.remove('bounce');
+  void el.offsetWidth;
+  el.classList.add('bounce');
+  setTimeout(() => el.classList.remove('bounce'), 500);
+}
+
+// ── Achievement popup ──
+function showAchievement(text) {
+  const existing = document.querySelector('.achieve-pop');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'achieve-pop';
+  el.innerHTML = `<div class="ach-title">⚔ Achievement Unlocked ⚔</div>${esc(text)}`;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity 0.6s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 700); }, 4000);
+}
+
+// ── Watch for achievement text in narration ──
+let lastNarrForAchieve = '';
+function checkForAchievement(text) {
+  if (!text || text === lastNarrForAchieve) return;
+  lastNarrForAchieve = text;
+  const match = text.match(/ACHIEVEMENT UNLOCKED:\s*([^\n]+)/i);
+  if (match) setTimeout(() => showAchievement(match[1].trim()), 1200);
+}
+
+// ── Watch for HP/gold changes and animate ──
+let prevHp   = null;
+let prevGold = null;
+function checkStatChanges(me) {
+  if (!me) return;
+  if (prevHp !== null && me.hp < prevHp)   triggerHpFlash('damage');
+  if (prevHp !== null && me.hp > prevHp)   triggerHpFlash('heal');
+  if (prevGold !== null && me.gold > prevGold) triggerGoldBounce();
+  prevHp   = me.hp;
+  prevGold = me.gold;
+}
+
+
+// ═══════════════════════════════════════════════════════
 //  FIREBASE INIT
 // ═══════════════════════════════════════════════════════
-let ROOT;
 try {
   if (typeof firebase === 'undefined') throw new Error('Firebase SDK scripts did not load. Check your internet connection or open DevTools → Network to see if the CDN requests are failing.');
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -870,6 +1131,14 @@ function render() {
   if (isGM) document.body.style.paddingBottom = '58px';
 
   const phase = fbState.session?.phase || 'archetype_selection';
+  const me = (fbState.players||{})[myId];
+
+  // Visual feedback on stat changes
+  checkStatChanges(me);
+
+  // Achievement detection
+  const narr = fbState.narration || {};
+  checkForAchievement(narr.text);
 
   if (!fbState.session || phase === 'archetype_selection') {
     renderArchSelection();
@@ -1198,6 +1467,66 @@ function buildDownedPanel(me) {
 // ═══════════════════════════════════════════════════════
 //  CHOICE SUBMISSION
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+//  SOUND ENGINE
+// ═══════════════════════════════════════════════════════
+let _sctx = null;
+function getSctx() {
+  if (!_sctx) _sctx = new (window.AudioContext || window.webkitAudioContext)();
+  return _sctx;
+}
+
+function playChoiceSound() {
+  try {
+    const ctx = getSctx();
+    // Short confident "thunk" — low thud + quick metallic shimmer
+    const t = ctx.currentTime;
+
+    // Thud
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1); gain1.connect(ctx.destination);
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(180, t);
+    osc1.frequency.exponentialRampToValueAtTime(60, t + 0.12);
+    gain1.gain.setValueAtTime(0.55, t);
+    gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+    osc1.start(t); osc1.stop(t + 0.18);
+
+    // Shimmer
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(900, t + 0.02);
+    osc2.frequency.exponentialRampToValueAtTime(600, t + 0.14);
+    gain2.gain.setValueAtTime(0.12, t + 0.02);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+    osc2.start(t + 0.02); osc2.stop(t + 0.2);
+  } catch(e) {}
+}
+
+function playAllReadySound() {
+  try {
+    const ctx = getSctx();
+    // Ascending three-note fanfare — decisive and satisfying
+    const t = ctx.currentTime;
+    const notes = [330, 415, 550];
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, t + i * 0.13);
+      gain.gain.setValueAtTime(0, t + i * 0.13);
+      gain.gain.linearRampToValueAtTime(0.18, t + i * 0.13 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.13 + 0.22);
+      osc.start(t + i * 0.13);
+      osc.stop(t + i * 0.13 + 0.25);
+    });
+  } catch(e) {}
+}
+
 function submitByIdx(i) {
   const c = currentChoices[i];
   if (!c) return;
@@ -1215,7 +1544,10 @@ function submitByIdx(i) {
     upd[`players/${myId}/inventory`] = inv;
   }
 
-  ROOT.update(upd).then(checkAllSubmitted);
+  ROOT.update(upd).then(() => {
+    playChoiceSound();
+    checkAllSubmitted();
+  });
 }
 
 function checkAllSubmitted() {
@@ -1225,8 +1557,9 @@ function checkAllSubmitted() {
     const ps = s.players || {};
     const allDone = Object.values(ps).every(p => p.status==='downed' || p.choiceSubmitted);
     if (allDone) {
+      playAllReadySound();
+      triggerReadyFlash();
       ROOT.update({ 'session/phase':'waiting_for_narration' });
-      // GM tab picks this up via the Firebase listener and fires the API call
     }
   });
 }
@@ -1315,45 +1648,611 @@ Narrate the outcome. Reference every player by name. Make their specific choices
 }
 
 // ═══════════════════════════════════════════════════════
-//  READY / CONTINUE FLOW
+//  SCENE TRANSITIONS
 // ═══════════════════════════════════════════════════════
+const txCanvas = document.createElement('canvas');
+txCanvas.style.cssText = 'position:fixed;inset:0;z-index:400;pointer-events:none;';
+document.body.appendChild(txCanvas);
+const txCtx = txCanvas.getContext('2d');
+function resizeTx() { txCanvas.width = window.innerWidth; txCanvas.height = window.innerHeight; }
+resizeTx(); window.addEventListener('resize', resizeTx);
+
+function showTransition(toScene, callback) {
+  const W = txCanvas.width, H = txCanvas.height;
+  const duration = 2200;
+  const start = performance.now();
+  const draws = { 2:txTrapCorridor, 3:txGrizzuk, 4:txAmbush, 5:txMerchant,
+                  6:txRiddleWall,   7:txBarracks, 8:txElites, 9:txBoss, 10:txVictory };
+  const draw = draws[toScene] || txCorridorRush;
+  let raf;
+  function frame(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const alpha = t < 0.08 ? t/0.08 : t > 0.82 ? (1-t)/0.18 : 1;
+    txCtx.clearRect(0,0,W,H);
+    txCtx.save(); txCtx.globalAlpha = alpha;
+    draw(txCtx, t, W, H, now);
+    txCtx.restore();
+    if (t < 1) { raf = requestAnimationFrame(frame); }
+    else { txCtx.clearRect(0,0,W,H); if(callback) callback(); }
+  }
+  if (raf) cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(frame);
+}
+
+// ── helpers ──
+function txFillBg(ctx, W, H, col='#040302') { ctx.fillStyle=col; ctx.fillRect(0,0,W,H); }
+function txTorch(ctx, x, y, r, t) {
+  const flicker = 0.75 + Math.sin(t*0.013+x)*0.15 + Math.sin(t*0.021+y)*0.1;
+  const g = ctx.createRadialGradient(x,y,0,x,y,r*flicker);
+  g.addColorStop(0,`rgba(255,170,50,${0.9*flicker})`);
+  g.addColorStop(0.35,`rgba(220,100,20,${0.5*flicker})`);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r*flicker*1.4,0,Math.PI*2); ctx.fill();
+}
+function txPerspLines(ctx, cx, cy, W, H, col='rgba(60,40,20,0.3)', n=16) {
+  ctx.strokeStyle=col; ctx.lineWidth=1;
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*W, cy+Math.sin(a)*H);
+    ctx.stroke();
+  }
+}
+function txSilhouette(ctx, path, col='#080604') {
+  ctx.fillStyle=col; ctx.beginPath();
+  path(ctx); ctx.fill();
+}
+function txText(ctx, txt, x, y, col='rgba(200,150,50,0.8)', size=22, font='Cinzel,serif') {
+  ctx.fillStyle=col; ctx.font=`${size}px ${font}`; ctx.textAlign='center';
+  ctx.shadowBlur=12; ctx.shadowColor=col; ctx.fillText(txt,x,y); ctx.shadowBlur=0;
+}
+
+// ── GENERIC: Corridor Rush ──
+function txCorridorRush(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#040302');
+  const cx=W/2, cy=H/2;
+  const zoom = 0.3 + t*2.2;
+  // Stone walls via perspective quad
+  const hw=W*0.38/zoom, hh=H*0.42/zoom;
+  ctx.fillStyle='#100c07';
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(cx-hw,cy-hh); ctx.lineTo(cx-hw,cy+hh); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#0e0a06';
+  ctx.beginPath(); ctx.moveTo(W,0); ctx.lineTo(cx+hw,cy-hh); ctx.lineTo(cx+hw,cy+hh); ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#080604';
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(cx-hw,cy-hh); ctx.lineTo(cx+hw,cy-hh); ctx.lineTo(W,0); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#0c0905';
+  ctx.beginPath(); ctx.moveTo(0,H); ctx.lineTo(cx-hw,cy+hh); ctx.lineTo(cx+hw,cy+hh); ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  // Center passage
+  ctx.fillStyle='#1a1208';
+  ctx.beginPath(); ctx.rect(cx-hw,cy-hh,hw*2,hh*2); ctx.fill();
+  // Torches
+  for(let i=0;i<3;i++){
+    const d=((i+t*2.5)%3)/3;
+    const s=Math.max(0.05,1-d*0.85);
+    txTorch(ctx, cx-hw*(1-d)*0.85, cy-(hh*(1-d)*0.6), 55*s, now);
+    txTorch(ctx, cx+hw*(1-d)*0.85, cy-(hh*(1-d)*0.6), 55*s, now);
+  }
+  // Motion lines
+  ctx.strokeStyle='rgba(80,55,25,0.12)'; ctx.lineWidth=1.5;
+  for(let i=0;i<24;i++){
+    const a=(i/24)*Math.PI*2, len=30+t*180;
+    ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*18,cy+Math.sin(a)*18);
+    ctx.lineTo(cx+Math.cos(a)*(18+len),cy+Math.sin(a)*(18+len)); ctx.stroke();
+  }
+  // Vignette
+  const vig=ctx.createRadialGradient(cx,cy,H*0.2,cx,cy,H*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.85)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 2: Pressure Plate ──
+function txTrapCorridor(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#060402');
+  txCorridorRush(ctx, Math.min(t*0.5,0.4), W, H, now);
+  // Floor plate in center
+  const px=W/2, py=H*0.72, pw=W*0.18, ph=H*0.06;
+  const press = t > 0.4 ? Math.min((t-0.4)/0.3, 1) : 0;
+  ctx.fillStyle=`rgba(80,60,30,${0.6+press*0.3})`;
+  ctx.fillRect(px-pw/2, py-ph/2+press*8, pw, ph);
+  ctx.strokeStyle=`rgba(180,140,60,${0.4+press*0.5})`; ctx.lineWidth=2;
+  ctx.strokeRect(px-pw/2, py-ph/2+press*8, pw, ph);
+  if(press > 0) {
+    // Cracks
+    ctx.strokeStyle=`rgba(200,160,80,${press*0.8})`; ctx.lineWidth=1.5;
+    const cracks=[[0,-1],[1,-0.5],[-1,-0.7],[0.5,1],[-0.8,0.6]];
+    cracks.forEach(([dx,dy])=>{
+      ctx.beginPath(); ctx.moveTo(px,py+press*8);
+      ctx.lineTo(px+dx*pw*0.8+Math.random()*10,py+dy*ph*2+press*8); ctx.stroke();
+    });
+    // Glow
+    const g=ctx.createRadialGradient(px,py,0,px,py,pw*1.2);
+    g.addColorStop(0,`rgba(255,180,40,${press*0.4})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(px-pw,py-ph,pw*2,ph*3);
+    // Dust
+    for(let i=0;i<20;i++){
+      const a=(i/20)*Math.PI*2, spd=press*(30+Math.sin(i)*20);
+      const dx2=Math.cos(a)*spd*(t-0.4), dy2=Math.sin(a)*spd*(t-0.4)-press*15;
+      ctx.beginPath(); ctx.arc(px+dx2,py+dy2,Math.max(0.1,1.5*(1-press*0.5)),0,Math.PI*2);
+      ctx.fillStyle=`rgba(180,150,80,${press*0.6*(1-t)})`; ctx.fill();
+    }
+  }
+  txText(ctx,'...',W/2,H*0.15);
+}
+
+// ── SCENE 3: Grizzuk ──
+function txGrizzuk(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#030201');
+  // Alcove walls
+  ctx.fillStyle='#0e0a06';
+  ctx.beginPath(); ctx.roundRect(W*0.15,H*0.1,W*0.7,H*0.8,20); ctx.fill();
+  ctx.fillStyle='#060402';
+  ctx.beginPath(); ctx.roundRect(W*0.2,H*0.15,W*0.6,H*0.7,14); ctx.fill();
+  // Torch flicker on ceiling
+  txTorch(ctx,W/2,H*0.22,80,now);
+  // Goblin silhouette — small, cowering in corner
+  const gx=W*0.62, gy=H*0.72;
+  const wobble = Math.sin(now*0.008)*3;
+  ctx.fillStyle='#1a1208';
+  // Body
+  ctx.beginPath(); ctx.ellipse(gx,gy,18,28,0,0,Math.PI*2); ctx.fill();
+  // Head peeking out
+  ctx.beginPath(); ctx.arc(gx-8+wobble,gy-32,14,0,Math.PI*2); ctx.fill();
+  // Big eyes (whites showing)
+  ctx.fillStyle=`rgba(220,200,150,${0.5+Math.sin(now*0.005)*0.3})`;
+  ctx.beginPath(); ctx.ellipse(gx-14+wobble,gy-35,4,5,0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(gx-4+wobble,gy-34,4,5,-0.3,0,Math.PI*2); ctx.fill();
+  // Armor glint
+  ctx.fillStyle='rgba(100,80,40,0.6)';
+  ctx.beginPath(); ctx.ellipse(gx,gy-10,12,16,0.2,0,Math.PI*2); ctx.fill();
+  // Text
+  const opacity = t > 0.5 ? Math.min((t-0.5)/0.25,1) : 0;
+  txText(ctx,'Something is hiding in there.',W/2,H*0.9,`rgba(200,150,50,${opacity})`,18);
+  // Vignette
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.7);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.92)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 4: Goblin Ambush ──
+function txAmbush(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#0a0302');
+  // Background red tint
+  ctx.fillStyle=`rgba(100,10,5,${Math.min(t*2,0.3)})`;
+  ctx.fillRect(0,0,W,H);
+  // Dropping goblin silhouettes
+  const goblins=[{x:0.25,delay:0},{x:0.5,delay:0.12},{x:0.75,delay:0.06}];
+  goblins.forEach(({x,delay})=>{
+    const gt = Math.max(0, Math.min((t-delay)/0.55, 1));
+    const gy = H*(-0.12) + gt*H*0.75;
+    const gx = W*x;
+    // Rope/trail
+    if(gt < 0.9) {
+      ctx.strokeStyle=`rgba(80,55,25,${0.5*(1-gt)})`; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,gy-30); ctx.stroke();
+    }
+    // Body
+    ctx.fillStyle='#1a0e06';
+    ctx.beginPath(); ctx.ellipse(gx,gy,16,22,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx,gy-28,12,0,Math.PI*2); ctx.fill();
+    // Weapon glint
+    if(gt > 0.5) {
+      ctx.strokeStyle=`rgba(200,180,100,${(gt-0.5)*1.5})`; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(gx+12,gy-10); ctx.lineTo(gx+28,gy-35); ctx.stroke();
+    }
+  });
+  // Big slash effect
+  const slashT = Math.max(0,Math.min((t-0.35)/0.2,1));
+  if(slashT > 0) {
+    ctx.save(); ctx.globalAlpha=slashT*(1-Math.max(0,(t-0.6)/0.25));
+    ctx.strokeStyle='rgba(220,40,20,0.9)'; ctx.lineWidth=6;
+    ctx.shadowBlur=20; ctx.shadowColor='rgba(255,50,20,0.8)';
+    ctx.beginPath(); ctx.moveTo(W*0.1,H*0.25); ctx.lineTo(W*0.9,H*0.7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W*0.15,H*0.6); ctx.lineTo(W*0.85,H*0.2); ctx.stroke();
+    ctx.restore();
+  }
+  // Impact flash
+  if(t > 0.3 && t < 0.5) {
+    ctx.fillStyle=`rgba(255,80,20,${(0.5-t)*0.5})`;
+    ctx.fillRect(0,0,W,H);
+  }
+  const opacity = t > 0.6 ? Math.min((t-0.6)/0.2,1) : 0;
+  txText(ctx,'AMBUSH.',W/2,H*0.88,`rgba(220,80,40,${opacity})`,28);
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.8);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.88)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 5: Merchant ──
+function txMerchant(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#060402');
+  // Warm light bloom
+  const warmT = Math.min(t*1.5,1);
+  const g=ctx.createRadialGradient(W/2,H*0.55,0,W/2,H*0.55,H*0.6);
+  g.addColorStop(0,`rgba(200,130,40,${warmT*0.25})`);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // Cart silhouette rolling in from right
+  const cartX = W*1.1 - t*W*0.65;
+  ctx.fillStyle='#1a1008';
+  // Cart body
+  ctx.beginPath(); ctx.roundRect(cartX-60,H*0.52,120,60,6); ctx.fill();
+  // Wheel
+  ctx.strokeStyle='#2a1a08'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.arc(cartX-35,H*0.62,22,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cartX+35,H*0.62,22,0,Math.PI*2); ctx.stroke();
+  // Spokes
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2 + now*0.004;
+    ctx.beginPath(); ctx.moveTo(cartX-35,H*0.62); ctx.lineTo(cartX-35+Math.cos(a)*20,H*0.62+Math.sin(a)*20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cartX+35,H*0.62); ctx.lineTo(cartX+35+Math.cos(a)*20,H*0.62+Math.sin(a)*20); ctx.stroke();
+  }
+  // Spinning gold coin
+  const coinT = Math.min(t*2,1);
+  const coinX=W*0.42, coinY=H*0.3 - coinT*H*0.05;
+  const coinW = 28*Math.abs(Math.cos(now*0.018));
+  ctx.fillStyle=`rgba(220,170,40,${coinT*0.9})`;
+  ctx.beginPath(); ctx.ellipse(coinX,coinY,Math.max(1,coinW),28,0,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=`rgba(255,210,80,${coinT*0.7})`; ctx.lineWidth=2;
+  ctx.stroke();
+  // Glint
+  if(coinW > 10) {
+    const gl=ctx.createRadialGradient(coinX,coinY-8,0,coinX,coinY,28);
+    gl.addColorStop(0,`rgba(255,240,180,${coinT*0.6})`); gl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gl; ctx.fillRect(coinX-30,coinY-30,60,60);
+  }
+  const opacity = t > 0.55 ? Math.min((t-0.55)/0.2,1) : 0;
+  txText(ctx,'"Lovely to see adventurers still alive."',W/2,H*0.88,`rgba(200,160,70,${opacity})`,17);
+  const vig=ctx.createRadialGradient(W/2,H*0.5,H*0.15,W/2,H*0.5,H*0.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 6: Riddle Wall ──
+function txRiddleWall(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#040302');
+  const cx=W/2, cy=H*0.48;
+  // Stone door
+  const dw=W*0.38, dh=H*0.62;
+  ctx.fillStyle='#1c1610';
+  ctx.beginPath(); ctx.roundRect(cx-dw/2,cy-dh/2,dw,dh,8); ctx.fill();
+  // Door arch
+  ctx.fillStyle='#140f0a';
+  ctx.beginPath(); ctx.ellipse(cx,cy-dh/2,dw/2,dh*0.15,0,Math.PI,0); ctx.fill();
+  // Stone texture lines
+  ctx.strokeStyle='rgba(60,45,25,0.5)'; ctx.lineWidth=1;
+  for(let row=0;row<8;row++){
+    const ry=cy-dh/2+row*(dh/8);
+    ctx.beginPath(); ctx.moveTo(cx-dw/2,ry); ctx.lineTo(cx+dw/2,ry); ctx.stroke();
+    const offset=row%2===0?0:dw/4;
+    ctx.beginPath(); ctx.moveTo(cx-dw/2+offset,ry); ctx.lineTo(cx-dw/2+offset,ry+dh/8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+offset-dw/4,ry); ctx.lineTo(cx+offset-dw/4,ry+dh/8); ctx.stroke();
+  }
+  // Four runes lighting up sequentially
+  const runePositions=[{x:cx-dw*0.22,y:cy-dh*0.18},{x:cx+dw*0.22,y:cy-dh*0.18},
+                       {x:cx-dw*0.22,y:cy+dh*0.1},{x:cx+dw*0.22,y:cy+dh*0.1}];
+  const runeSymbols=['ᚱ','ᚢ','ᚾ','ᛖ'];
+  const runeColors=['rgba(100,180,255,','rgba(180,100,255,','rgba(100,255,180,','rgba(255,180,100,'];
+  runePositions.forEach(({x,y},i)=>{
+    const rt = Math.max(0,Math.min((t-(i*0.15))/0.2,1));
+    if(rt > 0){
+      const gl=ctx.createRadialGradient(x,y,0,x,y,30);
+      gl.addColorStop(0,`${runeColors[i]}${rt*0.5})`);
+      gl.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=gl; ctx.fillRect(x-35,y-35,70,70);
+      ctx.fillStyle=`${runeColors[i]}${rt*0.9})`;
+      ctx.font=`bold ${28*rt}px serif`; ctx.textAlign='center';
+      ctx.shadowBlur=12*rt; ctx.shadowColor=`${runeColors[i]}0.8)`;
+      ctx.fillText(runeSymbols[i],x,y+10); ctx.shadowBlur=0;
+    }
+  });
+  // All runes lit — door glow
+  if(t > 0.75){
+    const glow = (t-0.75)/0.25;
+    const dg=ctx.createRadialGradient(cx,cy,0,cx,cy,dw*0.7);
+    dg.addColorStop(0,`rgba(200,220,255,${glow*0.15})`);
+    dg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=dg; ctx.fillRect(0,0,W,H);
+  }
+  const opacity = t > 0.6 ? Math.min((t-0.6)/0.2,1) : 0;
+  txText(ctx,'ANSWER TOGETHER.',W/2,H*0.9,`rgba(180,200,255,${opacity})`,20);
+  const vig=ctx.createRadialGradient(cx,cy,dh*0.2,cx,cy,H*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 7: Barracks ──
+function txBarracks(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#040302');
+  const warmT = Math.min(t*1.8,1);
+  // Room walls
+  ctx.fillStyle='#0e0a06';
+  ctx.fillRect(W*0.08,H*0.05,W*0.84,H*0.88);
+  // Floor
+  ctx.fillStyle='#080604';
+  ctx.fillRect(W*0.08,H*0.7,W*0.84,H*0.25);
+  // Bunk beds silhouettes - left
+  ctx.fillStyle='#1a1208';
+  ctx.fillRect(W*0.12,H*0.25,W*0.22,H*0.42); // frame
+  ctx.fillStyle='#100e08';
+  ctx.fillRect(W*0.12,H*0.32,W*0.22,H*0.06); // bottom bunk
+  ctx.fillRect(W*0.12,H*0.5,W*0.22,H*0.06); // top bunk
+  // Bunk beds - right
+  ctx.fillStyle='#1a1208';
+  ctx.fillRect(W*0.66,H*0.25,W*0.22,H*0.42);
+  ctx.fillStyle='#100e08';
+  ctx.fillRect(W*0.66,H*0.32,W*0.22,H*0.06);
+  ctx.fillRect(W*0.66,H*0.5,W*0.22,H*0.06);
+  // Firepit in center — slowly brightening
+  const fireX=W*0.5, fireY=H*0.68;
+  txTorch(ctx,fireX,fireY,70*warmT,now);
+  // Small ember particles rising from fire
+  for(let i=0;i<12;i++){
+    const ep=((i/12)+t*0.6)%1;
+    const ex=fireX+(Math.sin(i*2.4+now*0.005)*30);
+    const ey=fireY-ep*H*0.3;
+    if(ep < 0.9){
+      ctx.beginPath(); ctx.arc(ex,ey,Math.max(0.1,1.5*(1-ep)),0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,${140+Math.sin(i)*40},30,${(1-ep)*0.7*warmT})`; ctx.fill();
+    }
+  }
+  // Card game on crate
+  ctx.fillStyle='rgba(40,30,15,0.8)';
+  ctx.fillRect(W*0.42,H*0.6,W*0.16,H*0.07);
+  ctx.fillStyle='rgba(180,150,80,0.4)';
+  [[W*0.44,H*0.62,0.1],[W*0.48,H*0.61,-.12],[W*0.52,H*0.625,.08]].forEach(([x,y,r])=>{
+    ctx.save(); ctx.translate(x,y); ctx.rotate(r);
+    ctx.fillRect(-10,-14,20,28); ctx.restore();
+  });
+  const opacity = t > 0.5 ? Math.min((t-0.5)/0.25,1) : 0;
+  txText(ctx,'A moment to breathe.',W/2,H*0.92,`rgba(200,160,80,${opacity})`,18);
+  const vig=ctx.createRadialGradient(fireX,fireY,H*0.05,W/2,H/2,H*0.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.88)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 8: Elite Guard ──
+function txElites(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#060202');
+  ctx.fillStyle=`rgba(80,10,5,${Math.min(t*0.8,0.2)})`;
+  ctx.fillRect(0,0,W,H);
+  txCorridorRush(ctx,0.25,W,H,now);
+  // Two elite silhouettes stepping forward
+  const advance = Math.min(t/0.7,1);
+  const elites=[{x:W*0.3,flip:-1},{x:W*0.7,flip:1}];
+  elites.forEach(({x,flip},ei)=>{
+    const delay = ei*0.08;
+    const et = Math.max(0,Math.min((t-delay)/0.65,1));
+    const ey = H*0.15 + (1-et)*H*0.12;
+    const scale = 0.7 + et*0.45;
+    ctx.save(); ctx.translate(x,ey); ctx.scale(flip*scale,scale);
+    ctx.fillStyle='#1e1408';
+    // Body/armor
+    ctx.beginPath(); ctx.ellipse(0,H*0.45,30,55,0,0,Math.PI*2); ctx.fill();
+    // Shoulders (pauldrons)
+    ctx.beginPath(); ctx.ellipse(-28,H*0.28,20,15,0.4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(28,H*0.28,20,15,-0.4,0,Math.PI*2); ctx.fill();
+    // Head with helmet
+    ctx.beginPath(); ctx.arc(0,H*0.2,24,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#0a0804';
+    ctx.beginPath(); ctx.ellipse(0,H*0.18,18,10,0,0,Math.PI*2); ctx.fill(); // visor shadow
+    // Shield (first elite only in ei===0)
+    if(ei===0){
+      ctx.fillStyle='#2a1c0a';
+      ctx.beginPath(); ctx.roundRect(32,H*0.22,28,55,4); ctx.fill();
+      // Shield glint
+      const glint=(Math.sin(now*0.009)+1)/2;
+      ctx.strokeStyle=`rgba(200,170,80,${glint*et*0.8})`; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(36,H*0.26); ctx.lineTo(36,H*0.54); ctx.stroke();
+    }
+    // Weapon glint
+    const wglint = t > 0.5 ? Math.sin(now*0.012)*0.5+0.5 : 0;
+    ctx.strokeStyle=`rgba(180,160,80,${wglint*et})`; ctx.lineWidth=3;
+    ctx.shadowBlur=8*wglint; ctx.shadowColor='rgba(220,200,100,0.6)';
+    ctx.beginPath(); ctx.moveTo(-25,H*0.3); ctx.lineTo(-50,H*0.1); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.restore();
+  });
+  // Eye glow on elites
+  if(t > 0.4){
+    const eg=(t-0.4)/0.4;
+    elites.forEach(({x})=>{
+      ctx.fillStyle=`rgba(220,40,20,${eg*0.7})`;
+      ctx.beginPath(); ctx.ellipse(x-8,H*0.34,4,3,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x+8,H*0.34,4,3,0,0,Math.PI*2); ctx.fill();
+    });
+  }
+  const opacity = t > 0.65 ? Math.min((t-0.65)/0.2,1) : 0;
+  txText(ctx,'They are not embarrassed.',W/2,H*0.9,`rgba(200,80,60,${opacity})`,20);
+  const vig=ctx.createRadialGradient(W/2,H*0.45,H*0.1,W/2,H/2,H*0.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.9)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 9: Boss Entrance ──
+function txBoss(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#040101');
+  const cx=W/2;
+  // Throne room — wider corridor
+  ctx.fillStyle='#100806';
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(cx-W*0.4,H); ctx.lineTo(cx+W*0.4,H); ctx.lineTo(W,0); ctx.closePath(); ctx.fill();
+  // Skull decorations on walls
+  const skullPositions=[{x:W*0.12,y:H*0.3},{x:W*0.22,y:H*0.5},{x:W*0.88,y:H*0.3},{x:W*0.78,y:H*0.5}];
+  skullPositions.forEach(({x,y})=>{
+    ctx.fillStyle='rgba(60,45,25,0.7)';
+    ctx.beginPath(); ctx.arc(x,y,12,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y+10,8,0,Math.PI); ctx.fill();
+    ctx.fillStyle='rgba(20,15,8,0.9)';
+    ctx.beginPath(); ctx.ellipse(x-4,y-2,3,4,0,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x+4,y-2,3,4,0,0,Math.PI*2); ctx.fill();
+  });
+  // Torches on far walls
+  txTorch(ctx,W*0.05,H*0.35,45,now);
+  txTorch(ctx,W*0.95,H*0.35,45,now);
+  // Throne base
+  ctx.fillStyle='#1e1008';
+  ctx.beginPath(); ctx.roundRect(cx-55,H*0.52,110,H*0.32,4); ctx.fill();
+  // Throne back spikes
+  for(let i=0;i<7;i++){
+    const sx=cx-48+i*16;
+    ctx.fillStyle='#2a1610';
+    ctx.beginPath(); ctx.moveTo(sx,H*0.52); ctx.lineTo(sx+8,H*0.25+i%2*H*0.06); ctx.lineTo(sx+16,H*0.52); ctx.closePath(); ctx.fill();
+  }
+  // Krag rising — dramatic slow reveal
+  const riseT = Math.min(t/0.8,1);
+  const kragY = H*1.05 - riseT*H*0.62;
+  ctx.save(); ctx.translate(cx, kragY);
+  ctx.fillStyle='#1a0c06';
+  // Massive body
+  ctx.beginPath(); ctx.ellipse(0,0,55,85,0,0,Math.PI*2); ctx.fill();
+  // Huge shoulders
+  ctx.beginPath(); ctx.ellipse(-58,-30,32,22,0.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(58,-30,32,22,-0.5,0,Math.PI*2); ctx.fill();
+  // Head
+  ctx.beginPath(); ctx.arc(0,-95,35,0,Math.PI*2); ctx.fill();
+  // Crown/helmet spikes
+  for(let i=0;i<5;i++){
+    const sx=-30+i*15;
+    ctx.fillStyle='#2e1a0a';
+    ctx.beginPath(); ctx.moveTo(sx,-120); ctx.lineTo(sx+8,-145-i%2*12); ctx.lineTo(sx+15,-120); ctx.closePath(); ctx.fill();
+  }
+  // Glowing eyes
+  const eyeGlow=(riseT>0.5)?(riseT-0.5)/0.5*0.9:0;
+  ctx.fillStyle=`rgba(255,40,10,${eyeGlow})`;
+  ctx.shadowBlur=15*eyeGlow; ctx.shadowColor='rgba(255,20,0,0.8)';
+  ctx.beginPath(); ctx.ellipse(-12,-98,7,5,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(12,-98,7,5,0,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  // Weapon — greataxe
+  ctx.fillStyle='rgba(50,35,15,0.85)';
+  ctx.beginPath(); ctx.moveTo(55,-20); ctx.lineTo(100,-80); ctx.lineTo(115,-40); ctx.lineTo(90,10); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=`rgba(160,130,60,${eyeGlow*0.8})`; ctx.lineWidth=2;
+  ctx.stroke();
+  ctx.restore();
+  // Dramatic lightning flash
+  if(t > 0.65 && t < 0.75){
+    ctx.fillStyle=`rgba(255,200,150,${(0.75-t)*3})`;
+    ctx.fillRect(0,0,W,H);
+  }
+  // Red atmospheric glow from eyes
+  if(riseT > 0.5){
+    const rg=ctx.createRadialGradient(cx,kragY-95,0,cx,kragY-95,200);
+    rg.addColorStop(0,`rgba(200,20,10,${(riseT-0.5)*0.25})`);
+    rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+  }
+  const opacity = t > 0.7 ? Math.min((t-0.7)/0.15,1) : 0;
+  txText(ctx,'KRAG THE WARCHIEF.',W/2,H*0.9,`rgba(220,80,50,${opacity})`,24);
+  const vig=ctx.createRadialGradient(cx,H*0.6,H*0.08,cx,H/2,H*0.8);
+  vig.addColorStop(0,'rgba(0,0,0,0)'); vig.addColorStop(1,'rgba(0,0,0,0.92)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+}
+
+// ── SCENE 10: Victory ──
+function txVictory(ctx, t, W, H, now) {
+  txFillBg(ctx,W,H,'#040302');
+  // Golden light flooding down from above
+  const beams=8;
+  for(let i=0;i<beams;i++){
+    const bx=W*(0.1+i*0.12);
+    const bw=W*0.06;
+    const bt=Math.max(0,Math.min((t-i*0.04)/0.5,1));
+    const g=ctx.createLinearGradient(bx,0,bx,H);
+    g.addColorStop(0,`rgba(255,210,80,${bt*0.35})`);
+    g.addColorStop(0.6,`rgba(220,160,40,${bt*0.12})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.moveTo(bx-bw/2,0); ctx.lineTo(bx+bw/2,0);
+    ctx.lineTo(bx+bw*2,H); ctx.lineTo(bx-bw*2,H); ctx.closePath(); ctx.fill();
+  }
+  // Rising gold particles
+  for(let i=0;i<40;i++){
+    const pt=((i/40)+t*0.7)%1;
+    const px=W*(0.1+Math.sin(i*2.1)*0.4);
+    const py=H*(1.1-pt*1.3);
+    const ps=2+Math.sin(i)*1.5;
+    ctx.beginPath(); ctx.arc(px,py,Math.max(0.1,ps*(1-pt*0.5)),0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,${180+Math.sin(i)*40},50,${pt*(1-pt)*4*0.7})`; ctx.fill();
+  }
+  // Crown in center
+  const ct=Math.min(t*2,1);
+  const crx=W/2, cry=H*0.38;
+  ctx.save(); ctx.translate(crx,cry); ctx.scale(ct,ct);
+  ctx.fillStyle=`rgba(220,170,40,${ct*0.9})`;
+  // Crown base
+  ctx.fillRect(-45,0,90,25);
+  // Crown points
+  [[0,-50],[-28,-35],[28,-35]].forEach(([px2,py2])=>{
+    ctx.beginPath(); ctx.moveTo(px2-15,0); ctx.lineTo(px2,py2); ctx.lineTo(px2+15,0); ctx.closePath(); ctx.fill();
+  });
+  ctx.shadowBlur=20*ct; ctx.shadowColor='rgba(255,200,60,0.8)';
+  ctx.fillStyle=`rgba(255,220,80,${ct})`;
+  ctx.fillRect(-45,0,90,25);
+  ctx.shadowBlur=0;
+  // Jewels
+  ['rgba(255,60,60,0.9)','rgba(60,140,255,0.9)','rgba(60,220,80,0.9)'].forEach((col,i)=>{
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(-25+i*25,12,5,0,Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+  // THE SYSTEM text
+  const textT = t > 0.45 ? Math.min((t-0.45)/0.3,1) : 0;
+  txText(ctx,'THE DUNGEON IS CLEARED.',W/2,H*0.7,`rgba(255,210,80,${textT})`,26);
+  txText(ctx,'THE SYSTEM IS GRUDGINGLY IMPRESSED.',W/2,H*0.78,`rgba(200,160,60,${textT*0.85})`,16);
+  // Full screen golden glow
+  if(t > 0.6){
+    const gt=(t-0.6)/0.4;
+    ctx.fillStyle=`rgba(200,140,20,${gt*0.08})`;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+
 function setReady() {
   ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene1_ready', advanceToScene2));
 }
 
 function advanceToScene2() {
-  const ps = fbState.players || {};
-  const upd = { readiness:null, 'session/currentScene':2, 'session/phase':'choosing', 'narration/text':null, 'narration/scene':null };
-  Object.keys(ps).forEach(id => {
-    upd[`players/${id}/choice`] = null;
-    upd[`players/${id}/choiceId`] = null;
-    upd[`players/${id}/choiceSubmitted`] = false;
+  showTransition(2, () => {
+    const ps = fbState.players || {};
+    const upd = { readiness:null, 'session/currentScene':2, 'session/phase':'choosing', 'narration/text':null, 'narration/scene':null };
+    Object.keys(ps).forEach(id => {
+      upd[`players/${id}/choice`] = null;
+      upd[`players/${id}/choiceId`] = null;
+      upd[`players/${id}/choiceSubmitted`] = false;
+    });
+    ROOT.update(upd);
   });
-  ROOT.update(upd);
 }
 
 function setContinue() {
-  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', advanceToNextScene));
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', () => {
+    playAllReadySound();
+    triggerReadyFlash();
+    advanceToNextScene();
+  }));
 }
 
 function advanceToNextScene() {
   const cur  = fbState.session?.currentScene || 2;
   const next = cur + 1;
-  const ps   = fbState.players || {};
-  const upd  = { readiness:null, 'narration/text':null, 'narration/scene':null };
-  upd[`narrationLock/scene${next}`] = null;
-  Object.keys(ps).forEach(id => {
-    upd[`players/${id}/choice`] = null;
-    upd[`players/${id}/choiceId`] = null;
-    upd[`players/${id}/choiceSubmitted`] = false;
+  showTransition(next, () => {
+    const ps   = fbState.players || {};
+    const upd  = { readiness:null, 'narration/text':null, 'narration/scene':null };
+    upd[`narrationLock/scene${next}`] = null;
+    Object.keys(ps).forEach(id => {
+      upd[`players/${id}/choice`] = null;
+      upd[`players/${id}/choiceId`] = null;
+      upd[`players/${id}/choiceSubmitted`] = false;
+    });
+    if (SCENES[next]) {
+      upd['session/currentScene'] = next;
+      upd['session/phase'] = SCENES[next].type === 'intro' ? 'scene_intro' : 'choosing';
+    } else {
+      upd['session/phase'] = 'demo_end';
+    }
+    ROOT.update(upd);
   });
-  if (SCENES[next]) {
-    upd['session/currentScene'] = next;
-    upd['session/phase'] = SCENES[next].type === 'intro' ? 'scene_intro' : 'choosing';
-  } else {
-    upd['session/phase'] = 'demo_end';
-  }
-  ROOT.update(upd);
 }
 
 function checkAllReady(requiredPhase, callback) {
@@ -1405,10 +2304,22 @@ function triggerTypewriteIfNeeded(narr) {
   if (!el) return;
   const full = el.textContent;
   el.textContent = '';
+  triggerNarrGlow();
   clearTimeout(typeTimer);
+
+  // Add cursor element
+  const cursor = document.createElement('span');
+  cursor.className = 'narr-cursor';
+  el.appendChild(cursor);
+
   let i = 0;
   const tick = () => {
-    if (i < full.length) { el.textContent += full[i++]; typeTimer = setTimeout(tick, 14); }
+    if (i < full.length) {
+      el.insertBefore(document.createTextNode(full[i++]), cursor);
+      typeTimer = setTimeout(tick, 16);
+    } else {
+      cursor.remove();
+    }
   };
   tick();
 }
