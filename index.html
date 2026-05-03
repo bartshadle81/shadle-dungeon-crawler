@@ -696,8 +696,8 @@ const SCENES = {
       name: 'Goblin Patrol',
       maxHp: 80,
       partyDamage(choiceMap, track) {
-        const base = { good: 48, neutral: 28, bad: 10 }[track] || 20;
-        return base + Math.floor(Math.random() * 10);
+        const base = { good: 65, neutral: 42, bad: 22 }[track] || 30;
+        return base + Math.floor(Math.random() * 12);
       },
     },
   },
@@ -770,11 +770,11 @@ const SCENES = {
       name: 'Kobold Skirmishers',
       maxHp: 140,
       partyDamage(choiceMap, track) {
-        const base = { good: 52, neutral: 30, bad: 12 }[track] || 20;
+        const base = { good: 80, neutral: 50, bad: 25 }[track] || 35;
         // Torches help significantly in darkness
         const vals = Object.values(choiceMap);
         const hasTorch = vals.some(v => v === 'use_torch');
-        return base + Math.floor(Math.random() * 14) + (hasTorch ? 18 : 0);
+        return base + Math.floor(Math.random() * 16) + (hasTorch ? 22 : 0);
       },
     },
   },
@@ -903,10 +903,10 @@ const SCENES = {
       maxHp: 170,
       trollRegen: 5,
       partyDamage(choiceMap, track, players) {
-        const base = { good: 55, neutral: 33, bad: 12 }[track] || 25;
+        const base = { good: 85, neutral: 55, bad: 28 }[track] || 35;
         const vals = Object.values(choiceMap);
         const usedFire = vals.some(v => v === 'fire' || v === 'use_torch');
-        return base + Math.floor(Math.random() * 16) + (usedFire ? 18 : 0);
+        return base + Math.floor(Math.random() * 18) + (usedFire ? 22 : 0);
       },
     },
   },
@@ -1735,7 +1735,17 @@ function buildShared(scene, phase, narr, players, scData) {
 
   return `
     ${scData?.title ? `<div style="font-family:var(--f-disp);font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:0.03em;margin-bottom:14px;text-shadow:var(--glow-g)">${scData.title}</div>` : ''}
-    ${scData?.desc ? `<div class="scene-desc">${scData.desc}</div>` : ''}
+    ${(() => {
+      const combatRound = fbState.combat?.round || 1;
+      const inCombat = scData?.combatData && combatRound > 1;
+      if (inCombat) {
+        const enemyHp  = fbState.combat?.enemyHp ?? scData.combatData.maxHp;
+        const maxHp    = fbState.combat?.maxEnemyHp ?? scData.combatData.maxHp;
+        const defeated = enemyHp <= 0;
+        return `<div style="font-family:var(--f-mono);font-size:0.78rem;color:var(--sys);letter-spacing:0.04em;margin-bottom:14px;padding:6px 12px;border:1px solid var(--border-a);border-radius:2px;background:rgba(0,0,0,0.25);">⚔ Round ${combatRound} — ${defeated ? scData.combatData.name + ' defeated' : `${enemyHp}/${maxHp} HP remaining`}</div>`;
+      }
+      return scData?.desc ? `<div class="scene-desc">${scData.desc}</div>` : '';
+    })()}
     ${narrHTML}
     ${choicesHTML}
     <div class="taunt" id="tauntEl"></div>`;
@@ -1961,8 +1971,15 @@ function buildEnemyHpBar() {
         <span style="font-family:var(--f-disp);font-size:0.8rem;color:${defeated?'var(--green-b)':'var(--red-b)'};letter-spacing:0.05em;">${esc(scData.combatData.name)}${defeated?' — DEFEATED':''}${phase2}</span>
         <span style="font-family:var(--f-mono);font-size:0.75rem;color:var(--parch-d);">Round ${round} · ${hp}/${max} HP</span>
       </div>
-      <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+      <div style="position:relative;height:10px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
         <div style="height:100%;width:${pct}%;background:${defeated?'#3a7a3a':barCol};transition:width 0.6s ease;"></div>
+        ${defeated ? `
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+            <svg viewBox="0 0 100 10" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.8;">
+              <line x1="2" y1="1" x2="98" y2="9" stroke="#ff4444" stroke-width="1.5"/>
+              <line x1="98" y1="1" x2="2" y2="9" stroke="#ff4444" stroke-width="1.5"/>
+            </svg>
+          </div>` : ''}
       </div>
     </div>`;
 }
@@ -2551,13 +2568,16 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
   // This ensures the enemy HP bar updates immediately, even if the API call fails or is slow.
   // combat/continues: true = still fighting. null (not false) = done, so Firebase deletes the field cleanly.
   if (scData?.combatData && newEnemyHp !== null) {
-    await ROOT.update({
+    const earlyUpd = {
       'combat/enemyHp':   newEnemyHp,
       'combat/continues': combatContinues || null,
       'combat/round':     combatRound,
       ...(enteringPhase2 ? { 'combat/phase2': true } : {}),
       [`combat/history/round${combatRound}`]: `Round ${combatRound}: Enemy HP ${Math.round((newEnemyHp / scData.combatData.maxHp) * 100)}% remaining. ${combatContinues ? 'Fight continues.' : 'Defeated.'}`,
-    });
+    };
+    // Write maxEnemyHp on round 1 so the HP bar always has it
+    if (combatRound === 1) earlyUpd['combat/maxEnemyHp'] = scData.combatData.maxHp;
+    await ROOT.update(earlyUpd);
   }
 
   try {
@@ -2572,21 +2592,26 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
     const freshSnap = await ROOT.child('players').once('value');
     const freshPlayers = freshSnap.val() || players;
 
-    const hpUpd = {};
-    const goldLoot = deltas.__goldLoot || 0;
+    // Build pendingHp as { playerId: { hp, status?, gold? } } — no slashes in keys,
+    // which Firebase rejects when storing as a document value (slashes only work in update() paths).
+    const pendingHp = {};
+    const goldLoot  = deltas.__goldLoot || 0;
+
     Object.entries(deltas).forEach(([id, d]) => {
       if (id === '__goldLoot') return;
       const current = freshPlayers[id]?.hp ?? 0;
       const maxHp   = freshPlayers[id]?.maxHp || current;
       const newHp   = Math.min(maxHp, Math.max(0, current + d));
-      hpUpd[`players/${id}/hp`] = newHp;
-      if (newHp <= 0) hpUpd[`players/${id}/status`] = 'downed';
+      if (!pendingHp[id]) pendingHp[id] = {};
+      pendingHp[id].hp = newHp;
+      if (newHp <= 0) pendingHp[id].status = 'downed';
     });
 
     if (goldLoot > 0) {
       Object.keys(freshPlayers).forEach(id => {
         if (freshPlayers[id]?.status === 'downed') return;
-        hpUpd[`players/${id}/gold`] = (freshPlayers[id].gold||0) + goldLoot;
+        if (!pendingHp[id]) pendingHp[id] = {};
+        pendingHp[id].gold = (freshPlayers[id].gold || 0) + goldLoot;
       });
     }
 
@@ -2597,7 +2622,7 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       'narration/track':      track,
       'narration/timestamp':  Date.now(),
       'narration/generating': false,
-      'narration/pendingHp':  Object.keys(hpUpd).length ? hpUpd : null,
+      'narration/pendingHp':  Object.keys(pendingHp).length ? pendingHp : null,
       'session/phase':        'scene_complete',
     });
   } catch(e) {
@@ -3346,14 +3371,22 @@ async function setContinue() {
     if (!(await claimAdvance())) return;
     playAllReadySound();
     triggerReadyFlash();
-    const pending = s.narration?.pendingHp || {};   // fresh snap — not fbState
+
     const upd = {
       'session/advanceLock': null,
       'session/phase': 'system_verdict',
       readiness: null,
       'narration/pendingHp': null,
     };
-    Object.assign(upd, pending);
+
+    // Unpack pendingHp from {playerId: {hp, status?, gold?}} into update paths
+    const pending = s.narration?.pendingHp || {};
+    Object.entries(pending).forEach(([id, fields]) => {
+      Object.entries(fields).forEach(([field, val]) => {
+        upd[`players/${id}/${field}`] = val;
+      });
+    });
+
     ROOT.update(upd);
   }));
 }
