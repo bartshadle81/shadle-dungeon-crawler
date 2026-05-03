@@ -3831,12 +3831,12 @@ function gmJump() {
   const scType = SCENES[n]?.type;
   const phase = (scType === 'intro' || scType === 'victory') ? 'scene_intro' : 'choosing';
   const upd = { 'session/currentScene':n, 'session/phase':phase, readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null };
-  upd[`players/${id}/freeformChoice`] = null;
   upd[`narrationLock/scene${n}`] = null;
   Object.keys(ps).forEach(id => {
     upd[`players/${id}/choice`] = null;
     upd[`players/${id}/choiceId`] = null;
     upd[`players/${id}/choiceSubmitted`] = false;
+    upd[`players/${id}/freeformChoice`] = null;
   });
   ROOT.update(upd);
 }
