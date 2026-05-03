@@ -490,7 +490,7 @@ const ARCHETYPES = {
   },
   Leah: {
     icon: '🎻', hp: 85, atk: 12, sp: 22, arm: 0,
-    inv: ['Violin', 'Spell Tome', 'Impulse Charge ×3', 'Reading Glasses'],
+    inv: ['Violin', 'Spell Tome', 'Impulse Charge ×3', 'Glasses'],
     gold: 10,
     realName: 'Leah',
     title: 'The Wildcard',
@@ -989,12 +989,14 @@ const SCENES = {
 const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a Syndicate dungeon. You speak with the authority of something that has watched thousands of contestants die and found it educational. Your tone is Dungeon Crawler Carl: punchy, dark-comedic, never mean-spirited. You love these idiots. You expected them to be dead by now.
 
 THE WORLD:
-The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber. Somewhere on the other side of the world, another contestant is already on Floor 2 with a cat. THE SYSTEM finds this comparison useful and will deploy it when morale seems high.
+The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber.
+
+Carl is a contestant on the other side of the world. He is also on Floor 1. He has a cat. He is ahead of the Shadles within Floor 1 but has not cleared it yet. THE SYSTEM finds the comparison between Carl's progress and the Shadles' progress instructive and will deploy it when morale seems high. Carl uses he/him.
 
 THE PARTY (know them well):
-BART (The Historian): Bearded math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements.
+BART (The Historian): Bearded 6th grade math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements.
 
-MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats soft batch cookies or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Luna is a small athletic black dog named after Luna Lovegood — chaotic, was not present at descent, is loose in the dungeon, her paw prints have already been seen.
+MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats soft batch cookies or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear.
 
 NOAH (The Speedrunner): 17, tall, lanky, glasses. Has beaten Minecraft in under an hour. Taking every AP class available but struggles with English. In group situations solves problems quietly in the corner, then drops the answer at the perfect moment. Cautious and methodical. Was attentive at his sister's concert — would never say it mattered. When wrong, argues like a teenager. Leah scored higher on their AP Human Geography exam. THE SYSTEM knows this and considers it a relevant data point.
 
@@ -1002,8 +1004,10 @@ LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still h
 
 BEAR: Contestant 4-Delta. Mini black labradoodle. Appeared beside Melissa in a sealed auditorium. Navigates pressure plates without hesitation. Always seems to know things he shouldn't. THE SYSTEM has no comment about Bear.
 
+LUNA (DO NOT USE UNTIL TOLD): Luna is a small athletic black dog, named after Luna Lovegood — chaotic, was home when the box appeared, got out anyway, and has been loose in the dungeon since before the party descended. She will appear dramatically in Scene 9. Before that scene: DO NOT name her, DO NOT reference her directly. She may exist as unexplained sounds — claws on stone around a corner, a single bark that stops before anyone can place it — but she is never identified or named until the scene prompt tells you she has arrived.
+
 YOUR JOB:
-Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments. Luna is out there somewhere. THE SYSTEM occasionally references another contestant on Floor 1 — somewhere on the other side of the world, a man named Carl and his cat are also on Floor 1. He uses he/him. THE SYSTEM finds the comparison between Carl's progress and the Shadles' progress instructive. Paths may or may not cross. THE SYSTEM has no comment on that either.
+Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments.
 
 TONE RULES:
 - 70% drama, 30% humor. The dungeon is genuinely dangerous. People die in here. The Shadles might.
@@ -1687,7 +1691,32 @@ function buildShared(scene, phase, narr, players, scData) {
     if (scData?.type === 'shop') {
       choicesHTML = buildShopUI(me);
     } else if (scData?.type === 'riddle') {
-      choicesHTML = buildRiddleUI(me, scData);
+      // Party riddle status grid (Option C) — shows above the input
+      const players = fbState.players || {};
+      const riddleArchetypes = { Bart:'fire', Melissa:'key', Noah:'shadow', Leah:'door' };
+      const partyGrid = Object.values(players).map(p => {
+        if (p.status === 'downed') return `<div style="display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:0.75rem;color:var(--parch-d);"><span style="opacity:0.4">💀</span><span style="opacity:0.5">${esc(p.name)} — downed</span></div>`;
+        const riddle = riddleArchetypes[p.archetype] || '?';
+        let statusIcon, statusColor, statusText;
+        if (!p.choiceSubmitted) {
+          statusIcon = '⟳'; statusColor = 'var(--parch-d)'; statusText = 'thinking...';
+        } else if (p.choiceId === 'correct') {
+          statusIcon = '✓'; statusColor = 'var(--green-b)'; statusText = `"${riddle}" — correct`;
+        } else {
+          statusIcon = '✗'; statusColor = 'var(--red-b)'; statusText = 'wrong answer';
+        }
+        return `<div style="display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:0.75rem;">
+          <span style="color:${statusColor};font-size:0.9rem;width:14px;text-align:center;">${statusIcon}</span>
+          <span style="color:var(--parch-d);">${esc(p.name)}</span>
+          <span style="color:${statusColor};">${statusText}</span>
+        </div>`;
+      }).join('');
+      const correctCount = fbState.riddleCorrectCount;
+      const totalActive  = fbState.riddleTotalActive;
+      const scoreNote = (correctCount !== undefined && correctCount !== null)
+        ? `<div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--sys);margin-bottom:10px;padding:6px 10px;border:1px solid var(--border-a);border-radius:2px;background:rgba(0,0,0,0.3);">THE SYSTEM: ${correctCount}/${totalActive} correct. ${correctCount >= Math.ceil(totalActive/2) ? 'Door opens.' : 'Insufficient. Retrying.'}</div>`
+        : '';
+      choicesHTML = `<div style="margin-top:10px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-a);border-radius:2px;">${scoreNote}${partyGrid}</div>` + buildRiddleUI(me, scData);
     } else if (!me.choiceSubmitted) {
       const baseChoices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
       const itemChoices = getItemChoices(me.inventory||[]);
@@ -1707,7 +1736,6 @@ function buildShared(scene, phase, narr, players, scData) {
   return `
     ${scData?.title ? `<div style="font-family:var(--f-disp);font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:0.03em;margin-bottom:14px;text-shadow:var(--glow-g)">${scData.title}</div>` : ''}
     ${scData?.desc ? `<div class="scene-desc">${scData.desc}</div>` : ''}
-    ${buildEnemyHpBar()}
     ${narrHTML}
     ${choicesHTML}
     <div class="taunt" id="tauntEl"></div>`;
@@ -1916,7 +1944,8 @@ function buildEnemyHpBar() {
   const combat = fbState.combat;
   const scene  = fbState.session?.currentScene;
   const scData = SCENES[scene];
-  if (!combat?.enemyHp || !combat?.maxEnemyHp || !scData?.combatData) return '';
+  // Note: combat.enemyHp can legitimately be 0 (defeated) — use == null, not ! check
+  if (combat?.enemyHp == null || combat?.maxEnemyHp == null || !scData?.combatData) return '';
 
   const hp     = combat.enemyHp;
   const max    = combat.maxEnemyHp;
@@ -1924,15 +1953,16 @@ function buildEnemyHpBar() {
   const round  = combat.round || 1;
   const phase2 = combat.phase2 ? ' <span style="color:var(--red-b);font-size:0.75rem;">⚠ PHASE 2</span>' : '';
   const barCol = pct > 60 ? '#c03030' : pct > 30 ? '#d06020' : '#e09030';
+  const defeated = hp <= 0;
 
   return `
-    <div style="margin:12px 0 16px;padding:10px 14px;background:rgba(0,0,0,0.35);border:1px solid rgba(180,40,40,0.3);border-radius:2px;">
+    <div style="margin:12px 0 16px;padding:10px 14px;background:rgba(0,0,0,0.35);border:1px solid rgba(${defeated?'40,100,40':'180,40,40'},0.3);border-radius:2px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-family:var(--f-disp);font-size:0.8rem;color:var(--red-b);letter-spacing:0.05em;">${esc(scData.combatData.name)}${phase2}</span>
+        <span style="font-family:var(--f-disp);font-size:0.8rem;color:${defeated?'var(--green-b)':'var(--red-b)'};letter-spacing:0.05em;">${esc(scData.combatData.name)}${defeated?' — DEFEATED':''}${phase2}</span>
         <span style="font-family:var(--f-mono);font-size:0.75rem;color:var(--parch-d);">Round ${round} · ${hp}/${max} HP</span>
       </div>
       <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
-        <div style="height:100%;width:${pct}%;background:${barCol};transition:width 0.6s ease;"></div>
+        <div style="height:100%;width:${pct}%;background:${defeated?'#3a7a3a':barCol};transition:width 0.6s ease;"></div>
       </div>
     </div>`;
 }
@@ -2004,8 +2034,6 @@ const USABLE_ITEMS = [
   // ── Special ──
   { match: 'Spell Tome',    id: 'use_spelltome',    icon: '📖', text: 'Use the Spell Tome',
     effect: 'spell',     amount: 0, consumable: true },
-  { match: 'Reading Glasses', id: 'use_glasses',    icon: '👓', text: 'Study the enemy through your Reading Glasses',
-    effect: 'reveal',    amount: 3, consumable: false }, // reusable
   { match: 'Rope',          id: 'use_rope',         icon: '🪢', text: 'Use the Rope',
     effect: 'rope',      amount: 0, consumable: true },
   { match: 'Mystery Sack',  id: 'use_mysterysack',  icon: '🎒', text: 'Open the Mystery Sack',
@@ -2129,30 +2157,45 @@ async function submitRiddleAnswer() {
     const allDone = Object.values(ps).every(p => p.status === 'downed' || p.choiceSubmitted);
     if (!allDone) return;
 
-    // Check if all answered correctly
-    const allCorrect = Object.entries(ps).every(([id, p]) => {
-      if (p.status === 'downed') return true;
-      return p.choiceId === 'correct';
-    });
+    const activePlayers = Object.entries(ps).filter(([, p]) => p.status !== 'downed');
+    const correctCount  = activePlayers.filter(([, p]) => p.choiceId === 'correct').length;
+    const totalActive   = activePlayers.length;
 
-    if (allCorrect) {
-      // Door opens — write solved state and advance
-      const attempts = s.riddleAttempts || 0;
-      ROOT.update({ riddleSolved: true, 'session/phase': 'waiting_for_narration' });
+    // Tiered outcome: 4/4 → good (door opens), 2-3/4 → neutral (door opens), 0-1/4 → bad (damage + retry or fail)
+    const allCorrect  = correctCount === totalActive;
+    const mostCorrect = correctCount >= Math.ceil(totalActive / 2); // majority correct
+
+    if (allCorrect || mostCorrect) {
+      // Door opens — track written to Firebase so Claude knows how many got it right
+      ROOT.update({
+        riddleSolved: true,
+        riddleCorrectCount: correctCount,
+        riddleTotalActive: totalActive,
+        'session/phase': 'waiting_for_narration',
+      });
     } else {
-      // Wrong answer — apply damage, increment attempts, reset submissions
+      // Partial/total failure — apply damage, increment attempts, reset only wrong players
       const attempts = (s.riddleAttempts || 0) + 1;
-      const resetUpd = { riddleAttempts: attempts, 'session/phase': 'choosing' };
+      const resetUpd = {
+        riddleAttempts: attempts,
+        riddleCorrectCount: correctCount,
+        riddleTotalActive: totalActive,
+        'session/phase': 'choosing',
+      };
+      // Only clear wrong players so correct ones keep their answered state
       Object.keys(ps).forEach(id => {
-        resetUpd[`players/${id}/choiceSubmitted`] = false;
-        resetUpd[`players/${id}/choice`] = null;
-        resetUpd[`players/${id}/choiceId`] = null;
+        if (ps[id].status === 'downed') return;
+        if (ps[id].choiceId !== 'correct') {
+          resetUpd[`players/${id}/choiceSubmitted`] = false;
+          resetUpd[`players/${id}/choice`]          = null;
+          resetUpd[`players/${id}/choiceId`]        = null;
+        }
       });
       if (attempts >= 2) {
-        // Used all attempts — fire narration anyway (bad track)
+        // All attempts used — fire narration on bad track
         resetUpd['session/phase'] = 'waiting_for_narration';
       } else {
-        // Apply 8 damage immediately so bars update
+        // Apply 8 damage to all active players
         Object.keys(ps).filter(id => ps[id].status === 'active').forEach(id => {
           const newHp = Math.max(0, (ps[id].hp || 0) - 8);
           resetUpd[`players/${id}/hp`] = newHp;
@@ -2297,7 +2340,13 @@ async function fireSceneNarration(state) {
     : '';
 
   const track = scData?.type === 'riddle'
-    ? (state.riddleSolved ? 'good' : 'bad')
+    ? (() => {
+        const correct = state.riddleCorrectCount ?? (state.riddleSolved ? (state.riddleTotalActive || 4) : 0);
+        const total   = state.riddleTotalActive || Object.values(state.players || {}).filter(p => p.status !== 'downed').length || 4;
+        if (correct === total)                        return 'good';
+        if (correct >= Math.ceil(total / 2))          return 'neutral';
+        return 'bad';
+      })()
     : scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
 
   // ── Combat round calculation ──
@@ -2412,7 +2461,46 @@ async function fireSceneNarration(state) {
     ? '\n\nThis is the merchant checkpoint scene. Each player either bought one item or passed. Reference what each person bought (or did not) and how they interacted with Mags. The rest alcove gives everyone a small HP recovery — work that in naturally. Gerald is in the corner if he survived.'
     : '';
   const riddleNote = scData?.type === 'riddle'
-    ? `\n\nThis is the Syndicate Puzzle Lock scene. Each player was shown a different dungeon riddle (fire, key, shadow, door) and had to talk to each other to solve all four. ${fbState.riddleSolved ? 'They solved all four riddles correctly. The door opened. Narrate the triumph — make it feel earned.' : 'They failed to solve the riddles correctly (used all attempts). The door discharged 8 damage to everyone and then opened anyway via a Syndicate liability clause. Narrate the failure with appropriate System commentary.'}`
+    ? (() => {
+        const ps = state.players || {};
+        const riddleMap = { Bart:'fire', Melissa:'key', Noah:'shadow', Leah:'door' };
+        const riddleLines = {
+          fire:   '"I have no mouth but I speak to every dark place..."',
+          key:    '"I am nothing without a match..."',
+          shadow: '"I follow you everywhere and arrive before you do..."',
+          door:   '"I am the difference between here and there..."',
+        };
+        const results = Object.values(ps).map(p => {
+          if (p.status === 'downed') return null;
+          const riddle  = riddleMap[p.archetype] || '?';
+          const correct = p.choiceId === 'correct';
+          const answer  = p.choice ? p.choice.replace('Answered correctly: ','').replace('Answered: ','') : '?';
+          return `  ${p.name} — riddle: ${riddle} (${riddleLines[riddle]||''}) — answered: ${answer} — ${correct ? '✓ CORRECT' : '✗ WRONG'}`;
+        }).filter(Boolean).join('\n');
+
+        const correctCount = state.riddleCorrectCount ?? Object.values(ps).filter(p => p.choiceId === 'correct').length;
+        const totalActive  = state.riddleTotalActive  ?? Object.values(ps).filter(p => p.status !== 'downed').length;
+        const opened = state.riddleSolved;
+
+        const trackDesc = correctCount === totalActive
+          ? 'All four answered correctly. The door opened cleanly.'
+          : correctCount >= Math.ceil(totalActive / 2)
+            ? `${correctCount} of ${totalActive} answered correctly — majority sufficient. The door grinds open.`
+            : `Only ${correctCount} of ${totalActive} answered correctly. The door discharged punishment and opened anyway via Syndicate liability clause.`;
+
+        return `\n\nSYNDICATE PUZZLE LOCK — SCENE 8:
+CRITICAL: The riddle ANSWERS are single common nouns: fire, key, shadow, door. These are NOT player names and NOT related to who the players are. They are the answers to four separate riddles about those objects.
+
+Each player was shown a unique riddle on their screen. They had to talk out loud to each other to share what they heard and figure out all four answers together.
+
+INDIVIDUAL RESULTS:
+${results}
+
+OUTCOME: ${trackDesc}
+${opened ? 'The door is open.' : 'All attempts exhausted. The door opened via Syndicate liability clause — mandatory passage clause, sub-section 7.'}
+
+In your narrative: name which players got their riddle right and which got it wrong. Reference the specific riddle topic (fire, shadow, etc.) for each player. Do NOT imply the answers had anything to do with the players' identities or names.`;
+      })()
     : '';
 
   // Combat context
@@ -2459,6 +2547,19 @@ THE SYSTEM delivers its verdict. Use this format:
 - One final status line: dry, blunt, THE SYSTEM voice.
 If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 
+  // ── Write combat HP update NOW (before Claude call) ──
+  // This ensures the enemy HP bar updates immediately, even if the API call fails or is slow.
+  // combat/continues: true = still fighting. null (not false) = done, so Firebase deletes the field cleanly.
+  if (scData?.combatData && newEnemyHp !== null) {
+    await ROOT.update({
+      'combat/enemyHp':   newEnemyHp,
+      'combat/continues': combatContinues || null,
+      'combat/round':     combatRound,
+      ...(enteringPhase2 ? { 'combat/phase2': true } : {}),
+      [`combat/history/round${combatRound}`]: `Round ${combatRound}: Enemy HP ${Math.round((newEnemyHp / scData.combatData.maxHp) * 100)}% remaining. ${combatContinues ? 'Fight continues.' : 'Defeated.'}`,
+    });
+  }
+
   try {
     const raw = await callClaude(prompt);
 
@@ -2489,18 +2590,6 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       });
     }
 
-    // Build combat update
-    const combatUpd = {};
-    if (scData?.combatData && newEnemyHp !== null) {
-      combatUpd['combat/enemyHp']   = newEnemyHp;
-      combatUpd['combat/continues'] = combatContinues;
-      combatUpd['combat/round']     = combatRound;
-      if (enteringPhase2) combatUpd['combat/phase2'] = true;
-      // Store narrative in history for next round context
-      const histKey = `combat/history/round${combatRound}`;
-      combatUpd[histKey] = `Round ${combatRound}: ${narrative.substring(0, 300)}...`;
-    }
-
     await ROOT.update({
       'narration/text':       narrative,
       'narration/verdict':    verdict,
@@ -2510,7 +2599,6 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       'narration/generating': false,
       'narration/pendingHp':  Object.keys(hpUpd).length ? hpUpd : null,
       'session/phase':        'scene_complete',
-      ...combatUpd,
     });
   } catch(e) {
     await lock.remove();
@@ -2537,8 +2625,9 @@ function showTransition(toScene, callback) {
   const animDuration = 4800;   // animation phase — longer, more cinematic
   const holdDuration  = 800;   // hold black after animation
   const fadeDuration  = 900;   // fade out to reveal new scene
-  const draws = { 2:txTrapCorridor, 3:txGerald,   4:txAmbush,   5:txDarkness,
-                  6:txMags,         7:txBarracks,  8:txElites,   9:txBoss, 10:txBoss, 11:txVictory };
+  // Keys = scene being entered. Each animation previews what you're about to face.
+  const draws = { 2:txTrapCorridor, 3:txTrapCorridor, 4:txGerald,      5:txAmbush,
+                  6:txDarkness,     7:txMags,          8:txRiddleWall,  9:txElites, 10:txBoss, 11:txVictory };
   const draw = draws[toScene] || txCorridorRush;
   let raf;
   let phase = 'anim'; // 'anim' → 'hold' → 'fadeout'
@@ -3205,21 +3294,44 @@ function txVictory(ctx, t, W, H, now) {
 
 
 function setReady() {
-  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene1_ready', advanceToScene2));
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene1_ready', (_s) => {
+    playAllReadySound();
+    triggerReadyFlash();
+    advanceToScene2();
+  }));
 }
 
 function setReady2() {
-  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene2_ready', () => {
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene2_ready', (_s) => {
     playAllReadySound();
     triggerReadyFlash();
     advanceToNextScene();
   }));
 }
 
-function advanceToScene2() {
+// ── Advance lock — atomic transaction prevents multiple tabs from double-firing ──
+// Returns true if this tab claimed the advance; false if another tab beat us.
+async function claimAdvance() {
+  let claimed = false;
+  await ROOT.child('session/advanceLock').transaction(cur => {
+    if (cur) return undefined; // already claimed — abort transaction
+    claimed = true;
+    return Date.now();         // set a non-null value to claim
+  });
+  return claimed;
+}
+
+async function advanceToScene2() {
+  if (!(await claimAdvance())) return; // another tab is handling this
   showTransition(2, () => {
     const ps = fbState.players || {};
-    const upd = { readiness:null, 'session/currentScene':2, 'session/phase':'scene_intro', 'narration/text':null, 'narration/verdict':null, 'narration/scene':null };
+    const upd = {
+      'session/advanceLock': null,   // release lock
+      readiness: null,
+      'session/currentScene': 2,
+      'session/phase': 'scene_intro',
+      'narration/text': null, 'narration/verdict': null, 'narration/scene': null,
+    };
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
@@ -3229,39 +3341,43 @@ function advanceToScene2() {
   });
 }
 
-function setContinue() {
-  // First continue: go to system_verdict screen — apply HP changes here
-  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', () => {
+async function setContinue() {
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', async (s) => {
+    if (!(await claimAdvance())) return;
     playAllReadySound();
     triggerReadyFlash();
-    // Apply pending HP/gold changes now that everyone has read the narrative
-    const pending = fbState.narration?.pendingHp || {};
-    const upd = { 'session/phase': 'system_verdict', readiness: null, 'narration/pendingHp': null };
+    const pending = s.narration?.pendingHp || {};   // fresh snap — not fbState
+    const upd = {
+      'session/advanceLock': null,
+      'session/phase': 'system_verdict',
+      readiness: null,
+      'narration/pendingHp': null,
+    };
     Object.assign(upd, pending);
     ROOT.update(upd);
   }));
 }
 
-function setVerdictContinue() {
-  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('system_verdict', () => {
+async function setVerdictContinue() {
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('system_verdict', async (s) => {
+    if (!(await claimAdvance())) return;
     playAllReadySound();
     triggerReadyFlash();
 
-    if (fbState.combat?.continues) {
-      // Reset for next combat round
-      const ps = fbState.players || {};
-      const nextRound = (fbState.combat?.round || 1) + 1;
+    // Use fresh snap — not fbState — to check combat state
+    if (s.combat?.continues) {
+      const ps = s.players || {};
+      const nextRound = (s.combat?.round || 1) + 1;
+      const curScene  = s.session?.currentScene;
       const upd = {
+        'session/advanceLock': null,
         readiness: null,
-        'narration/text':    null,
-        'narration/verdict': null,
-        'narration/pendingHp': null,
-        'combat/continues':  null,
-        'combat/round':      nextRound,
-        'session/phase':     'choosing',
+        'narration/text': null, 'narration/verdict': null, 'narration/pendingHp': null,
+        'combat/continues': null,
+        'combat/round': nextRound,
+        'session/phase': 'choosing',
       };
-      // Clear lock so narration can fire again
-      upd[`narrationLock/scene${fbState.session?.currentScene}`] = null;
+      upd[`narrationLock/scene${curScene}`] = null;
       Object.keys(ps).forEach(id => {
         upd[`players/${id}/choice`] = null;
         upd[`players/${id}/choiceId`] = null;
@@ -3269,17 +3385,18 @@ function setVerdictContinue() {
       });
       ROOT.update(upd);
     } else {
-      advanceToNextScene();
+      await advanceToNextScene(true); // lock already held — skip re-claim
     }
   }));
 }
 
-function advanceToNextScene() {
+async function advanceToNextScene(lockAlreadyHeld = false) {
+  if (!lockAlreadyHeld && !(await claimAdvance())) return; // another tab is handling this
   const cur  = fbState.session?.currentScene || 2;
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
@@ -3288,6 +3405,7 @@ function advanceToNextScene() {
     });
     if (SCENES[next]) {
       upd['session/currentScene'] = next;
+      upd['session/advanceLock']  = null;   // release lock
       upd['session/phase'] = (SCENES[next].type === 'intro' || SCENES[next].type === 'victory') ? 'scene_intro' : 'choosing';
       // Luna reunion — add her to Melissa's inventory at Scene 9
       if (next === 9) {
@@ -3315,6 +3433,7 @@ function advanceToNextScene() {
         upd['combat/history']    = null;
       }
     } else {
+      upd['session/advanceLock'] = null;
       upd['session/phase'] = 'victory_end';
     }
     ROOT.update(upd);
@@ -3327,7 +3446,7 @@ function checkAllReady(requiredPhase, callback) {
     if (s.session?.phase !== requiredPhase) return;
     const ps  = s.players || {};
     const rdy = s.readiness || {};
-    if (Object.keys(ps).every(id => rdy[id])) callback();
+    if (Object.keys(ps).every(id => rdy[id])) callback(s); // pass fresh snap to callback
   });
 }
 
@@ -3445,7 +3564,7 @@ function gmReset() {
   if (!confirm('Reset entire session? All players return to archetype selection.')) return;
   const resetToken = 'r_' + Math.random().toString(36).substr(2,9);
   ROOT.remove().then(() => {
-    ROOT.set({ session: { active:false, phase:'archetype_selection', resetToken } });
+    ROOT.set({ session: { active:false, phase:'archetype_selection', resetToken, advanceLock: null } });
   });
 }
 
