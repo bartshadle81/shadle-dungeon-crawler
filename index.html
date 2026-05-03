@@ -1336,6 +1336,10 @@ function render() {
     renderArchSelection();
   } else if (phase === 'game_over') {
     renderGameOver();
+  } else if (phase === 'victory_end') {
+    renderVictoryEnd();
+  } else if (phase === 'floor_collapse') {
+    renderFloorCollapse();
   } else {
     renderSceneScreen(phase);
   }
@@ -1454,6 +1458,171 @@ function renderGameOver() {
 
   // Typewriter on verdict if generating just finished
   if (verdict) triggerVerdictTypewrite({ verdict, scene: narr.scene, timestamp: narr.timestamp || 0 });
+}
+
+// ═══════════════════════════════════════════════════════
+//  COLLAPSE TIMER
+// ═══════════════════════════════════════════════════════
+function getCollapseMs() {
+  const paused   = fbState.session?.collapsePaused;
+  if (paused) return Math.max(0, fbState.session?.collapseRemaining || 0);
+  const deadline = fbState.session?.collapseDeadline || 0;
+  return Math.max(0, deadline - Date.now());
+}
+
+function fmtCollapse(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+let collapseTick = null;
+function manageCollapseTick(phase) {
+  const hasTimer = !!(fbState.session?.collapseDeadline || fbState.session?.collapseRemaining);
+  const active   = phase === 'victory_end' && hasTimer && !fbState.session?.collapsePaused;
+
+  if (active && !collapseTick) {
+    collapseTick = setInterval(() => {
+      const ms = getCollapseMs();
+      // Update just the timer display without full re-render
+      const el = document.getElementById('collapseTimer');
+      if (el) {
+        const color = ms < 60000 ? '#cc3333' : ms < 120000 ? '#cc8030' : 'var(--sys)';
+        el.style.color = color;
+        el.textContent = fmtCollapse(ms);
+      }
+      // Fire floor_collapse when timer hits 0
+      if (ms <= 0 && isGM) {
+        clearInterval(collapseTick); collapseTick = null;
+        ROOT.update({ 'session/phase': 'floor_collapse', 'session/collapseDeadline': null });
+      }
+    }, 1000);
+  } else if (!active && collapseTick) {
+    clearInterval(collapseTick);
+    collapseTick = null;
+  }
+}
+
+function gmPauseCollapse() {
+  const ms = getCollapseMs();
+  ROOT.update({ 'session/collapsePaused': true, 'session/collapseRemaining': ms });
+}
+
+function gmResumeCollapse() {
+  const remaining = fbState.session?.collapseRemaining || 0;
+  ROOT.update({
+    'session/collapseDeadline': Date.now() + remaining,
+    'session/collapsePaused':   null,
+    'session/collapseRemaining': null,
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  VICTORY END SCREEN
+// ═══════════════════════════════════════════════════════
+function renderVictoryEnd() {
+  const narr    = fbState.narration || {};
+  const players = fbState.players   || {};
+  const ms      = getCollapseMs();
+  const paused  = fbState.session?.collapsePaused;
+  const timerColor = ms < 60000 ? '#cc3333' : ms < 120000 ? '#cc8030' : 'var(--sys)';
+
+  // Party final stats strip
+  const statsStrip = Object.values(players).map(p =>
+    `<div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+      <span style="color:var(--gold)">${esc(p.name)}</span>
+      <span>HP ${p.hp}/${p.maxHp} · ${p.gold}g</span>
+    </div>`
+  ).join('');
+
+  // Collapse timer block
+  const timerBlock = `
+    <div style="margin:28px 0;padding:18px 24px;border:1px solid rgba(180,40,40,0.4);border-radius:2px;background:rgba(60,0,0,0.3);text-align:center;">
+      <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);letter-spacing:0.1em;margin-bottom:8px;">FLOOR 1 — STRUCTURAL INTEGRITY: DECOMMISSIONING</div>
+      <div id="collapseTimer" style="font-family:var(--f-disp);font-size:3.5rem;font-weight:900;letter-spacing:0.05em;color:${timerColor};text-shadow:0 0 30px rgba(200,60,40,0.5);">${fmtCollapse(ms)}</div>
+      <div style="font-family:var(--f-mono);font-size:0.7rem;color:var(--parch-d);margin-top:6px;">Floor 2 is the only exit. THE SYSTEM notes the stairs are open.</div>
+      ${paused ? `<div style="font-family:var(--f-mono);font-size:0.72rem;color:#cc8030;margin-top:8px;">⏸ TIMER PAUSED BY GM</div>` : ''}
+    </div>`;
+
+  // Floor 2 teaser
+  const teaser = `
+    <div style="margin-top:20px;padding:16px 20px;border-left:2px solid var(--border-a);background:rgba(0,0,0,0.2);">
+      <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--sys);margin-bottom:10px;letter-spacing:0.08em;">FLOOR 2 — PRELIMINARY ASSESSMENT</div>
+      <div style="font-family:var(--f-mono);font-size:0.8rem;color:var(--parch-d);line-height:2;">
+        Carl cleared Floor 1 forty minutes ago. His last logged position: Floor 2, Room 3.<br>
+        THE SYSTEM has no further data on Carl.<br>
+        THE SYSTEM notes this is a different kind of silence than its usual silences.<br>
+        <br>
+        The stairs smell different from Floor 1. Not worse, necessarily.<br>
+        Just different. Like something that doesn't make noise on purpose.<br>
+        <br>
+        <span style="color:var(--gold);font-style:italic;">Floor 2 is not ready for them either.</span>
+      </div>
+    </div>`;
+
+  // GM controls
+  const gmControls = isGM ? `
+    <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;">
+      ${paused
+        ? `<button class="btn btn-sm btn-primary" onclick="gmResumeCollapse()">▶ Resume Timer</button>`
+        : `<button class="btn btn-sm" onclick="gmPauseCollapse()">⏸ Pause Timer</button>`}
+      <button class="btn btn-sm btn-danger" onclick="gmReset()">Reset Session</button>
+    </div>` : '';
+
+  APP.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:36px 24px 60px;background:radial-gradient(ellipse at 50% 0%, #0d1a0d 0%, #050a05 100%);">
+    <div style="width:100%;max-width:680px;">
+
+      <div style="font-family:var(--f-disp);font-size:2rem;font-weight:900;color:var(--gold-b);letter-spacing:0.1em;text-align:center;margin-bottom:4px;text-shadow:0 0 40px rgba(255,210,80,0.5);">⚔ FLOOR 1 CLEARED ⚔</div>
+      <div style="font-family:var(--f-mono);font-size:0.78rem;color:var(--parch-d);text-align:center;letter-spacing:0.1em;margin-bottom:28px;">The Goblin Antechamber — Cleared</div>
+
+      ${narr.verdict
+        ? `<div class="narr-box" id="verdictBox11" style="border-color:var(--gold-d);margin-bottom:20px;">
+             <div class="narr-text" id="verdictText11">${esc(narr.verdict)}</div>
+           </div>`
+        : `<div class="narr-box" style="margin-bottom:20px;"><div class="narr-loading">⟳ THE SYSTEM is filing the report...</div></div>`}
+
+      <div style="margin-bottom:20px;padding:12px 16px;background:rgba(0,0,0,0.25);border:1px solid var(--border-a);border-radius:2px;">
+        <div style="font-family:var(--f-mono);font-size:0.68rem;color:var(--parch-d);letter-spacing:0.1em;margin-bottom:8px;">RUN SUMMARY — OFFICIAL RECORD</div>
+        ${statsStrip}
+      </div>
+
+      ${timerBlock}
+      ${teaser}
+      ${gmControls}
+    </div>
+  </div>`;
+
+  manageCollapseTick('victory_end');
+
+  // Trigger verdict typewriter once
+  if (narr.verdict) {
+    triggerVerdictTypewrite({ verdict: narr.verdict, scene: 11, timestamp: narr.timestamp || 0 });
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  FLOOR COLLAPSE SCREEN
+// ═══════════════════════════════════════════════════════
+function renderFloorCollapse() {
+  APP.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:#000;">
+    <div style="width:100%;max-width:600px;text-align:center;">
+      <div style="font-family:var(--f-disp);font-size:1.1rem;color:#cc3333;letter-spacing:0.15em;margin-bottom:24px;text-shadow:0 0 20px rgba(200,40,40,0.6);">FLOOR 1 — DECOMMISSIONED</div>
+      <div style="font-family:var(--f-mono);font-size:0.82rem;color:var(--parch-d);line-height:2.2;margin-bottom:32px;">
+        Structural integrity: 0%<br>
+        Status: archived<br>
+        Contestants logged: 1 party<br>
+        Casualties: Krag the Warchief (noted)<br>
+        Bear: [REDACTED]<br>
+        <br>
+        <span style="color:var(--sys);">THE SYSTEM is preparing Floor 2.</span><br>
+        <span style="color:var(--parch-d);font-size:0.72rem;">THE SYSTEM recommends the party not think too hard about what "preparing" means in this context.</span>
+      </div>
+      <div style="font-family:var(--f-disp);font-size:1.4rem;color:var(--gold);letter-spacing:0.05em;margin-bottom:8px;">Floor 2</div>
+      <div style="font-family:var(--f-mono);font-size:0.78rem;color:var(--parch-d);margin-bottom:28px;">Coming soon. THE SYSTEM is ready. THE SYSTEM is always ready.</div>
+      ${isGM ? `<button class="btn btn-sm btn-danger" onclick="gmReset()" style="margin-top:12px;">Reset Session</button>` : ''}
+    </div>
+  </div>`;
 }
 
 function setName() {
@@ -1599,72 +1768,81 @@ async function fireScene11Narration() {
     `- ${p.name} (${p.title||p.archetype}, HP: ${p.hp}/${p.maxHp}, Gold: ${p.gold}g)${p.status==='downed' ? ' [DOWNED]' : ''}`
   ).join('\n');
 
-  // Check if anyone survived downed
   const survivors = Object.values(players).filter(p => p.status === 'active');
-  const downerNames = Object.values(players).filter(p => p.status === 'downed').map(p => p.name);
-
-  // Gold reward for clearing Floor 1 — bonus for each active survivor
   const floorClearGold = 30 + Math.floor(Math.random() * 20);
   const goldUpd = {};
   Object.entries(players).forEach(([id, p]) => {
     if (p.status === 'active') goldUpd[`players/${id}/gold`] = (p.gold||0) + floorClearGold;
   });
 
+  // Collapse timer — 5 minutes from floor clear
+  const COLLAPSE_MS = 5 * 60 * 1000;
+
   const prompt = `SCENE 11: FLOOR CLEARED
 
 The Goblin Antechamber — Floor 1 — is cleared.
 
-Krag the Warchief is on the floor. He never finished his speech. He got three sentences in before the party interrupted him. This bothered him throughout the entire fight. It bothers him now.
+Krag the Warchief is on the floor. He never finished his speech. He got three sentences in before the party interrupted him. He had something genuinely menacing to say. The dungeon will never know what it was. This has bothered Krag for the eleven seconds he has been on the floor.
 
 THE PARTY (current state):
 ${party}
-- Bear (Contestant 4-Delta): present, calm, watching the new door
-- Luna: sitting next to Melissa, wearing a Goblin Hardhat that is three sizes too big, tilted sideways. There is a half-eaten Mystery Sack nearby. She looks enormously pleased with herself.
+- Bear: present. Sitting at the top of the stairs to Floor 2. Not beside Melissa — at the top. Looking down at the family. He was there before the door finished opening. THE SYSTEM logged the timestamp discrepancy and has reclassified Bear from Contestant 4-Delta to [REDACTED]. THE SYSTEM will not be elaborating.
+- Luna: wearing the Goblin Hardhat, three sizes too big, tilted sideways over one eye. There is a half-eaten Mystery Sack nearby. She is sitting next to Melissa and looks enormously pleased with herself. THE SYSTEM still does not know how she acquired the hardhat. THE SYSTEM is choosing to move on.
 
-Gerald (if he survived Scene 4 and the dungeon): is here. He just did something small but unexpectedly useful during the Krag fight — something that turned a moment, accidentally, in a Gerald way. He is now standing slightly to one side looking surprised by himself. His dungeon name is Gorgath the Undying. The dungeon name has not been entirely ironic.
+Gerald (if he survived): is here. He just did something small but unexpectedly useful during the Krag fight — accidental, non-heroic, a Gerald thing. He is standing slightly to one side looking surprised by himself. Gorgath the Undying. The name has not been entirely ironic.
 
 WHAT HAPPENS:
-1. The Syndicate acknowledgment chime plays through the dungeon PA — the official tone that signals a floor has been cleared. It sounds exactly like the sound a vending machine makes when your item successfully drops.
-2. A door at the far end of the throne room opens. It was not there before. Stairs descend to Floor 2.
-3. THE SYSTEM acknowledges the clear with a leaderboard update: the Shadles are not last. Somewhere on the other side of the world, Carl and his cat cleared Floor 1 about forty minutes ago. The Shadles are "not last." THE SYSTEM considers this generous information.
-4. Luna is wearing the Goblin Hardhat. THE SYSTEM logs this. THE SYSTEM is unclear how she acquired it.
-5. Bear looks at the new door to Floor 2. Then he looks at Melissa. He does not move toward the door.
+1. The room goes quiet. Genuinely quiet. The kind of quiet that hasn't happened on Floor 1 since before the first contestant.
+2. The Syndicate acknowledgment chime plays — the official tone that signals a floor has been cleared. It sounds exactly like the sound a vending machine makes when your item successfully drops.
+3. The door at the far end opens. Stairs descend to Floor 2.
+4. Carl cleared Floor 1 about forty minutes ago. His last logged position was Floor 2, Room 3. THE SYSTEM has no further data on Carl. THE SYSTEM notes this is a different kind of "no comment" than its usual no comments.
+5. THE SYSTEM announces that Floor 1 structural integrity will begin decommissioning in 5 minutes per standard Syndicate post-clear protocol. Going back up is no longer an option. The stairs are the only exit.
 
-WRITE:
-2 paragraphs of narrative — the room going quiet, Krag on the floor, the chime, Luna and the hardhat, Gerald's moment landing, Bear at the door. The family standing at the stairs.
+WRITE THREE PARAGRAPHS:
 
-Then the ---SYSTEM--- section: THE SYSTEM's final verdict on Floor 1. Personal. Specific to each family member. Acknowledge the run — what they did well, what barely worked, what THE SYSTEM is not going to comment on (Bear). 
+PARAGRAPH 1 — The silence after. The room. Krag on the floor, mid-speech. What it cost them to get here. The specific weight of a dungeon going quiet. No jokes yet. Let it breathe.
 
-Include: "FLOOR CLEARED: Floor 1 — The Goblin Antechamber."
-Include: "FLOOR BONUS: Each survivor receives ${floorClearGold}g from the Syndicate clearance reward."
-Include: "LEADERBOARD UPDATE: The Shadles are not last. THE SYSTEM finds this worth mentioning."
-Include ONE achievement — the family earned it. Make it specific to something they actually did.
-End with THE SYSTEM's one-line assessment of whether they go down to Floor 2. It should sound like a recommendation from something that doesn't recommend things.
+PARAGRAPH 2 — The comedy landing. The chime. Luna's hardhat. Gerald's moment. Bear's position at the top of the stairs — the timestamp problem, the fact that he was there before the door opened. Write Bear as both funny and genuinely unsettling. Then the Syndicate announcement: Floor 1 decommissioning in 5 minutes. The only way out is down.
 
-TONE: This is the ending of something. Let it breathe. The humor is earned. The dungeon was real.`;
+PARAGRAPH 3 — Short. Just the stairs. What it means that they're standing at the top of them. The dungeon ahead. Carl is somewhere down there and has gone quiet. The door is open. Bear is already waiting.
+
+---SYSTEM---
+
+THE SYSTEM VERDICT — this one is different from every other verdict. This is the end of something. The accounting is real but the tone is almost respect:
+
+- FLOOR CLEARED: Floor 1 — The Goblin Antechamber. [timestamp this run].
+- FLOOR BONUS: Each survivor receives ${floorClearGold}g.
+- LEADERBOARD: The Shadles are not last. Carl was first. Carl has gone quiet. THE SYSTEM finds this worth mentioning.
+- One line per family member — personal, specific to their run. What THE SYSTEM actually noticed about each of them. Not flattery. Observation.
+- Bear: one line. Bear has been reclassified [REDACTED]. THE SYSTEM will not be elaborating. This is a different kind of "no comment."
+- ONE achievement — earned, specific, something they actually did.
+- Final line from THE SYSTEM: the collapse timer has started. Floor 2 is the only exit. It should sound like a recommendation from something that doesn't recommend things. End with: "Floor 2 is not ready for them either."
+
+TONE: Earned. The humor is real now. So is the weight. The dungeon respected them enough to actually try to kill them.`;
 
   try {
     const raw = await callClaude(prompt);
-    const sepIdx = raw.indexOf('---SYSTEM---');
+    const sepIdx  = raw.indexOf('---SYSTEM---');
     const narrative = sepIdx > -1 ? raw.substring(0, sepIdx).trim() : raw.trim();
     const verdict   = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : '';
 
-    // Apply floor clear gold bonus
     const updatePayload = {
-      'narration/text':       narrative,
-      'narration/verdict':    verdict,
-      'narration/scene':      11,
-      'narration/timestamp':  Date.now(),
-      'narration/generating': false,
-      'session/phase':        'scene_complete',
+      'narration/text':            narrative,
+      'narration/verdict':         verdict,
+      'narration/scene':           11,
+      'narration/timestamp':       Date.now(),
+      'narration/generating':      false,
+      'session/phase':             'scene_complete',
+      'session/collapseDeadline':  null,  // set when player hits Continue to system_verdict
+      'session/collapseArmed':     true,  // flag so we know to arm the timer on Continue
       ...goldUpd,
     };
     ROOT.update(updatePayload);
   } catch(e) {
     ROOT.update({
-      'narration/text': `THE SYSTEM acknowledges the floor is cleared.\n\n[API Error: ${e.message}]\nUse GM panel to continue.`,
+      'narration/text':       `THE SYSTEM acknowledges the floor is cleared.\n\n[API Error: ${e.message}]\nUse GM panel to continue.`,
       'narration/generating': false,
-      'session/phase': 'scene_complete',
+      'session/phase':        'scene_complete',
     });
   }
 }
@@ -1695,6 +1873,7 @@ function renderSceneScreen(phase) {
 
   manageTaunts(phase, players);
   manageRiddleTick(phase, me);
+  manageCollapseTick(phase); // stops tick if not on victory_end
 
   // Auto-submit downed players during choosing — they can't choose, so submit on their behalf
   if (phase === 'choosing' && me?.status === 'downed' && !me?.choiceSubmitted) {
@@ -1894,14 +2073,6 @@ function buildPlayerPanel(phase, me, scData, players) {
       ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
       : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">${combatCont ? 'Fight On →' : scene11 ? 'Into Floor 2 →' : 'Continue'}</button></div>`;
 
-  } else if (phase === 'victory_end') {
-    const me2 = players[myId];
-    action = `<div style="text-align:center;padding:28px 18px;">
-      <div style="font-family:var(--f-disp);color:var(--gold-b);font-size:1.5rem;letter-spacing:0.08em;margin-bottom:10px;text-shadow:0 0 30px rgba(255,210,80,0.6);">⚔ FLOOR 1 COMPLETE ⚔</div>
-      <div class="sys-voice" style="font-size:0.82rem;line-height:2;margin-bottom:20px;">THE SYSTEM has logged this run.<br>Survival: confirmed.<br>Floor 2 awaits.<br>THE SYSTEM recommends rest first.<br>THE SYSTEM does not expect you to rest.</div>
-      ${me2 ? `<div style="font-family:var(--f-mono);font-size:0.78rem;color:var(--parch-d);margin-bottom:16px;">Final gold: ${me2.gold}g · HP: ${me2.hp}/${me2.maxHp}</div>` : ''}
-      <button class="btn btn-sm" onclick="window.location.reload()">Return to Surface</button>
-    </div>`;
   } else if (phase === 'demo_end') {
     action = `<div style="text-align:center;padding:22px;font-family:var(--f-mono);color:var(--sys-d);">
       <div style="font-family:var(--f-disp);color:var(--gold);font-size:1.05rem;margin-bottom:10px;">⚔ End of Session ⚔</div>
@@ -3797,6 +3968,13 @@ async function setVerdictContinue() {
       });
       ROOT.update(upd);
     } else {
+      // Arm the collapse timer when leaving scene 11's system_verdict
+      if (s.session?.collapseArmed && !s.session?.collapseDeadline) {
+        await ROOT.update({
+          'session/collapseDeadline': Date.now() + 5 * 60 * 1000,
+          'session/collapseArmed':    null,
+        });
+      }
       await advanceToNextScene(true); // lock already held — skip re-claim
     }
   }));
@@ -3983,6 +4161,11 @@ function renderGMPanel() {
       : `<input id="gmKeyIn" type="password" placeholder="Paste Anthropic API key..." style="font-family:var(--f-mono);font-size:0.7rem;padding:5px 8px;background:var(--bg-card);border:1px solid var(--red);color:var(--parch);border-radius:2px;width:220px;">
          <button class="btn btn-sm btn-primary" onclick="gmSaveKey()">Set Key</button>`
     }
+    ${fbState.session?.collapseDeadline || fbState.session?.collapseRemaining
+      ? fbState.session?.collapsePaused
+        ? `<span class="gm-sep">|</span><button class="btn btn-sm btn-primary" onclick="gmResumeCollapse()">▶ Resume Timer</button><span style="font-size:0.7rem;color:#cc8030;margin-left:4px;">⏸ ${fmtCollapse(getCollapseMs())} left</span>`
+        : `<span class="gm-sep">|</span><button class="btn btn-sm" onclick="gmPauseCollapse()">⏸ Pause Timer</button><span style="font-size:0.7rem;color:var(--sys);margin-left:4px;">${fmtCollapse(getCollapseMs())} left</span>`
+      : ''}
     <span class="gm-stat">Phase: ${phase} | Scene: ${scene} | Players: ${pcnt}/4</span>`;
 }
 
@@ -3990,7 +4173,7 @@ function gmReset() {
   if (!confirm('Reset entire session? All players return to archetype selection.')) return;
   const resetToken = 'r_' + Math.random().toString(36).substr(2,9);
   ROOT.remove().then(() => {
-    ROOT.set({ session: { active:false, phase:'archetype_selection', resetToken, advanceLock: null } });
+    ROOT.set({ session: { active:false, phase:'archetype_selection', resetToken, advanceLock: null, collapseDeadline: null, collapsePaused: null, collapseRemaining: null, collapseArmed: null } });
   });
 }
 
