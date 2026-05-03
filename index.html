@@ -1332,6 +1332,8 @@ function render() {
 
   if (!fbState.session || phase === 'archetype_selection') {
     renderArchSelection();
+  } else if (phase === 'game_over') {
+    renderGameOver();
   } else {
     renderSceneScreen(phase);
   }
@@ -1417,6 +1419,39 @@ function renderArchSelection() {
   </div>`;
 
   if (!myName) setTimeout(() => document.getElementById('nameIn')?.focus(), 40);
+}
+
+function renderGameOver() {
+  const narr   = fbState.narration || {};
+  const verdict = narr.verdict || '';
+
+  const narrativeBox = narr.generating
+    ? `<div class="narr-box" style="border-color:rgba(180,30,30,0.4);margin-bottom:24px;"><div class="narr-loading" style="color:var(--red-b);">⟳ THE SYSTEM is calculating your failure...</div></div>`
+    : narr.text
+      ? `<div class="narr-box" style="border-color:rgba(180,30,30,0.4);margin-bottom:24px;">
+           <div class="narr-text" style="font-family:var(--f-body);font-size:1.05rem;color:var(--parch);line-height:1.75;">${esc(narr.text)}</div>
+         </div>`
+      : `<div class="narr-box" style="border-color:rgba(180,30,30,0.4);margin-bottom:24px;"><div class="narr-loading" style="color:var(--red-b);">⟳ THE SYSTEM is calculating your failure...</div></div>`;
+
+  APP.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:40px 24px;background:radial-gradient(ellipse at center, #1a0505 0%, #0a0000 100%);">
+    <div style="font-family:var(--f-disp);font-size:3rem;font-weight:900;color:#cc2222;letter-spacing:0.15em;text-shadow:0 0 60px rgba(200,30,30,0.7),0 0 120px rgba(180,20,20,0.3);margin-bottom:8px;">GAME OVER</div>
+    <div style="font-family:var(--f-mono);font-size:0.8rem;color:var(--parch-d);letter-spacing:0.12em;margin-bottom:36px;">Floor 1 — The Goblin Antechamber</div>
+    <div style="width:100%;max-width:720px;">
+      ${narrativeBox}
+      ${verdict ? `
+        <div style="font-family:var(--f-disp);font-size:1.2rem;font-weight:700;color:#cc2222;letter-spacing:0.05em;margin-bottom:14px;text-shadow:0 0 20px rgba(200,30,30,0.4);">— THE SYSTEM —</div>
+        <div class="narr-box" id="gameOverVerdict" style="border-color:rgba(180,30,30,0.4);">
+          <div class="narr-text" id="gameOverText">${esc(verdict)}</div>
+        </div>` : ''}
+      ${isGM ? `<div style="margin-top:32px;text-align:center;">
+        <button class="btn btn-danger" onclick="gmReset()" style="font-size:1rem;padding:12px 28px;">Reset Session</button>
+        <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);margin-top:10px;">THE SYSTEM recommends a debrief.</div>
+      </div>` : `<div style="margin-top:32px;text-align:center;font-family:var(--f-mono);font-size:0.78rem;color:var(--parch-d);">Waiting for GM to reset the session.</div>`}
+    </div>
+  </div>`;
+
+  // Typewriter on verdict if generating just finished
+  if (verdict) triggerVerdictTypewrite({ verdict, scene: narr.scene, timestamp: narr.timestamp || 0 });
 }
 
 function setName() {
@@ -1659,6 +1694,15 @@ function renderSceneScreen(phase) {
   manageTaunts(phase, players);
   manageRiddleTick(phase, me);
 
+  // Auto-submit downed players during choosing — they can't choose, so submit on their behalf
+  if (phase === 'choosing' && me?.status === 'downed' && !me?.choiceSubmitted) {
+    ROOT.update({
+      [`players/${myId}/choice`]:          'unconscious — being carried',
+      [`players/${myId}/choiceId`]:        'downed_carried',
+      [`players/${myId}/choiceSubmitted`]: true,
+    }).then(() => checkAllSubmitted());
+  }
+
   // Narrative: fade in (no typewriter)
   if (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready') {
     const el = document.getElementById('narrText');
@@ -1900,20 +1944,40 @@ function buildCharSheet(p) {
 }
 
 function buildDownedPanel(me) {
+  const phase = fbState.session?.phase || '';
   const msgs = [
-    'THE SYSTEM regrets to inform you that you are dead. THE SYSTEM does not actually regret this.',
-    'You are currently horizontal. This is suboptimal.',
-    'On the bright side, the dungeon floor knows you personally now.',
-    'HP: 0. Dignity: also 0. THE SYSTEM rates this: expected.',
+    'THE SYSTEM notes you are horizontal. This was not a strategic decision.',
+    'You are unconscious. The party is arguing about who has to carry you.',
+    'HP: 0. You can hear everything. You are choosing not to respond.',
+    'THE SYSTEM rates your current contribution: negligible. Still better than Carl\'s first run.',
   ];
   const msg = msgs[Math.floor(Date.now() / 30000) % msgs.length];
+
+  // Phase-aware action
+  let action = '';
+  if (phase === 'scene_complete') {
+    const ready = (fbState.readiness||{})[myId];
+    action = ready
+      ? `<div class="state-msg" style="margin-top:14px;">✓ Ready<div class="sub">Waiting for the party to drag you forward...</div></div>`
+      : `<div style="margin-top:14px;"><button class="btn btn-primary" style="width:100%;opacity:0.85;" onclick="setContinue()">Continue (you are being carried)</button></div>`;
+  } else if (phase === 'system_verdict') {
+    const ready = (fbState.readiness||{})[myId];
+    action = ready
+      ? `<div class="state-msg" style="margin-top:14px;">✓ Ready<div class="sub">Still horizontal.</div></div>`
+      : `<div style="margin-top:14px;"><button class="btn btn-primary" style="width:100%;opacity:0.85;" onclick="setVerdictContinue()">Continue (you are still being carried)</button></div>`;
+  } else if (phase === 'choosing') {
+    // Auto-submit fires from renderSceneScreen — show waiting state
+    action = `<div class="state-msg dim" style="margin-top:14px;">⟳ Being carried...<div class="sub">Your choice has been made for you.</div></div>`;
+  }
+
   return `${buildCharSheet(me)}
     <div class="downed-box">
-      <div class="downed-title">☠ DOWNED ☠</div>
+      <div class="downed-title">☠ UNCONSCIOUS ☠</div>
       <div class="sys-voice" style="font-size:0.82rem">${msg}</div>
-      <div style="margin-top:14px;font-size:0.8rem;color:var(--parch-d)">
-        Awaiting revival: Cleric's Lay on Hands · Holy Water · Party luck
+      <div style="margin-top:10px;font-size:0.78rem;color:var(--parch-d);font-family:var(--f-mono);">
+        The party is carrying you. A Health Potion will revive you.<br>Mags can patch you up at the rest stop.
       </div>
+      ${action}
     </div>`;
 }
 
@@ -2108,8 +2172,10 @@ const USABLE_ITEMS = [
 function getItemChoices(inventory) {
   if (!inventory || !inventory.length) return [];
   const choices = [];
+  const downdPlayers = Object.entries(fbState.players || {})
+    .filter(([id, p]) => p.status === 'downed' && id !== myId);
+
   USABLE_ITEMS.forEach(item => {
-    // Find matching inventory entry (handles "×2" etc)
     const invEntry = inventory.find(i => i.startsWith(item.match));
     if (!invEntry) return;
     choices.push({
@@ -2121,6 +2187,22 @@ function getItemChoices(inventory) {
       itemAmount: item.amount,
       consumable: item.consumable,
     });
+    // Health Potion / Bandage can be used to revive a downed player
+    if ((item.match === 'Health Potion' || item.match === 'Bandage') && downdPlayers.length > 0) {
+      downdPlayers.forEach(([id, p]) => {
+        const reviveHp = item.match === 'Health Potion' ? 25 : 12;
+        choices.push({
+          id:          `revive_${id}`,
+          icon:        item.icon,
+          text:        `Use ${item.match} on ${p.name} — revive them (${reviveHp} HP)`,
+          usesItem:    item.match,
+          itemEffect:  'revive_other',
+          itemAmount:  reviveHp,
+          consumable:  true,
+          reviveTarget: id,
+        });
+      });
+    }
   });
   return choices;
 }
@@ -2133,6 +2215,12 @@ function applyItemEffect(item, playerId, players) {
   if (effect === 'heal_self') {
     const p = players[playerId];
     if (p) deltas[playerId] = Math.min(p.maxHp - p.hp, amount);
+  } else if (effect === 'revive_other') {
+    // Extract target from choiceId: 'revive_PLAYERID'
+    const targetId = players[playerId]?.choiceId?.replace('revive_', '');
+    if (targetId && players[targetId]) {
+      deltas[targetId] = amount; // full amount — they're at 0 HP
+    }
   } else if (effect === 'heal_party') {
     Object.keys(players).forEach(id => {
       if (players[id].status === 'active') {
@@ -2576,7 +2664,7 @@ REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIR
       if (d > 0) return `${p.name} heals ${d} HP (HP: ${current} → ${newHp})`;
       return null;
     }).filter(Boolean);
-    if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING (narrate these exactly — do not invent different targets):\n${lines.join('\n')}`;
+    if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING — THESE NUMBERS ARE EXACT. Use them verbatim in the verdict. Do not invent, round, or change any HP value:\n${lines.join('\n')}`;
   }
 
   // Gold loot — calculated before Claude call so amounts match
@@ -2620,11 +2708,35 @@ REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIR
       }[item.effect] || '';
       return `${p.name} used ${item.match} — ${effectDesc}`;
     }).filter(Boolean);
+
+  // Revive-other items — special narration note
+  Object.values(players).forEach(p => {
+    if (p.choiceId?.startsWith('revive_')) {
+      const targetId  = p.choiceId.replace('revive_', '');
+      const target    = players[targetId];
+      const itemMatch = p.choice?.includes('Bandage') ? 'Bandage' : 'Health Potion';
+      const reviveHp  = itemMatch === 'Bandage' ? 12 : 25;
+      if (target) itemUsages.push(`${p.name} used ${itemMatch} on ${target.name} — revives them at ${reviveHp} HP`);
+    }
+  });
+
   const itemSummary = itemUsages.length
     ? `\n\nITEMS USED THIS SCENE:\n${itemUsages.join('\n')}\nNarrate these item uses naturally. They happen alongside their other actions.`
     : '';
+
+  // Carrying burden — downed players are dead weight
+  const downedInFight = Object.values(players).filter(p => p.status === 'downed');
+  const carryingNote = downedInFight.length > 0
+    ? `\n\nCARRYING BURDEN: ${downedInFight.map(p=>p.name).join(', ')} ${downedInFight.length === 1 ? 'is' : 'are'} unconscious and being physically carried by the active party. This is a real tactical and physical burden — it limits mobility, divides attention, and makes everything harder. Factor this into the difficulty and tone. The party cannot achieve a GOOD outcome without their choices explicitly addressing how they're managing the dead weight.`
+    : '';
+  const revivedByMags = scData?.type === 'shop'
+    ? Object.values(players).filter(p => p.choiceId === 'mags_revived').map(p => p.name)
+    : [];
+  const magsReviveNote = revivedByMags.length > 0
+    ? ` ${revivedByMags.join(' and ')} ${revivedByMags.length === 1 ? 'was' : 'were'} unconscious when they arrived — Mags patched them up with minimal ceremony (15 HP). Reference this: it cost Mags supplies she'd rather have kept.`
+    : '';
   const shopNote = scData?.type === 'shop'
-    ? '\n\nThis is the merchant checkpoint scene. Each player either bought one item or passed. Reference what each person bought (or did not) and how they interacted with Mags. The rest alcove gives everyone a small HP recovery — work that in naturally. Gerald is in the corner if he survived.'
+    ? `\n\nThis is the merchant checkpoint scene. Each player either bought one item or passed. Reference what each person bought (or did not) and how they interacted with Mags. The rest alcove gives everyone a small HP recovery — work that in naturally. Gerald is in the corner if he survived.${magsReviveNote}`
     : '';
   const riddleNote = scData?.type === 'riddle'
     ? (() => {
@@ -2685,7 +2797,8 @@ In your narrative: name which players got their riddle right and which got it wr
         ? `⚔ COMBAT CONTINUES — enemies still at ${newEnemyHp}/${maxHp} HP. End your narrative mid-fight, with momentum. Do NOT resolve the combat.`
         : `✓ COMBAT ENDS.`;
     combatContext = `\n\nCOMBAT STATE (Round ${combatRound}):
-Enemy: ${scData.combatData.name} — HP: ${prevHp}/${maxHp} → ${newEnemyHp}/${maxHp} this round
+Enemy: ${scData.combatData.name} — HP going into this round: ${prevHp}/${maxHp}. After party damage: ${newEnemyHp}/${maxHp}.
+THESE HP VALUES ARE EXACT AND AUTHORITATIVE. Use them verbatim. Do not round, estimate, or use different numbers.
 ${statusLine}${phase2Flag}${historyText}`;
   }
 
@@ -2695,7 +2808,7 @@ ${scData?.desc || ''}
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}${freeformContext}${bearNote}${geraldNote}
+OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${carryingNote}${combatContext}${freeformContext}${bearNote}${geraldNote}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -2705,15 +2818,25 @@ Tell the story of what happened. Reference every player by name. Make their choi
 ---SYSTEM---
 
 SECTION 2 — THE SYSTEM VERDICT (3-6 lines, terminal voice):
-THE SYSTEM delivers its verdict. Use this format:
-- One line per player who took damage: "DAMAGE: [Name] — [amount] damage. HP: [new]/[max]."
+THE SYSTEM delivers its verdict. Use EXACTLY the HP numbers provided above — do not recalculate or approximate.
+- One line per player who took damage: "DAMAGE: [Name] — [amount] damage. HP: [new]/[max]." (use the exact values from ACTUAL DAMAGE/HEALING above)
 - One line if gold was found: "GOLD: Each survivor finds [amount]g."
 - One line if anyone is downed: "[Name] is down. THE SYSTEM notes this."
 - One optional achievement if truly earned: "NEW ACHIEVEMENT! [Title] — [one line]."
 - One final status line: dry, blunt, THE SYSTEM voice.
 If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 
-  // ── Write combat HP update NOW (before Claude call) — only when track is already known ──
+  // ── Game over detection — if all active players will hit 0 HP this round ──
+  const activePlayers = Object.entries(players).filter(([, p]) => p.status === 'active');
+  const allDownAfter = activePlayers.length > 0 && activePlayers.every(([id, p]) => {
+    const d = deltas[id] || 0;
+    return Math.max(0, (p.hp || 0) + d) <= 0;
+  });
+
+  if (allDownAfter) {
+    await fireGameOverNarration(state, scene, scData, players, deltas, track);
+    return;
+  }
   // When freeform choices are in play, Claude determines the track, so we skip this
   // and write combat HP after parsing Claude's response instead.
   if (scData?.combatData && newEnemyHp !== null && !hasFreeform) {
@@ -2767,30 +2890,30 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       }
     }
 
-    // Read fresh HP from Firebase to apply deltas against current values
-    const freshSnap = await ROOT.child('players').once('value');
-    const freshPlayers = freshSnap.val() || players;
-
     // Build pendingHp as { playerId: { hp, status?, gold? } } — no slashes in keys,
     // which Firebase rejects when storing as a document value (slashes only work in update() paths).
+    // IMPORTANT: use `players` (same state Claude narrated from), NOT a fresh Firebase snap.
+    // A fresh snap could have drifted, making the stored HP differ from what Claude described.
     const pendingHp = {};
     const goldLoot  = deltas.__goldLoot || 0;
 
     Object.entries(deltas).forEach(([id, d]) => {
       if (id === '__goldLoot') return;
-      const current = freshPlayers[id]?.hp ?? 0;
-      const maxHp   = freshPlayers[id]?.maxHp || current;
+      const current = players[id]?.hp ?? 0;
+      const maxHp   = players[id]?.maxHp || current;
       const newHp   = Math.min(maxHp, Math.max(0, current + d));
       if (!pendingHp[id]) pendingHp[id] = {};
       pendingHp[id].hp = newHp;
       if (newHp <= 0) pendingHp[id].status = 'downed';
+      // Revival: downed player gets healed above 0 — restore to active
+      if (newHp > 0 && players[id]?.status === 'downed') pendingHp[id].status = 'active';
     });
 
     if (goldLoot > 0) {
-      Object.keys(freshPlayers).forEach(id => {
-        if (freshPlayers[id]?.status === 'downed') return;
+      Object.keys(players).forEach(id => {
+        if (players[id]?.status === 'downed') return;
         if (!pendingHp[id]) pendingHp[id] = {};
-        pendingHp[id].gold = (freshPlayers[id].gold || 0) + goldLoot;
+        pendingHp[id].gold = (players[id].gold || 0) + goldLoot;
       });
     }
 
@@ -2815,8 +2938,79 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 }
 
 // ═══════════════════════════════════════════════════════
-//  SCENE TRANSITIONS
+//  GAME OVER NARRATION
 // ═══════════════════════════════════════════════════════
+async function fireGameOverNarration(state, scene, scData, players, deltas, track) {
+  if (!isGM) return;
+
+  // Release the narration lock so a GM reset doesn't leave it permanently set
+  await ROOT.child(`narrationLock/scene${scene}`).remove();
+
+  ROOT.update({ 'session/phase': 'narrating', 'narration/generating': true });
+
+  // Calculate final HP for each player
+  const finalHp = {};
+  Object.entries(players).forEach(([id, p]) => {
+    const d = deltas[id] || 0;
+    finalHp[id] = Math.max(0, (p.hp || 0) + d);
+  });
+
+  const partyLines = Object.values(players).map(p =>
+    `${p.name} (${p.title||p.archetype}) — final HP: ${finalHp[Object.keys(players).find(id=>players[id]===p)] ?? 0}/${p.maxHp}`
+  ).join('\n');
+
+  const prompt = `SCENE ${scene} — TOTAL PARTY KNOCKOUT
+
+The entire party has been reduced to 0 HP.
+
+THE PARTY (last known state):
+${partyLines}
+
+Scene context: ${scData?.desc?.substring(0, 200) || scData?.name || ''}
+
+THE SYSTEM has observed many total party knockouts. Most of them were more dignified than this one.
+
+Write a game over narration:
+SECTION 1 (2 paragraphs): Narrate the party going down — all of them, one by one or all at once. Make it feel real. The dungeon won. Name who went down how.
+
+---SYSTEM---
+
+SECTION 2 — GAME OVER VERDICT (THE SYSTEM voice, maximum sarcasm):
+THE SYSTEM has watched thousands of parties die in this dungeon. This one rates a mention — not for bravery, but for the specific sequence of decisions that led here. THE SYSTEM delivers its final assessment of the run so far. Personal. Specific. Cutting. But not without a grudging note of: at least they tried.
+
+End with: "GAME OVER. Floor 1 — The Goblin Antechamber. THE SYSTEM suggests a debrief."
+
+Keep it under 10 lines. THE SYSTEM is efficient even in failure.`;
+
+  try {
+    const raw = await callClaude(prompt);
+    const sepIdx  = raw.indexOf('---SYSTEM---');
+    const narrative = sepIdx > -1 ? raw.substring(0, sepIdx).trim() : raw.trim();
+    const verdict   = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : 'GAME OVER. THE SYSTEM has no further comment.';
+
+    // Mark all players downed
+    const downUpd = {};
+    Object.keys(players).forEach(id => {
+      downUpd[`players/${id}/hp`]     = 0;
+      downUpd[`players/${id}/status`] = 'downed';
+    });
+
+    ROOT.update({
+      'narration/text':       narrative,
+      'narration/verdict':    verdict,
+      'narration/scene':      scene,
+      'narration/generating': false,
+      'session/phase':        'game_over',
+      ...downUpd,
+    });
+  } catch(e) {
+    ROOT.update({
+      'narration/text':       'THE SYSTEM has lost the signal. Everyone is down.\n[Error: ' + e.message + ']',
+      'narration/generating': false,
+      'session/phase':        'game_over',
+    });
+  }
+}
 const txCanvas = document.createElement('canvas');
 txCanvas.style.cssText = 'position:fixed;inset:0;z-index:400;pointer-events:none;';
 document.body.appendChild(txCanvas);
@@ -3630,6 +3824,19 @@ async function advanceToNextScene(lockAlreadyHeld = false) {
           if (!inv.includes('Luna (companion)')) inv.push('Luna (companion)');
           upd[`players/${melissaId}/inventory`] = inv;
         }
+      }
+      // Mags' rest stop — revive all downed players at 15 HP and auto-submit for them
+      // (they just woke up — they can't browse the shop, but active players still can)
+      if (next === 7) {
+        Object.keys(ps).forEach(id => {
+          if (ps[id].status === 'downed') {
+            upd[`players/${id}/hp`]             = 15;
+            upd[`players/${id}/status`]          = 'active';
+            upd[`players/${id}/choice`]          = 'Revived by Mags — passed on shop';
+            upd[`players/${id}/choiceId`]        = 'mags_revived';
+            upd[`players/${id}/choiceSubmitted`] = true;
+          }
+        });
       }
       // Initialize or clear combat state
       if (SCENES[next].combatData) {
