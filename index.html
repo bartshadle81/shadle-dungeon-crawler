@@ -52,7 +52,32 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Subtle noise texture */
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .scene-screen {
+    flex-direction: column !important;
+    min-height: unset !important;
+  }
+  .shared-panel {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 2px solid var(--border-a) !important;
+  }
+  .player-panel {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .arch-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  .a-card { padding: 12px 8px !important; }
+  html, body { font-size: 16px !important; }
+  .gm-bar { flex-wrap: wrap; gap: 6px; padding: 6px 10px; }
+  .gm-stat { width: 100%; text-align: center; }
+}
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -950,6 +975,14 @@ const SCENES = {
       },
     },
   },
+
+  11: {
+    name: 'Floor Cleared',
+    title: 'It\'s over.',
+    sub:   'The Goblin Antechamber — Cleared',
+    desc:  'Krag is on the floor. The throne room is quiet for the first time since Floor 1 opened. Somewhere above them, the Timber Creek High School auditorium is still sealed. The Syndicate has not sent anyone to explain what happens next. A door at the far end of the room was not there before.',
+    type:  'victory',
+  },
 };
 
 // ── THE SYSTEM PROMPT ──
@@ -1151,6 +1184,39 @@ function checkForAchievement(text) {
   if (match) setTimeout(() => showAchievement(match[1].trim()), 1200);
 }
 
+// ── Victory / floor-clear Syndicate chime ──
+let victoryChimeFired = false;
+function playVictoryChime() {
+  if (victoryChimeFired) return;
+  victoryChimeFired = true;
+  try {
+    const ctx = getSctx();
+    const t = ctx.currentTime;
+    // Like the sound a vending machine makes when your item drops, but for killing a warchief
+    const notes = [
+      { freq: 880,  start: 0.0, dur: 0.50, vol: 0.20 },
+      { freq: 1047, start: 0.2, dur: 0.45, vol: 0.18 },
+      { freq: 784,  start: 0.4, dur: 0.55, vol: 0.20 },
+      { freq: 659,  start: 0.7, dur: 0.80, vol: 0.24 },
+      { freq: 523,  start: 1.1, dur: 1.30, vol: 0.22 },
+    ];
+    notes.forEach(({ freq, start, dur, vol }) => {
+      ['sine','sine'].forEach((type, i) => {
+        const f2 = i === 1 ? freq * 2.01 : freq;
+        const v2 = i === 1 ? vol * 0.15  : vol;
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = type; osc.frequency.setValueAtTime(f2, t + start);
+        gain.gain.setValueAtTime(0, t + start);
+        gain.gain.linearRampToValueAtTime(v2, t + start + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + start + dur + 0.3);
+        osc.start(t + start); osc.stop(t + start + dur + 0.4);
+      });
+    });
+  } catch(e) {}
+}
+
 // ── Watch for HP/gold changes and animate ──
 let prevHp   = null;
 let prevGold = null;
@@ -1210,6 +1276,7 @@ try {
       } else if (phase === 'scene_intro') {
         if (scene === 1) fireScene1Narration();
         else if (scene === 2) fireScene2Narration();
+        else if (scene === 11) fireScene11Narration();
       }
     }
 
@@ -1448,6 +1515,93 @@ Reference each family member by name and what THE SYSTEM has already clocked abo
     ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene2_ready' });
   }
 }
+
+// ═══════════════════════════════════════════════════════
+//  SCENE 11 API CALL (victory — floor cleared)
+// ═══════════════════════════════════════════════════════
+async function fireScene11Narration() {
+  if (!isGM) return;
+  const lock = ROOT.child('narrationLock/scene11');
+  let acquired = false;
+  await lock.transaction(cur => { if (!cur) { acquired=true; return true; } });
+  if (!acquired) return;
+
+  ROOT.update({ 'session/phase':'narrating', 'narration/generating':true });
+
+  const players = fbState.players || {};
+  const party = Object.values(players).map(p =>
+    `- ${p.name} (${p.title||p.archetype}, HP: ${p.hp}/${p.maxHp}, Gold: ${p.gold}g)${p.status==='downed' ? ' [DOWNED]' : ''}`
+  ).join('\n');
+
+  // Check if anyone survived downed
+  const survivors = Object.values(players).filter(p => p.status === 'active');
+  const downerNames = Object.values(players).filter(p => p.status === 'downed').map(p => p.name);
+
+  // Gold reward for clearing Floor 1 — bonus for each active survivor
+  const floorClearGold = 30 + Math.floor(Math.random() * 20);
+  const goldUpd = {};
+  Object.entries(players).forEach(([id, p]) => {
+    if (p.status === 'active') goldUpd[`players/${id}/gold`] = (p.gold||0) + floorClearGold;
+  });
+
+  const prompt = `SCENE 11: FLOOR CLEARED
+
+The Goblin Antechamber — Floor 1 — is cleared.
+
+Krag the Warchief is on the floor. He never finished his speech. He got three sentences in before the party interrupted him. This bothered him throughout the entire fight. It bothers him now.
+
+THE PARTY (current state):
+${party}
+- Bear (Contestant 4-Delta): present, calm, watching the new door
+- Luna: sitting next to Melissa, wearing a Goblin Hardhat that is three sizes too big, tilted sideways. There is a half-eaten Mystery Sack nearby. She looks enormously pleased with herself.
+
+Gerald (if he survived Scene 4 and the dungeon): is here. He just did something small but unexpectedly useful during the Krag fight — something that turned a moment, accidentally, in a Gerald way. He is now standing slightly to one side looking surprised by himself. His dungeon name is Gorgath the Undying. The dungeon name has not been entirely ironic.
+
+WHAT HAPPENS:
+1. The Syndicate acknowledgment chime plays through the dungeon PA — the official tone that signals a floor has been cleared. It sounds exactly like the sound a vending machine makes when your item successfully drops.
+2. A door at the far end of the throne room opens. It was not there before. Stairs descend to Floor 2.
+3. THE SYSTEM acknowledges the clear with a leaderboard update: the Shadles are not last. Somewhere on the other side of the world, Carl and his cat cleared Floor 1 about forty minutes ago. The Shadles are "not last." THE SYSTEM considers this generous information.
+4. Luna is wearing the Goblin Hardhat. THE SYSTEM logs this. THE SYSTEM is unclear how she acquired it.
+5. Bear looks at the new door to Floor 2. Then he looks at Melissa. He does not move toward the door.
+
+WRITE:
+2 paragraphs of narrative — the room going quiet, Krag on the floor, the chime, Luna and the hardhat, Gerald's moment landing, Bear at the door. The family standing at the stairs.
+
+Then the ---SYSTEM--- section: THE SYSTEM's final verdict on Floor 1. Personal. Specific to each family member. Acknowledge the run — what they did well, what barely worked, what THE SYSTEM is not going to comment on (Bear). 
+
+Include: "FLOOR CLEARED: Floor 1 — The Goblin Antechamber."
+Include: "FLOOR BONUS: Each survivor receives ${floorClearGold}g from the Syndicate clearance reward."
+Include: "LEADERBOARD UPDATE: The Shadles are not last. THE SYSTEM finds this worth mentioning."
+Include ONE achievement — the family earned it. Make it specific to something they actually did.
+End with THE SYSTEM's one-line assessment of whether they go down to Floor 2. It should sound like a recommendation from something that doesn't recommend things.
+
+TONE: This is the ending of something. Let it breathe. The humor is earned. The dungeon was real.`;
+
+  try {
+    const raw = await callClaude(prompt);
+    const sepIdx = raw.indexOf('---SYSTEM---');
+    const narrative = sepIdx > -1 ? raw.substring(0, sepIdx).trim() : raw.trim();
+    const verdict   = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : '';
+
+    // Apply floor clear gold bonus
+    const updatePayload = {
+      'narration/text':       narrative,
+      'narration/verdict':    verdict,
+      'narration/scene':      11,
+      'narration/timestamp':  Date.now(),
+      'narration/generating': false,
+      'session/phase':        'scene_complete',
+      ...goldUpd,
+    };
+    ROOT.update(updatePayload);
+  } catch(e) {
+    ROOT.update({
+      'narration/text': `THE SYSTEM acknowledges the floor is cleared.\n\n[API Error: ${e.message}]\nUse GM panel to continue.`,
+      'narration/generating': false,
+      'session/phase': 'scene_complete',
+    });
+  }
+}
 function renderSceneScreen(phase) {
   const scene   = fbState.session?.currentScene || 1;
   const players = fbState.players || {};
@@ -1485,6 +1639,10 @@ function renderSceneScreen(phase) {
         el.style.opacity = '0';
         el.style.transition = 'opacity 0.7s ease';
         setTimeout(() => { el.style.opacity = '1'; }, 30);
+        // Victory chime fires once when Scene 11 narrative first appears
+        if (scene === 11 && phase === 'scene_complete') {
+          setTimeout(() => playVictoryChime(), 400);
+        }
       }
     }
   }
@@ -1506,13 +1664,20 @@ function buildShared(scene, phase, narr, players, scData) {
   } else if (phase === 'system_verdict') {
     // THE SYSTEM verdict screen — terminal voice, typewriter
     const verdictText = narr.verdict || '';
+    const victoryHeader = scene === 11
+      ? `<div style="font-family:var(--f-disp);font-size:1.1rem;color:var(--gold-b);letter-spacing:0.08em;margin-bottom:10px;text-shadow:0 0 24px rgba(255,210,80,0.5);">— FLOOR 1 CLEARED —</div>`
+      : '';
     narrHTML = `
+      ${victoryHeader}
       <div style="font-family:var(--f-disp);font-size:1.3rem;font-weight:700;color:var(--gold);letter-spacing:0.05em;margin-bottom:16px;text-shadow:var(--glow-g)">— THE SYSTEM —</div>
       <div class="narr-box" id="verdictBox" style="border-color:var(--gold-d)">
         <div class="narr-text" id="verdictText">${esc(verdictText)}</div>
       </div>`;
   } else if (narr.text) {
-    narrHTML = `<div class="narr-box"><div class="narr-text" id="narrText" style="font-family:var(--f-body);font-size:1.05rem;color:var(--parch);line-height:1.75;text-shadow:none;">${esc(narr.text)}</div></div>`;
+    const victoryBanner = scene === 11 && (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready')
+      ? `<div style="font-family:var(--f-disp);font-size:1.6rem;font-weight:900;color:var(--gold-b);letter-spacing:0.1em;text-align:center;margin-bottom:18px;text-shadow:0 0 40px rgba(255,210,80,0.7),0 0 80px rgba(255,180,40,0.3);">⚔ FLOOR CLEARED ⚔</div>`
+      : '';
+    narrHTML = `<div class="narr-box">${victoryBanner}<div class="narr-text" id="narrText" style="font-family:var(--f-body);font-size:1.05rem;color:var(--parch);line-height:1.75;text-shadow:none;">${esc(narr.text)}</div></div>`;
   }
 
   // Choices / shop in shared panel
@@ -1592,13 +1757,22 @@ function buildPlayerPanel(phase, me, scData, players) {
   } else if (phase === 'system_verdict') {
     const ready = (fbState.readiness||{})[myId];
     const combatCont = fbState.combat?.continues;
+    const scene11 = (fbState.session?.currentScene === 11);
     action = ready
       ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
-      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">${combatCont ? 'Fight On →' : 'Continue'}</button></div>`;
+      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">${combatCont ? 'Fight On →' : scene11 ? 'Into Floor 2 →' : 'Continue'}</button></div>`;
 
+  } else if (phase === 'victory_end') {
+    const me2 = players[myId];
+    action = `<div style="text-align:center;padding:28px 18px;">
+      <div style="font-family:var(--f-disp);color:var(--gold-b);font-size:1.5rem;letter-spacing:0.08em;margin-bottom:10px;text-shadow:0 0 30px rgba(255,210,80,0.6);">⚔ FLOOR 1 COMPLETE ⚔</div>
+      <div class="sys-voice" style="font-size:0.82rem;line-height:2;margin-bottom:20px;">THE SYSTEM has logged this run.<br>Survival: confirmed.<br>Floor 2 awaits.<br>THE SYSTEM recommends rest first.<br>THE SYSTEM does not expect you to rest.</div>
+      ${me2 ? `<div style="font-family:var(--f-mono);font-size:0.78rem;color:var(--parch-d);margin-bottom:16px;">Final gold: ${me2.gold}g · HP: ${me2.hp}/${me2.maxHp}</div>` : ''}
+      <button class="btn btn-sm" onclick="window.location.reload()">Return to Surface</button>
+    </div>`;
   } else if (phase === 'demo_end') {
     action = `<div style="text-align:center;padding:22px;font-family:var(--f-mono);color:var(--sys-d);">
-      <div style="font-family:var(--f-disp);color:var(--gold);font-size:1.05rem;margin-bottom:10px;">⚔ End of Chunk 1 ⚔</div>
+      <div style="font-family:var(--f-disp);color:var(--gold);font-size:1.05rem;margin-bottom:10px;">⚔ End of Session ⚔</div>
       THE SYSTEM will return.
     </div>`;
   }
@@ -2097,6 +2271,31 @@ async function fireSceneNarration(state) {
   const choiceMap = {};
   Object.entries(players).forEach(([id,p]) => { if (p.choiceId) choiceMap[id] = p.choiceId; });
 
+  // Outcome track hint descriptions (used in prompt so Claude knows the flavor)
+  const hint = {
+    good:    'Party coordinated well. Signature abilities were used effectively. Choices complemented each other.',
+    neutral: 'Mixed results. Some good choices, some that didn\'t land. The party got through it.',
+    bad:     'Poor coordination. The party took more punishment than they needed to.',
+  };
+
+  // Per-scene Bear mystery moments — slow-burn subplot
+  const bearMoments = {
+    3: 'BEAR MOMENT: Bear walks the pressure plate path without hesitation — first, before anyone asks, before any calculation. He knows which squares are safe. THE SYSTEM logs this and has no comment.',
+    4: 'BEAR MOMENT: When the party encounters Gerald, Bear sits beside him immediately. Gerald exhales like he hasn\'t exhaled in hours. Something about Bear makes the dungeon feel slightly less certain that Gerald is going to die here.',
+    5: 'BEAR MOMENT: In the chaos of the goblin fight, Bear moves to exactly the right position at exactly the right moment to absorb or redirect a hit meant for whoever is most vulnerable. He seemed to know it was coming before the goblin did.',
+    6: 'BEAR MOMENT: In total darkness, Bear is calm. He can see. He doesn\'t lead dramatically — he just walks, and whoever follows his sound makes fewer mistakes. THE SYSTEM notes this. THE SYSTEM has no comment.',
+    7: 'BEAR MOMENT: At Mags\' rest stop, Bear rests with everyone. But his eyes don\'t close. He watches the corridor they came from, not the one ahead. THE SYSTEM knows why Bear is watching that corridor. THE SYSTEM has no comment.',
+    8: 'BEAR MOMENT: When Leah gets stuck on her riddle (the answer is "door"), Bear walks to the actual door and sits in front of it, looking at Leah. THE SYSTEM notes this may or may not have been a hint. THE SYSTEM has no comment on how Bear knew.',
+    9: 'BEAR MOMENT: When Luna comes around the corner at full speed wearing the Goblin Hardhat, Bear watches her approach with complete calm. They make eye contact for a fraction of a second as she blows past. Something passes between them. THE SYSTEM has no comment.',
+    10: 'BEAR MOMENT: At the worst moment of the Krag fight — Phase 2, or when things look darkest — Bear does something. Small. Real. He positions himself, or looks at something the party missed, or reacts to Krag\'s attack a half-second before it lands. He is not heroic. He is just always exactly where he should be. THE SYSTEM has logged Bear as Contestant 4-Delta since the beginning of this run. THE SYSTEM continues to have no comment about Bear.',
+  };
+  const bearNote = bearMoments[scene] ? `\n\n${bearMoments[scene]}` : '';
+
+  // Scene 10 Gerald payoff — Gerald does something unexpectedly useful
+  const geraldNote = scene === 10
+    ? '\n\nGERALD PAYOFF: Gerald — the accountant from Savannah who has been in this dungeon six hours alone, who named himself Gorgath the Undying, who survived because the party chose to bring him — is present during this fight. At a critical moment (ideally when things look worst, or during Phase 2), Gerald does something unexpectedly useful. It must be small, non-heroic, accidental, or a Gerald thing — not a heroic moment. He trips over something that turns out to matter. He does the accountant equivalent of a battlefield contribution. THE SYSTEM is briefly surprised. So is Gerald. This is the payoff for Scene 4.'
+    : '';
+
   const track = scData?.type === 'riddle'
     ? (state.riddleSolved ? 'good' : 'bad')
     : scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
@@ -2242,7 +2441,7 @@ ${scData?.desc || ''}
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}
+OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}${bearNote}${geraldNote}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -2339,7 +2538,7 @@ function showTransition(toScene, callback) {
   const holdDuration  = 800;   // hold black after animation
   const fadeDuration  = 900;   // fade out to reveal new scene
   const draws = { 2:txTrapCorridor, 3:txGerald,   4:txAmbush,   5:txDarkness,
-                  6:txMags,         7:txBarracks,  8:txElites,   9:txBoss, 10:txVictory };
+                  6:txMags,         7:txBarracks,  8:txElites,   9:txBoss, 10:txBoss, 11:txVictory };
   const draw = draws[toScene] || txCorridorRush;
   let raf;
   let phase = 'anim'; // 'anim' → 'hold' → 'fadeout'
@@ -3089,7 +3288,7 @@ function advanceToNextScene() {
     });
     if (SCENES[next]) {
       upd['session/currentScene'] = next;
-      upd['session/phase'] = SCENES[next].type === 'intro' ? 'scene_intro' : 'choosing';
+      upd['session/phase'] = (SCENES[next].type === 'intro' || SCENES[next].type === 'victory') ? 'scene_intro' : 'choosing';
       // Luna reunion — add her to Melissa's inventory at Scene 9
       if (next === 9) {
         const melissaId = Object.keys(ps).find(id => ps[id].archetype === 'Melissa');
@@ -3116,7 +3315,7 @@ function advanceToNextScene() {
         upd['combat/history']    = null;
       }
     } else {
-      upd['session/phase'] = 'demo_end';
+      upd['session/phase'] = 'victory_end';
     }
     ROOT.update(upd);
   });
