@@ -2297,7 +2297,7 @@ async function submitRiddleAnswer() {
         if (ps[id].status === 'downed') return;
         if (ps[id].choiceId !== 'correct') {
           resetUpd[`players/${id}/choiceSubmitted`] = false;
-          upd[`players/${id}/freeformChoice`] = null;
+          resetUpd[`players/${id}/freeformChoice`] = null;
           resetUpd[`players/${id}/choice`]          = null;
           resetUpd[`players/${id}/choiceId`]        = null;
         }
@@ -3789,11 +3789,11 @@ function gmForceNext() {
   const ps   = fbState.players || {};
   const upd  = { 'session/currentScene':next, 'session/phase':'choosing', readiness:null, 'narration/text':null, 'narration/scene':null };
   upd[`narrationLock/scene${next}`] = null;
-  upd[`players/${id}/freeformChoice`] = null;
   Object.keys(ps).forEach(id => {
     upd[`players/${id}/choice`] = null;
     upd[`players/${id}/choiceId`] = null;
     upd[`players/${id}/choiceSubmitted`] = false;
+    upd[`players/${id}/freeformChoice`] = null;
   });
   ROOT.update(upd);
 }
