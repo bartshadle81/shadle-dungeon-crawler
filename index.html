@@ -1048,6 +1048,10 @@ let tauntTimer = null;
 let tauntIdx   = 0;
 let typeTimer  = null;
 let lastNarrKey = null;    // prevents re-typewriting same narration
+// Tracks what was last fully rendered so we can do partial updates
+let lastFullRenderPhase   = null;
+let lastFullRenderScene   = null;
+let lastFullRenderNarrTs  = null;
 
 // ═══════════════════════════════════════════════════════
 //  VISUAL EFFECTS
@@ -1858,8 +1862,37 @@ function renderSceneScreen(phase) {
       <div class="loading-title" style="font-size:1.4rem;">THE SYSTEM</div>
       <div class="sys-voice" style="text-align:center;font-size:0.85rem;">A dungeon run is already in progress.<br>You appear to have arrived late.<br>This is noted.</div>
     </div>`;
+    lastFullRenderPhase = null;
     return;
   }
+
+  // ── Partial render: during system_verdict and scene_complete, only rebuild
+  // the player panel when the shared content (narration) hasn't changed.
+  // This prevents Firebase readiness updates from killing the typewriter mid-animation.
+  const STABLE_PHASES = ['system_verdict', 'scene_complete'];
+  const samePhase   = phase === lastFullRenderPhase;
+  const sameScene   = scene === lastFullRenderScene;
+  const sameNarrTs  = narr.timestamp === lastFullRenderNarrTs;
+  const sharedIsStable = STABLE_PHASES.includes(phase) && samePhase && sameScene && sameNarrTs;
+
+  if (sharedIsStable) {
+    // Only rebuild the player panel — leave the shared panel (and typewriter) untouched
+    const panel = document.querySelector('.player-panel');
+    if (panel) {
+      panel.innerHTML = me.status === 'downed'
+        ? buildDownedPanel(me)
+        : buildPlayerPanel(phase, me, scData, players);
+    }
+    manageTaunts(phase, players);
+    manageRiddleTick(phase, me);
+    manageCollapseTick(phase);
+    return;
+  }
+
+  // Full render
+  lastFullRenderPhase  = phase;
+  lastFullRenderScene  = scene;
+  lastFullRenderNarrTs = narr.timestamp || null;
 
   const sharedHTML = buildShared(scene, phase, narr, players, scData);
   const playerHTML = me.status === 'downed'
@@ -1873,7 +1906,7 @@ function renderSceneScreen(phase) {
 
   manageTaunts(phase, players);
   manageRiddleTick(phase, me);
-  manageCollapseTick(phase); // stops tick if not on victory_end
+  manageCollapseTick(phase);
 
   // Auto-submit downed players during choosing — they can't choose, so submit on their behalf
   if (phase === 'choosing' && me?.status === 'downed' && !me?.choiceSubmitted) {
@@ -3981,7 +4014,10 @@ async function setVerdictContinue() {
 }
 
 async function advanceToNextScene(lockAlreadyHeld = false) {
-  if (!lockAlreadyHeld && !(await claimAdvance())) return; // another tab is handling this
+  if (!lockAlreadyHeld && !(await claimAdvance())) return;
+  lastFullRenderPhase  = null; // force full render on next scene
+  lastFullRenderScene  = null;
+  lastFullRenderNarrTs = null;
   const cur  = fbState.session?.currentScene || 2;
   const next = cur + 1;
   showTransition(next, () => {
