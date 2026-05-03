@@ -480,7 +480,7 @@ const ARCH_NAMES = Object.keys(ARCHETYPES);
 const SCENES = {
   1: {
     name: 'Mars',
-    title: 'Mars.',
+    title: 'Before.',
     sub:  'The Concert — No Choices',
     desc: '',
     type: 'intro',
@@ -667,8 +667,15 @@ const SCENES = {
       return deltas;
     },
     goodLootGold: () => 6 + Math.floor(Math.random()*10),
+    combatData: {
+      name: 'Goblin Patrol',
+      maxHp: 80,
+      partyDamage(choiceMap, track) {
+        const base = { good: 48, neutral: 28, bad: 10 }[track] || 20;
+        return base + Math.floor(Math.random() * 10);
+      },
+    },
   },
-
   6: {
     name: 'Ambush in the Dark',
     title: 'Something\'s wrong.',
@@ -734,8 +741,18 @@ const SCENES = {
       return deltas;
     },
     goodLootGold: () => 8 + Math.floor(Math.random()*10),
+    combatData: {
+      name: 'Kobold Skirmishers',
+      maxHp: 140,
+      partyDamage(choiceMap, track) {
+        const base = { good: 52, neutral: 30, bad: 12 }[track] || 20;
+        // Torches help significantly in darkness
+        const vals = Object.values(choiceMap);
+        const hasTorch = vals.some(v => v === 'use_torch');
+        return base + Math.floor(Math.random() * 14) + (hasTorch ? 18 : 0);
+      },
+    },
   },
-
   7: {
     name: 'Mags the Merchant',
     title: 'A friendly face. Probably.',
@@ -763,16 +780,27 @@ const SCENES = {
     name: 'The Puzzle Lock',
     title: 'Think.',
     sub:  'Syndicate Class-3 Security Door',
-    desc: 'The corridor ends at a door that has no business being here — solid stone, three feet thick, with a keypad set into the face and a screen above it. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. Below that, smaller: unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. The moment the party reads it, something shifts — a pressure, not quite a sound, like a word on the tip of the tongue. Each person holds one line of something. The others hold the rest. The door predates the goblins. The door has seen parties stand here and not make it through. It is waiting to see what this one does.',
+    desc: 'The corridor ends at a door that has no business being here — solid stone, three feet thick, with a keypad set into the face and a screen above it. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. Below that, smaller: unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. The moment the party reads it, something shifts — a pressure, not quite a sound, like a word on the tip of the tongue. Each person holds one riddle. The others hold theirs. The door predates the goblins. The door has seen parties stand here and not make it through. It is waiting to see what this one does.',
     type: 'riddle',
     riddleLines: {
-      Bart:    'I fell on the South in eighteen sixty-five,',
-      Melissa: 'I keep your coffee warm and fill the morning bright,',
-      Noah:    'My speed is measured — runners know me well,',
-      Leah:    'What silences a room and fills a concert hall?',
+      Bart:    'I have no mouth but I speak to every dark place. I have no hands but I reach for the ceiling. Feed me and I grow. Starve me and I vanish. What am I?',
+      Melissa: 'I am nothing without a match. I have one purpose and I have never failed it. Kings have carried me on their belts and prisoners have dreamed of me in the dark. I am useless once you no longer need me. What am I?',
+      Noah:    'I follow you everywhere and arrive before you do. I have no weight and cannot be held. I grow tall in the morning and small at noon and by night I own everything. I am made of nothing. What am I?',
+      Leah:    'I am the difference between here and there. I have stood in this place longer than the goblins. I have heard everything said on both sides of me and I have never repeated a word. I am waiting. What am I?',
     },
-    // Each answer is the player's own first name
-    getAnswer(archetype) { return archetype.toLowerCase(); },
+    riddleAnswers: {
+      Bart:    'fire',
+      Melissa: 'key',
+      Noah:    'shadow',
+      Leah:    'door',
+    },
+    riddleHints: {
+      Bart:    'THE SYSTEM notes: It has kept this dungeon lit since before the first contestant descended. Feed it and it grows. Starve it and it vanishes. It has lit the way for the brave and the doomed alike.',
+      Melissa: 'THE SYSTEM notes: It opens what is closed. Every locked thing has one. This door wants to know if you understand what opens things.',
+      Noah:    'THE SYSTEM notes: It requires no light to exist. In fact, it requires the opposite. It is never wrong about your shape.',
+      Leah:    'THE SYSTEM notes: You are standing in front of one. It is open or it is closed. Right now it is neither.',
+    },
+    getAnswer(archetype) { return this.riddleAnswers[archetype] || ''; },
     applyOutcome(players, track) {
       if (track === 'bad') {
         const active = Object.keys(players).filter(id => players[id].status === 'active');
@@ -789,7 +817,7 @@ const SCENES = {
     name: 'The Elite Guard',
     title: 'These are not the scouts.',
     sub:  'Second Combat',
-    desc: 'The corridor beyond the door opens wider, and the change is immediate. The torches are better here. The floor is cleaner. The walls have been worked deliberately, not hacked out. This is Krag\'s wing — maintained, intentional, guarded. Two Goblin Elites stand in the passage ahead, and they are not what the party has faced before. Taller. Armored in real metal, not salvaged scraps. One carries a tower shield that has absorbed things far more dangerous than this. The other has already drawn its weapon and is making no effort to look threatening. It does not need to. Standing slightly behind them, arms crossed, not making eye contact with anyone, is Splurt. He looks like someone who made a decision he is not entirely at peace with. And somewhere nearby — a sound. Small claws on stone. Getting closer.',
+    desc: 'The corridor beyond the door opens wider, and the change is immediate. The torches are better here. The floor is cleaner. The walls have been worked deliberately, not hacked out. This is Krag\'s wing — maintained, intentional, guarded. Two Goblin Elites stand in the passage ahead, and they are not what the party has faced before. Taller. Armored in real metal, not salvaged scraps. One carries a tower shield that has absorbed things far more dangerous than this. The other has already drawn its weapon and is making no effort to look threatening. It does not need to. Standing slightly behind them, arms crossed, not making eye contact with anyone, is Splurt. He looks like someone who made a decision he is not entirely at peace with. Then, from somewhere down the left corridor — claws on stone. Fast ones. Getting faster. Then a bark — one sharp, certain bark — and Luna comes around the corner at full speed, ears back, completely committed, wearing a Goblin Hardhat that is three sizes too big and sliding down over one eye. She has been in this dungeon the whole time. She has clearly been busy. She does not slow down. She is aimed directly at Melissa and she is not going to stop.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -845,8 +873,18 @@ const SCENES = {
       return deltas;
     },
     goodLootGold: () => 15 + Math.floor(Math.random() * 16),
+    combatData: {
+      name: 'Elite Guard + Troll',
+      maxHp: 170,
+      trollRegen: 5,
+      partyDamage(choiceMap, track, players) {
+        const base = { good: 55, neutral: 33, bad: 12 }[track] || 25;
+        const vals = Object.values(choiceMap);
+        const usedFire = vals.some(v => v === 'fire' || v === 'use_torch');
+        return base + Math.floor(Math.random() * 16) + (usedFire ? 18 : 0);
+      },
+    },
   },
-
   10: {
     name: 'Krag the Warchief',
     title: 'Oh no.',
@@ -901,6 +939,16 @@ const SCENES = {
       }
       return deltas;
     },
+    goodLootGold: () => 25 + Math.floor(Math.random() * 20),
+    combatData: {
+      name: 'Krag the Warchief',
+      maxHp: 180,
+      phase2Threshold: 90,
+      partyDamage(choiceMap, track) {
+        const base = { good: 50, neutral: 28, bad: 10 }[track] || 20;
+        return base + Math.floor(Math.random() * 18);
+      },
+    },
   },
 };
 
@@ -922,7 +970,7 @@ LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still h
 BEAR: Contestant 4-Delta. Mini black labradoodle. Appeared beside Melissa in a sealed auditorium. Navigates pressure plates without hesitation. Always seems to know things he shouldn't. THE SYSTEM has no comment about Bear.
 
 YOUR JOB:
-Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments. Luna is out there somewhere. THE SYSTEM occasionally references the contestant on Floor 2 with the cat.
+Narrate what happens next in exactly 2 paragraphs. Reference all four family members by name. Make their specific choices feel personal. Lean into the DCC world — the Syndicate, the dungeon as a system, the leaderboard, other contestants dying elsewhere. Bear gets moments. Luna is out there somewhere. THE SYSTEM occasionally references another contestant on Floor 1 — somewhere on the other side of the world, a man named Carl and his cat are also on Floor 1. He uses he/him. THE SYSTEM finds the comparison between Carl's progress and the Shadles' progress instructive. Paths may or may not cross. THE SYSTEM has no comment on that either.
 
 TONE RULES:
 - 70% drama, 30% humor. The dungeon is genuinely dangerous. People die in here. The Shadles might.
@@ -1383,7 +1431,7 @@ ${party}
 
 This is where THE SYSTEM introduces itself properly — not the ambient presence from Scene 1, but the actual voice of the dungeon. Sardonic. Omniscient. Faintly disappointed by what it's been assigned to manage today.
 
-Establish the DCC world: the Syndicate, the boxes dropping worldwide simultaneously, Floor 1 of the Goblin Antechamber. Mention that other contestants are already underground elsewhere in the world. Imply one in particular is already on Floor 2 with a cat. THE SYSTEM finds this comparison instructive.
+Establish the DCC world: the Syndicate, the boxes dropping worldwide simultaneously, Floor 1 of the Goblin Antechamber. Mention that other contestants are already underground elsewhere in the world. Mention that one contestant in particular — on the other side of the world, also on Floor 1 — is a man named Carl, and he has a cat. THE SYSTEM finds the comparison between his progress and the Shadles' progress instructive but will not elaborate.
 
 Note that Luna was home when the box appeared. The gate was locked. Bear glanced back once at the top of the stairs. THE SYSTEM logged this glance and has no comment.
 
@@ -1395,9 +1443,9 @@ Reference each family member by name and what THE SYSTEM has already clocked abo
 
   try {
     const text = await callClaude(prompt);
-    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':2, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':2, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene2_ready' });
   } catch(e) {
-    ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene2_ready' });
   }
 }
 function renderSceneScreen(phase) {
@@ -1428,7 +1476,7 @@ function renderSceneScreen(phase) {
   manageTaunts(phase, players);
 
   // Narrative: fade in (no typewriter)
-  if (phase === 'scene_complete' || phase === 'scene1_ready') {
+  if (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready') {
     const el = document.getElementById('narrText');
     if (el) {
       const key = `fade_s${narr.scene}`;
@@ -1476,7 +1524,9 @@ function buildShared(scene, phase, narr, players, scData) {
     } else if (scData?.type === 'riddle') {
       choicesHTML = buildRiddleUI(me, scData);
     } else if (!me.choiceSubmitted) {
-      const choices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
+      const baseChoices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
+      const itemChoices = getItemChoices(me.inventory||[]);
+      const choices = [...baseChoices, ...itemChoices];
       currentChoices = choices;
       const btns = choices.map((c,i) => `
         <button class="c-btn" onclick="submitByIdx(${i})">
@@ -1492,6 +1542,7 @@ function buildShared(scene, phase, narr, players, scData) {
   return `
     ${scData?.title ? `<div style="font-family:var(--f-disp);font-size:1.5rem;font-weight:700;color:var(--gold);letter-spacing:0.03em;margin-bottom:14px;text-shadow:var(--glow-g)">${scData.title}</div>` : ''}
     ${scData?.desc ? `<div class="scene-desc">${scData.desc}</div>` : ''}
+    ${buildEnemyHpBar()}
     ${narrHTML}
     ${choicesHTML}
     <div class="taunt" id="tauntEl"></div>`;
@@ -1520,6 +1571,12 @@ function buildPlayerPanel(phase, me, scData, players) {
       ? `<div class="state-msg">✓ Ready<div class="sub">Waiting for the party...</div></div>`
       : `<div class="ready-wrap"><button class="btn btn-primary" style="font-size:1rem;padding:13px 28px;" onclick="setReady()">⚔ READY TO DESCEND ⚔</button></div>`;
 
+  } else if (phase === 'scene2_ready') {
+    const ready = (fbState.readiness||{})[myId];
+    action = ready
+      ? `<div class="state-msg">✓ Ready<div class="sub">Waiting for the party...</div></div>`
+      : `<div class="ready-wrap"><button class="btn btn-primary" style="font-size:1rem;padding:13px 28px;" onclick="setReady2()">⚔ INTO THE DUNGEON ⚔</button></div>`;
+
   } else if (phase === 'choosing') {
     action = waitHTML;
 
@@ -1534,9 +1591,10 @@ function buildPlayerPanel(phase, me, scData, players) {
 
   } else if (phase === 'system_verdict') {
     const ready = (fbState.readiness||{})[myId];
+    const combatCont = fbState.combat?.continues;
     action = ready
       ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
-      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">Continue to Next Scene →</button></div>`;
+      : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">${combatCont ? 'Fight On →' : 'Continue'}</button></div>`;
 
   } else if (phase === 'demo_end') {
     action = `<div style="text-align:center;padding:22px;font-family:var(--f-mono);color:var(--sys-d);">
@@ -1545,7 +1603,7 @@ function buildPlayerPanel(phase, me, scData, players) {
     </div>`;
   }
 
-  return `${sheet}${action}`;
+  return `${sheet}${buildEnemyHpBar()}${action}`;
 }
 
 function buildCharSheet(p) {
@@ -1680,6 +1738,31 @@ const SHOP_ITEMS = [
   { id:'granola_bar',   icon:'🍫', name:'Gerald\'s Granola Bar', desc:'The last one. He needs the gold more than the calories.', cost:2, inv:'Granola Bar (Gerald\'s)' },
 ];
 
+function buildEnemyHpBar() {
+  const combat = fbState.combat;
+  const scene  = fbState.session?.currentScene;
+  const scData = SCENES[scene];
+  if (!combat?.enemyHp || !combat?.maxEnemyHp || !scData?.combatData) return '';
+
+  const hp     = combat.enemyHp;
+  const max    = combat.maxEnemyHp;
+  const pct    = Math.max(0, Math.min(100, (hp / max) * 100));
+  const round  = combat.round || 1;
+  const phase2 = combat.phase2 ? ' <span style="color:var(--red-b);font-size:0.75rem;">⚠ PHASE 2</span>' : '';
+  const barCol = pct > 60 ? '#c03030' : pct > 30 ? '#d06020' : '#e09030';
+
+  return `
+    <div style="margin:12px 0 16px;padding:10px 14px;background:rgba(0,0,0,0.35);border:1px solid rgba(180,40,40,0.3);border-radius:2px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-family:var(--f-disp);font-size:0.8rem;color:var(--red-b);letter-spacing:0.05em;">${esc(scData.combatData.name)}${phase2}</span>
+        <span style="font-family:var(--f-mono);font-size:0.75rem;color:var(--parch-d);">Round ${round} · ${hp}/${max} HP</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${barCol};transition:width 0.6s ease;"></div>
+      </div>
+    </div>`;
+}
+
 function buildShopUI(me) {
   if (me.choiceSubmitted) {
     const bought = me.choiceId === 'pass' ? 'Passed on the shop.' : 'Purchased: ' + me.choice;
@@ -1721,10 +1804,87 @@ function buildShopUI(me) {
 
 
 // ═══════════════════════════════════════════════════════
-//  RIDDLE WALL (Scene 7)
+//  USABLE ITEMS
 // ═══════════════════════════════════════════════════════
+const USABLE_ITEMS = [
+  // ── Healing ──
+  { match: 'Health Potion', id: 'use_healthpotion', icon: '🧪', text: 'Use a Health Potion',
+    effect: 'heal_self', amount: 25, consumable: true },
+  { match: 'Bandage',       id: 'use_bandage',      icon: '🩹', text: 'Use a Bandage',
+    effect: 'heal_self', amount: 12, consumable: true },
+  { match: 'Rations',       id: 'use_rations',      icon: '🍖', text: 'Use Rations',
+    effect: 'heal_self', amount: 15, consumable: true },
+  { match: 'Antidote',      id: 'use_antidote',     icon: '💊', text: 'Use an Antidote',
+    effect: 'heal_self', amount: 8,  consumable: true },
+
+  // ── Party healing ──
+  { match: 'Soft Batch Cookies', id: 'use_cookies', icon: '🍪', text: 'Share the Soft Batch Cookies',
+    effect: 'heal_party', amount: 8, consumable: true },
+
+  // ── Combat boosts ──
+  { match: 'Energy Drink',  id: 'use_energydrink',  icon: '⚡', text: 'Crack open an Energy Drink',
+    effect: 'boost_atk', amount: 4, consumable: true },
+  { match: 'Smoke Bomb',    id: 'use_smokebomb',    icon: '💨', text: 'Throw a Smoke Bomb',
+    effect: 'smoke',     amount: 0, consumable: true },
+
+  // ── Special ──
+  { match: 'Spell Tome',    id: 'use_spelltome',    icon: '📖', text: 'Use the Spell Tome',
+    effect: 'spell',     amount: 0, consumable: true },
+  { match: 'Reading Glasses', id: 'use_glasses',    icon: '👓', text: 'Study the enemy through your Reading Glasses',
+    effect: 'reveal',    amount: 3, consumable: false }, // reusable
+  { match: 'Rope',          id: 'use_rope',         icon: '🪢', text: 'Use the Rope',
+    effect: 'rope',      amount: 0, consumable: true },
+  { match: 'Mystery Sack',  id: 'use_mysterysack',  icon: '🎒', text: 'Open the Mystery Sack',
+    effect: 'mystery',   amount: 0, consumable: true },
+];
+
+function getItemChoices(inventory) {
+  if (!inventory || !inventory.length) return [];
+  const choices = [];
+  USABLE_ITEMS.forEach(item => {
+    // Find matching inventory entry (handles "×2" etc)
+    const invEntry = inventory.find(i => i.startsWith(item.match));
+    if (!invEntry) return;
+    choices.push({
+      id: item.id,
+      icon: item.icon,
+      text: item.text,
+      usesItem: item.match,
+      itemEffect: item.effect,
+      itemAmount: item.amount,
+      consumable: item.consumable,
+    });
+  });
+  return choices;
+}
+
+// Apply item effect to player deltas
+function applyItemEffect(item, playerId, players) {
+  const effect = item.effect;
+  const amount = item.amount;
+  const deltas = {};
+  if (effect === 'heal_self') {
+    const p = players[playerId];
+    if (p) deltas[playerId] = Math.min(p.maxHp - p.hp, amount);
+  } else if (effect === 'heal_party') {
+    Object.keys(players).forEach(id => {
+      if (players[id].status === 'active') {
+        deltas[id] = Math.min(players[id].maxHp - players[id].hp, amount);
+      }
+    });
+  } else if (effect === 'boost_atk') {
+    // Handled narratively — flag in choice text for Claude
+  } else if (effect === 'reveal') {
+    // Handled narratively — flag for Claude
+  }
+  // smoke, spell, rope, mystery — all handled narratively by Claude
+  return deltas;
+}
+
+
 function buildRiddleUI(me, scData) {
   const myLine = scData.riddleLines?.[me.archetype] || '';
+  const myHint = scData.riddleHints?.[me.archetype] || '';
   const attempts = fbState.riddleAttempts || 0;
   const solved   = fbState.riddleSolved || false;
 
@@ -1740,16 +1900,21 @@ function buildRiddleUI(me, scData) {
     ? `<div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--red-b);margin-bottom:10px;">⚠ One attempt remaining. Wrong answer discharges 8 damage to all.</div>`
     : '';
 
+  const hint = (attempts > 0 && myHint)
+    ? `<div style="font-family:var(--f-mono);font-size:0.75rem;color:var(--sys);background:rgba(0,0,0,0.35);border:1px solid var(--border-a);border-radius:2px;padding:10px 14px;margin-bottom:14px;line-height:1.6;text-shadow:0 0 6px rgba(240,192,64,0.2)">${esc(myHint)}</div>`
+    : '';
+
   return `
     <div style="margin-top:14px;">
       <div class="choice-lbl">Your line</div>
       <div style="font-family:var(--f-mono);font-size:1rem;color:var(--sys);padding:14px 16px;background:rgba(0,0,0,0.4);border:1px solid var(--border-a);border-radius:2px;margin-bottom:14px;line-height:1.7;text-shadow:0 0 8px rgba(240,192,64,0.25)">
         "${esc(myLine)}"
       </div>
+      ${hint}
       <div class="choice-lbl" style="margin-bottom:6px;">Your answer</div>
       ${warn}
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="riddleInput" type="text" placeholder="Enter your answer..."
+        <input id="riddleInput" type="text" placeholder="What am I?"
           style="flex:1;font-family:var(--f-disp);font-size:1rem;padding:10px 14px;
                  background:var(--bg-card);border:1px solid var(--border-a);border-radius:2px;
                  color:var(--parch);letter-spacing:0.05em;"
@@ -1758,7 +1923,7 @@ function buildRiddleUI(me, scData) {
         <button class="btn btn-primary" onclick="submitRiddleAnswer()" style="white-space:nowrap;">Submit</button>
       </div>
       <div style="font-family:var(--f-mono);font-size:0.7rem;color:var(--parch-d);margin-top:10px;">
-        Talk to the rest of your party. Each of you holds one line.
+        Talk to the rest of your party. Each of you holds a different riddle.
       </div>
     </div>`;
 }
@@ -1872,10 +2037,23 @@ function submitByIdx(i) {
     [`players/${myId}/choiceSubmitted`]: true,
   };
   if (c.usesAbility) upd[`players/${myId}/signatureUsed`] = true;
-  if (c.usesItem) {
+
+  // Handle item consumption (both old usesItem and new consumable items)
+  if (c.usesItem && c.consumable !== false) {
     const inv = [...((fbState.players||{})[myId]?.inventory || [])];
     const idx = inv.findIndex(it => it === c.usesItem || it.startsWith(c.usesItem));
-    if (idx > -1) inv.splice(idx, 1);
+    if (idx > -1) {
+      const entry = inv[idx];
+      // Handle stacked items like "Rations ×2" → "Rations ×1" → remove
+      const stackMatch = entry.match(/^(.+?) ×(\d+)$/);
+      if (stackMatch) {
+        const count = parseInt(stackMatch[2]) - 1;
+        if (count <= 0) inv.splice(idx, 1);
+        else inv[idx] = `${stackMatch[1]} ×${count}`;
+      } else {
+        inv.splice(idx, 1);
+      }
+    }
     upd[`players/${myId}/inventory`] = inv;
   }
 
@@ -1923,9 +2101,53 @@ async function fireSceneNarration(state) {
     ? (state.riddleSolved ? 'good' : 'bad')
     : scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
 
+  // ── Combat round calculation ──
+  let combatContinues = false;
+  let newEnemyHp = null;
+  let combatRound = state.combat?.round || 1;
+  let enteringPhase2 = false;
+
+  if (scData?.combatData) {
+    const currentEnemyHp = state.combat?.enemyHp ?? scData.combatData.maxHp;
+    const partyDmg = scData.combatData.partyDamage(choiceMap, track, players);
+
+    // Troll regeneration — if fire/acid not used this round
+    let regen = 0;
+    if (scData.combatData.trollRegen) {
+      const vals = Object.values(choiceMap);
+      const usedFire = vals.some(v => v === 'fire' || v === 'use_torch');
+      if (!usedFire) regen = scData.combatData.trollRegen;
+    }
+
+    newEnemyHp = Math.max(0, currentEnemyHp - partyDmg + regen);
+
+    // Phase 2 check
+    if (scData.combatData.phase2Threshold &&
+        currentEnemyHp > scData.combatData.phase2Threshold &&
+        newEnemyHp <= scData.combatData.phase2Threshold) {
+      enteringPhase2 = true;
+    }
+
+    // Combat continues if enemies still alive and party not all downed
+    const activePlayers = Object.values(players).filter(p => p.status === 'active');
+    combatContinues = newEnemyHp > 0 && activePlayers.length > 0;
+  }
+
   // ── Calculate damage/healing BEFORE calling Claude ──
   // Use players from state (not fresh snap) so we can describe current HP accurately
   const deltas = scData?.applyOutcome ? scData.applyOutcome(players, track) : {};
+
+  // ── Apply item effects to deltas ──
+  Object.entries(players).forEach(([id, p]) => {
+    if (!p.choiceId || !p.choiceId.startsWith('use_')) return;
+    const itemDef = USABLE_ITEMS.find(item => `use_${item.match.toLowerCase().replace(/\s+/g,'')}` === p.choiceId ||
+                                              item.id === p.choiceId);
+    if (!itemDef) return;
+    const itemDeltas = applyItemEffect(itemDef, id, players);
+    Object.entries(itemDeltas).forEach(([tid, d]) => {
+      deltas[tid] = (deltas[tid] || 0) + d;
+    });
+  });
 
   // Build outcome summary for Claude so narration matches reality exactly
   let outcomeSummary = '';
@@ -1943,13 +2165,21 @@ async function fireSceneNarration(state) {
     if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING (narrate these exactly — do not invent different targets):\n${lines.join('\n')}`;
   }
 
-  // Gold loot
+  // Gold loot — calculated before Claude call so amounts match
   let goldSummary = '';
-  if (track === 'good' && scData?.goodLootGold) {
-    const g = scData.goodLootGold();
-    goldSummary = `\n\nGOLD FOUND: Each active player finds ${g}g.`;
-    // Store gold amount for application after narration
-    deltas.__goldLoot = g;
+  if (scData?.goodLootGold) {
+    if (track === 'good') {
+      const g = scData.goodLootGold();
+      goldSummary = `\n\nGOLD FOUND: Each active player finds ${g}g. Include this in THE SYSTEM verdict as: "GOLD: Each survivor finds ${g}g."`;
+      deltas.__goldLoot = g;
+    } else if (track === 'neutral') {
+      const g = Math.floor(scData.goodLootGold() * 0.5);
+      if (g > 0) {
+        goldSummary = `\n\nGOLD FOUND: Each active player finds ${g}g (partial loot). Include this in THE SYSTEM verdict as: "GOLD: Each survivor finds ${g}g."`;
+        deltas.__goldLoot = g;
+      }
+    }
+    // bad track: no gold
   }
 
   const party = Object.values(players).map(p =>
@@ -1958,13 +2188,53 @@ async function fireSceneNarration(state) {
   Choice: "${p.choice || 'did nothing'}"${p.status==='downed' ? ' [CURRENTLY DOWNED]' : ''}`
   ).join('\n\n');
 
-  const hint = { good:'Things go relatively well.', neutral:'Mixed result — some consequence, not catastrophic.', bad:'Poor choices. Things go badly.' };
+  // Item usage summary for Claude
+  const itemUsages = Object.values(players)
+    .filter(p => p.choiceId?.startsWith('use_'))
+    .map(p => {
+      const item = USABLE_ITEMS.find(it => it.id === p.choiceId);
+      if (!item) return null;
+      const effectDesc = {
+        heal_self: `heals ${item.amount} HP`,
+        heal_party: `heals the whole party for ${item.amount} HP each`,
+        boost_atk: `gains +${item.amount} ATK this scene`,
+        smoke: 'creates a smoke cloud — stuns or escapes',
+        spell: 'unleashes a powerful musical spell',
+        reveal: `studies the enemy — party gains +${item.amount} ATK this scene`,
+        rope: 'uses the rope for a tactical advantage',
+        mystery: 'opens the Mystery Sack — effect unknown',
+      }[item.effect] || '';
+      return `${p.name} used ${item.match} — ${effectDesc}`;
+    }).filter(Boolean);
+  const itemSummary = itemUsages.length
+    ? `\n\nITEMS USED THIS SCENE:\n${itemUsages.join('\n')}\nNarrate these item uses naturally. They happen alongside their other actions.`
+    : '';
   const shopNote = scData?.type === 'shop'
     ? '\n\nThis is the merchant checkpoint scene. Each player either bought one item or passed. Reference what each person bought (or did not) and how they interacted with Mags. The rest alcove gives everyone a small HP recovery — work that in naturally. Gerald is in the corner if he survived.'
     : '';
   const riddleNote = scData?.type === 'riddle'
-    ? `\n\nThis is the Syndicate Puzzle Lock scene. Each player was shown one personal line of a riddle and had to communicate out loud to solve it. The answer is that each line describes something personal to that family member — and each player submits their own first name. ${fbState.riddleSolved ? 'They solved it correctly. The door opened. Narrate the triumph — make it feel earned.' : 'They failed to solve it correctly (used all attempts). The door discharged 8 damage to everyone and then opened anyway because the Syndicate has a liability clause. Narrate the failure with appropriate System commentary.'}`
+    ? `\n\nThis is the Syndicate Puzzle Lock scene. Each player was shown a different dungeon riddle (fire, key, shadow, door) and had to talk to each other to solve all four. ${fbState.riddleSolved ? 'They solved all four riddles correctly. The door opened. Narrate the triumph — make it feel earned.' : 'They failed to solve the riddles correctly (used all attempts). The door discharged 8 damage to everyone and then opened anyway via a Syndicate liability clause. Narrate the failure with appropriate System commentary.'}`
     : '';
+
+  // Combat context
+  let combatContext = '';
+  if (scData?.combatData) {
+    const maxHp = scData.combatData.maxHp;
+    const prevHp = state.combat?.enemyHp ?? maxHp;
+    const history = state.combat?.history ? Object.values(state.combat.history) : [];
+    const historyText = history.length ? `\n\nPREVIOUS ROUNDS:\n${history.join('\n---\n')}` : '';
+    const phase2Flag = enteringPhase2
+      ? '\n\n⚠ PHASE 2 TRIGGERED THIS ROUND: Krag uses the Syndicate Emergency Enhancement Serum. His eyes go red. His attacks get faster. He stops trying to finish his speech. Narrate this transition dramatically.'
+      : (state.combat?.phase2 ? '\n\n[PHASE 2 ACTIVE — Krag is enhanced, attacks harder]' : '');
+    const statusLine = newEnemyHp <= 0
+      ? `✓ ENEMIES DEFEATED THIS ROUND — narrate their defeat conclusively.`
+      : combatContinues
+        ? `⚔ COMBAT CONTINUES — enemies still at ${newEnemyHp}/${maxHp} HP. End your narrative mid-fight, with momentum. Do NOT resolve the combat.`
+        : `✓ COMBAT ENDS.`;
+    combatContext = `\n\nCOMBAT STATE (Round ${combatRound}):
+Enemy: ${scData.combatData.name} — HP: ${prevHp}/${maxHp} → ${newEnemyHp}/${maxHp} this round
+${statusLine}${phase2Flag}${historyText}`;
+  }
 
   const prompt = `SCENE ${scene}: ${scData?.name || ''}
 ${scData?.desc || ''}
@@ -1972,7 +2242,7 @@ ${scData?.desc || ''}
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}
+OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -2015,19 +2285,33 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 
     if (goldLoot > 0) {
       Object.keys(freshPlayers).forEach(id => {
+        if (freshPlayers[id]?.status === 'downed') return;
         hpUpd[`players/${id}/gold`] = (freshPlayers[id].gold||0) + goldLoot;
       });
     }
 
+    // Build combat update
+    const combatUpd = {};
+    if (scData?.combatData && newEnemyHp !== null) {
+      combatUpd['combat/enemyHp']   = newEnemyHp;
+      combatUpd['combat/continues'] = combatContinues;
+      combatUpd['combat/round']     = combatRound;
+      if (enteringPhase2) combatUpd['combat/phase2'] = true;
+      // Store narrative in history for next round context
+      const histKey = `combat/history/round${combatRound}`;
+      combatUpd[histKey] = `Round ${combatRound}: ${narrative.substring(0, 300)}...`;
+    }
+
     await ROOT.update({
-      'narration/text':      narrative,
-      'narration/verdict':   verdict,
-      'narration/scene':     scene,
-      'narration/track':     track,
-      'narration/timestamp': Date.now(),
+      'narration/text':       narrative,
+      'narration/verdict':    verdict,
+      'narration/scene':      scene,
+      'narration/track':      track,
+      'narration/timestamp':  Date.now(),
       'narration/generating': false,
-      'session/phase':       'scene_complete',
-      ...hpUpd,
+      'narration/pendingHp':  Object.keys(hpUpd).length ? hpUpd : null,
+      'session/phase':        'scene_complete',
+      ...combatUpd,
     });
   } catch(e) {
     await lock.remove();
@@ -2725,6 +3009,14 @@ function setReady() {
   ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene1_ready', advanceToScene2));
 }
 
+function setReady2() {
+  ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene2_ready', () => {
+    playAllReadySound();
+    triggerReadyFlash();
+    advanceToNextScene();
+  }));
+}
+
 function advanceToScene2() {
   showTransition(2, () => {
     const ps = fbState.players || {};
@@ -2739,20 +3031,47 @@ function advanceToScene2() {
 }
 
 function setContinue() {
-  // First continue: go to system_verdict screen
+  // First continue: go to system_verdict screen — apply HP changes here
   ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('scene_complete', () => {
     playAllReadySound();
     triggerReadyFlash();
-    ROOT.update({ 'session/phase': 'system_verdict', readiness: null });
+    // Apply pending HP/gold changes now that everyone has read the narrative
+    const pending = fbState.narration?.pendingHp || {};
+    const upd = { 'session/phase': 'system_verdict', readiness: null, 'narration/pendingHp': null };
+    Object.assign(upd, pending);
+    ROOT.update(upd);
   }));
 }
 
 function setVerdictContinue() {
-  // Second continue: advance to next scene
   ROOT.child(`readiness/${myId}`).set(true).then(() => checkAllReady('system_verdict', () => {
     playAllReadySound();
     triggerReadyFlash();
-    advanceToNextScene();
+
+    if (fbState.combat?.continues) {
+      // Reset for next combat round
+      const ps = fbState.players || {};
+      const nextRound = (fbState.combat?.round || 1) + 1;
+      const upd = {
+        readiness: null,
+        'narration/text':    null,
+        'narration/verdict': null,
+        'narration/pendingHp': null,
+        'combat/continues':  null,
+        'combat/round':      nextRound,
+        'session/phase':     'choosing',
+      };
+      // Clear lock so narration can fire again
+      upd[`narrationLock/scene${fbState.session?.currentScene}`] = null;
+      Object.keys(ps).forEach(id => {
+        upd[`players/${id}/choice`] = null;
+        upd[`players/${id}/choiceId`] = null;
+        upd[`players/${id}/choiceSubmitted`] = false;
+      });
+      ROOT.update(upd);
+    } else {
+      advanceToNextScene();
+    }
   }));
 }
 
@@ -2771,7 +3090,7 @@ function advanceToNextScene() {
     if (SCENES[next]) {
       upd['session/currentScene'] = next;
       upd['session/phase'] = SCENES[next].type === 'intro' ? 'scene_intro' : 'choosing';
-      // Luna reunion — add her to Melissa's inventory at Scene 8
+      // Luna reunion — add her to Melissa's inventory at Scene 9
       if (next === 9) {
         const melissaId = Object.keys(ps).find(id => ps[id].archetype === 'Melissa');
         if (melissaId) {
@@ -2779,6 +3098,22 @@ function advanceToNextScene() {
           if (!inv.includes('Luna (companion)')) inv.push('Luna (companion)');
           upd[`players/${melissaId}/inventory`] = inv;
         }
+      }
+      // Initialize or clear combat state
+      if (SCENES[next].combatData) {
+        upd['combat/enemyHp']    = SCENES[next].combatData.maxHp;
+        upd['combat/maxEnemyHp'] = SCENES[next].combatData.maxHp;
+        upd['combat/round']      = 1;
+        upd['combat/continues']  = null;
+        upd['combat/phase2']     = null;
+        upd['combat/history']    = null;
+      } else {
+        upd['combat/enemyHp']    = null;
+        upd['combat/maxEnemyHp'] = null;
+        upd['combat/round']      = null;
+        upd['combat/continues']  = null;
+        upd['combat/phase2']     = null;
+        upd['combat/history']    = null;
       }
     } else {
       upd['session/phase'] = 'demo_end';
