@@ -1152,6 +1152,31 @@ function showAchievement(text) {
 let lastVerdictKey = null;
 let verdictTimer   = null;
 
+// ── Riddle waiting tick — re-renders player panel every second so elapsed time is live ──
+let riddleTick = null;
+function manageRiddleTick(phase, me) {
+  const isRiddleWaiting = phase === 'choosing'
+    && SCENES[fbState.session?.currentScene]?.type === 'riddle'
+    && me?.choiceSubmitted;
+
+  if (isRiddleWaiting && !riddleTick) {
+    riddleTick = setInterval(() => {
+      // Only re-render the player panel div, not the full screen
+      const panel = document.querySelector('.player-panel');
+      const me2   = (fbState.players||{})[myId];
+      const scData2 = SCENES[fbState.session?.currentScene];
+      if (panel && me2 && scData2) {
+        panel.innerHTML = me2.status === 'downed'
+          ? buildDownedPanel(me2)
+          : buildPlayerPanel(fbState.session?.phase, me2, scData2, fbState.players || {});
+      }
+    }, 1000);
+  } else if (!isRiddleWaiting && riddleTick) {
+    clearInterval(riddleTick);
+    riddleTick = null;
+  }
+}
+
 function triggerVerdictTypewrite(narr) {
   if (!narr.verdict || !narr.scene) return;
   const key = `v${narr.scene}`;
@@ -1632,6 +1657,7 @@ function renderSceneScreen(phase) {
   </div>`;
 
   manageTaunts(phase, players);
+  manageRiddleTick(phase, me);
 
   // Narrative: fade in (no typewriter)
   if (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready') {
@@ -1727,7 +1753,29 @@ function buildShared(scene, phase, narr, players, scData) {
           <span class="c-icon">${c.icon}</span>${c.text}
           
         </button>`).join('');
-      choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}</div></div>`;
+
+      const freeformBtn = `
+        <button class="c-btn" id="freeformToggle" onclick="toggleFreeform()"
+          style="border-color:var(--gold-d);color:var(--gold);background:rgba(0,0,0,0.2);margin-top:4px;">
+          <span class="c-icon">✍</span>Something else?
+        </button>
+        <div id="freeformArea" style="display:none;margin-top:8px;">
+          <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--sys);margin-bottom:8px;line-height:1.5;">
+            THE SYSTEM is listening. Describe what you do — in your own words.
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="freeformInput" type="text"
+              placeholder="I climb on the goblin and..."
+              style="flex:1;font-family:var(--f-body);font-size:0.95rem;padding:10px 14px;
+                     background:var(--bg-card);border:1px solid var(--gold-d);border-radius:2px;
+                     color:var(--parch);outline:none;"
+              onkeydown="if(event.key==='Enter')submitFreeform()"
+              autocomplete="off" />
+            <button class="btn btn-primary" onclick="submitFreeform()" style="white-space:nowrap;">Submit</button>
+          </div>
+        </div>`;
+
+      choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}${freeformBtn}</div></div>`;
     } else {
       choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
     }
@@ -2111,7 +2159,50 @@ function buildRiddleUI(me, scData) {
     return `<div class="state-msg">✓ The door is open.<div class="sub">Well done.</div></div>`;
   }
   if (me.choiceSubmitted) {
-    return `<div class="state-msg">✓ Answer submitted.<div class="sub">Waiting for the others...</div></div>`;
+    // ── Name-and-shame: show who's still thinking, with elapsed time ──
+    const players  = fbState.players || {};
+    const started  = fbState.riddleStarted || Date.now();
+    const elapsed  = Math.floor((Date.now() - started) / 1000);
+    const mins     = Math.floor(elapsed / 60);
+    const secs     = elapsed % 60;
+    const timeStr  = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+    const waiting = Object.values(players).filter(p =>
+      p.status !== 'downed' && !p.choiceSubmitted && p.playerId !== myId
+    );
+    // Also catch by id in case playerId isn't stored
+    const waitingById = Object.entries(players)
+      .filter(([id, p]) => p.status !== 'downed' && !p.choiceSubmitted && id !== myId)
+      .map(([, p]) => p.name);
+
+    const waitingNames = waitingById.length > 0 ? waitingById : waiting.map(p => p.name);
+
+    const waitingLines = waitingNames.length === 0
+      ? `<div style="color:var(--green-b);margin-top:4px;">Everyone has answered.</div>`
+      : waitingNames.map(name =>
+          `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:var(--red-b);font-size:1rem;">⟳</span>
+            <span style="color:var(--parch);">${esc(name)}</span>
+            <span style="color:var(--parch-d);font-size:0.72rem;margin-left:auto;">still thinking...</span>
+          </div>`
+        ).join('');
+
+    const timeColor = elapsed > 90 ? 'var(--red-b)' : elapsed > 45 ? '#d08030' : 'var(--sys)';
+
+    return `
+      <div style="margin-top:14px;">
+        <div class="state-msg" style="margin-bottom:0;padding-bottom:0;">
+          ✓ Answer submitted.
+          <div class="sub">THE SYSTEM is waiting.</div>
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(0,0,0,0.35);border:1px solid var(--border-a);border-radius:2px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);letter-spacing:0.05em;">WAITING FOR</span>
+            <span style="font-family:var(--f-mono);font-size:0.8rem;color:${timeColor};letter-spacing:0.04em;">${timeStr}</span>
+          </div>
+          <div style="font-family:var(--f-mono);font-size:0.82rem;">${waitingLines}</div>
+        </div>
+      </div>`;
   }
 
   const attemptsLeft = 2 - attempts;
@@ -2164,6 +2255,8 @@ async function submitRiddleAnswer() {
     [`players/${myId}/choiceId`]:        isRight ? 'correct' : 'wrong',
     [`players/${myId}/choiceSubmitted`]: true,
   };
+  // Stamp the start time on the first submission so elapsed clock is synced across all tabs
+  if (!fbState.riddleStarted) upd['riddleStarted'] = Date.now();
   await ROOT.update(upd);
   playChoiceSound();
 
@@ -2204,6 +2297,7 @@ async function submitRiddleAnswer() {
         if (ps[id].status === 'downed') return;
         if (ps[id].choiceId !== 'correct') {
           resetUpd[`players/${id}/choiceSubmitted`] = false;
+          upd[`players/${id}/freeformChoice`] = null;
           resetUpd[`players/${id}/choice`]          = null;
           resetUpd[`players/${id}/choiceId`]        = null;
         }
@@ -2259,6 +2353,35 @@ async function buyItem(itemId) {
   playChoiceSound();
   triggerGoldBounce();
   checkAllSubmitted();
+}
+
+function toggleFreeform() {
+  const area   = document.getElementById('freeformArea');
+  const toggle = document.getElementById('freeformToggle');
+  if (!area) return;
+  const opening = area.style.display === 'none';
+  area.style.display = opening ? 'block' : 'none';
+  if (toggle) toggle.style.borderColor = opening ? 'var(--gold-b)' : 'var(--gold-d)';
+  if (opening) setTimeout(() => document.getElementById('freeformInput')?.focus(), 40);
+}
+
+function submitFreeform() {
+  const me = (fbState.players||{})[myId];
+  if (!me || me.choiceSubmitted) return;
+  const input = document.getElementById('freeformInput');
+  const text  = input?.value.trim();
+  if (!text) return;
+
+  const upd = {
+    [`players/${myId}/choice`]:          text,
+    [`players/${myId}/choiceId`]:        'freeform',
+    [`players/${myId}/choiceSubmitted`]: true,
+    [`players/${myId}/freeformChoice`]:  true,  // flag so narration knows this was improvised
+  };
+  ROOT.update(upd).then(() => {
+    playChoiceSound();
+    checkAllSubmitted();
+  });
 }
 
 function submitByIdx(i) {
@@ -2365,6 +2488,32 @@ async function fireSceneNarration(state) {
         return 'bad';
       })()
     : scData?.outcomeTrack ? scData.outcomeTrack(choiceMap) : 'neutral';
+
+  // ── Freeform detection — if any active player typed their own choice ──
+  const hasFreeform = Object.values(players).some(p => p.freeformChoice && p.status !== 'downed');
+
+  // Build available-options context for Claude when freeform is in play
+  let freeformContext = '';
+  if (hasFreeform) {
+    const me2 = Object.values(players).find(p => p.freeformChoice);
+    const arch = me2?.archetype;
+    if (arch && scData?.getChoices) {
+      const availableOpts = scData.getChoices(arch, me2?.inventory || [], me2?.signatureUsed || false);
+      const optList = availableOpts.map(o => `  • ${o.text}`).join('\n');
+      freeformContext = `\n\nFREEFORM CHOICES IN PLAY:
+One or more players chose to write their own action instead of selecting a listed option.
+Listed options they could have chosen:\n${optList}
+
+When a player writes their own action, judge it against these criteria:
+1. Does it fit who this character is — their archetype, personality, and established abilities?
+2. Does it help, hurt, or ignore what the party needs right now given the scene?
+3. Does it show engagement with the actual situation, or is it evasion/joke/nothing?
+
+A creative choice that fits the character should lean good. A safe but uninspired choice is neutral. Evasion, passivity, or deliberately unhelpful input is bad.
+
+REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIRST LINE of your ---SYSTEM--- section. The damage calculations depend on this. Commit to one — do not hedge.`;
+    }
+  }
 
   // ── Combat round calculation ──
   let combatContinues = false;
@@ -2546,7 +2695,7 @@ ${scData?.desc || ''}
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${track.toUpperCase()} — ${hint[track]||''}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}${bearNote}${geraldNote}
+OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${combatContext}${freeformContext}${bearNote}${geraldNote}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -2564,10 +2713,10 @@ THE SYSTEM delivers its verdict. Use this format:
 - One final status line: dry, blunt, THE SYSTEM voice.
 If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
 
-  // ── Write combat HP update NOW (before Claude call) ──
-  // This ensures the enemy HP bar updates immediately, even if the API call fails or is slow.
-  // combat/continues: true = still fighting. null (not false) = done, so Firebase deletes the field cleanly.
-  if (scData?.combatData && newEnemyHp !== null) {
+  // ── Write combat HP update NOW (before Claude call) — only when track is already known ──
+  // When freeform choices are in play, Claude determines the track, so we skip this
+  // and write combat HP after parsing Claude's response instead.
+  if (scData?.combatData && newEnemyHp !== null && !hasFreeform) {
     const earlyUpd = {
       'combat/enemyHp':   newEnemyHp,
       'combat/continues': combatContinues || null,
@@ -2586,7 +2735,37 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
     // Split on separator
     const sepIdx = raw.indexOf('---SYSTEM---');
     const narrative = sepIdx > -1 ? raw.substring(0, sepIdx).trim() : raw.trim();
-    const verdict   = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : '';
+    let verdict     = sepIdx > -1 ? raw.substring(sepIdx + 12).trim() : '';
+
+    // ── Parse track from Claude response when freeform was in play ──
+    let resolvedTrack = track;
+    if (hasFreeform) {
+      const trackMatch = verdict.match(/^TRACK:\s*(good|neutral|bad)/im);
+      if (trackMatch) {
+        resolvedTrack = trackMatch[1].toLowerCase();
+        // Strip the TRACK line from the verdict so it doesn't show to players
+        verdict = verdict.replace(/^TRACK:\s*(good|neutral|bad)\s*\n?/im, '').trim();
+      }
+      // Recalculate deltas and combat HP now that we know the actual track
+      if (scData?.applyOutcome) {
+        const recalcDeltas = scData.applyOutcome(players, resolvedTrack);
+        Object.assign(deltas, recalcDeltas);
+      }
+      if (scData?.combatData) {
+        const recalcDmg = scData.combatData.partyDamage(choiceMap, resolvedTrack, players);
+        const prevEnemyHp = state.combat?.enemyHp ?? scData.combatData.maxHp;
+        newEnemyHp = Math.max(0, prevEnemyHp - recalcDmg);
+        combatContinues = newEnemyHp > 0 && Object.values(players).some(p => p.status === 'active');
+        // Write the recalculated combat HP now (was skipped pre-Claude for freeform)
+        const freeformCombatUpd = {
+          'combat/enemyHp':   newEnemyHp,
+          'combat/continues': combatContinues || null,
+          'combat/round':     combatRound,
+          ...(combatRound === 1 ? { 'combat/maxEnemyHp': scData.combatData.maxHp } : {}),
+        };
+        await ROOT.update(freeformCombatUpd);
+      }
+    }
 
     // Read fresh HP from Firebase to apply deltas against current values
     const freshSnap = await ROOT.child('players').once('value');
@@ -3360,6 +3539,7 @@ async function advanceToScene2() {
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
+      upd[`players/${id}/freeformChoice`] = null;
       upd[`players/${id}/choiceSubmitted`] = false;
     });
     ROOT.update(upd);
@@ -3413,6 +3593,7 @@ async function setVerdictContinue() {
       upd[`narrationLock/scene${curScene}`] = null;
       Object.keys(ps).forEach(id => {
         upd[`players/${id}/choice`] = null;
+        upd[`players/${id}/freeformChoice`] = null;
         upd[`players/${id}/choiceId`] = null;
         upd[`players/${id}/choiceSubmitted`] = false;
       });
@@ -3429,9 +3610,10 @@ async function advanceToNextScene(lockAlreadyHeld = false) {
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null, riddleStarted:null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
+    upd[`players/${id}/freeformChoice`] = null;
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
       upd[`players/${id}/choiceSubmitted`] = false;
@@ -3607,6 +3789,7 @@ function gmForceNext() {
   const ps   = fbState.players || {};
   const upd  = { 'session/currentScene':next, 'session/phase':'choosing', readiness:null, 'narration/text':null, 'narration/scene':null };
   upd[`narrationLock/scene${next}`] = null;
+  upd[`players/${id}/freeformChoice`] = null;
   Object.keys(ps).forEach(id => {
     upd[`players/${id}/choice`] = null;
     upd[`players/${id}/choiceId`] = null;
@@ -3648,6 +3831,7 @@ function gmJump() {
   const scType = SCENES[n]?.type;
   const phase = (scType === 'intro' || scType === 'victory') ? 'scene_intro' : 'choosing';
   const upd = { 'session/currentScene':n, 'session/phase':phase, readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null };
+  upd[`players/${id}/freeformChoice`] = null;
   upd[`narrationLock/scene${n}`] = null;
   Object.keys(ps).forEach(id => {
     upd[`players/${id}/choice`] = null;
