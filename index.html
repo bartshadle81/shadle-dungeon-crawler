@@ -3279,7 +3279,7 @@ function advanceToNextScene() {
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, riddleAttempts:null, riddleSolved:null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
       upd[`players/${id}/choice`] = null;
@@ -3493,7 +3493,9 @@ function gmJump() {
   const n = parseInt(document.getElementById('gmJump')?.value);
   if (!n) return;
   const ps  = fbState.players || {};
-  const upd = { 'session/currentScene':n, 'session/phase':'choosing', readiness:null, 'narration/text':null, 'narration/scene':null };
+  const scType = SCENES[n]?.type;
+  const phase = (scType === 'intro' || scType === 'victory') ? 'scene_intro' : 'choosing';
+  const upd = { 'session/currentScene':n, 'session/phase':phase, readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null };
   upd[`narrationLock/scene${n}`] = null;
   Object.keys(ps).forEach(id => {
     upd[`players/${id}/choice`] = null;
