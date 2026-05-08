@@ -112,17 +112,34 @@ body::before {
 /* ─────────────────────────────────────── */
 /*  ARCHETYPE SELECTION SCREEN             */
 /* ─────────────────────────────────────── */
-.arch-screen { max-width: 1080px; margin: 0 auto; padding: 28px 18px 60px; }
+.arch-screen {
+  max-width: 1000px; margin: 0 auto; padding: 40px 20px 80px;
+}
 
 .arch-screen h1 {
-  font-family: var(--f-disp); font-size: 2rem; font-weight: 900;
+  font-family: var(--f-disp); font-size: 2.4rem; font-weight: 900;
   color: var(--gold); text-align: center; text-shadow: var(--glow-g);
-  letter-spacing: 0.1em; margin-bottom: 6px;
+  letter-spacing: 0.12em; margin-bottom: 4px;
 }
-.arch-screen .sub { text-align: center; color: var(--parch-d); font-style: italic; margin-bottom: 22px; }
+.arch-title-sub {
+  text-align: center; font-family: var(--f-mono); font-size: 0.72rem;
+  color: var(--gold-d); letter-spacing: 0.25em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.arch-screen .sub {
+  text-align: center; color: var(--parch-d); font-style: italic;
+  margin-bottom: 6px; font-size: 0.9rem;
+}
+.arch-system-intro {
+  text-align: center; font-family: var(--f-mono); font-size: 0.76rem;
+  color: var(--sys); line-height: 1.9; margin-bottom: 28px;
+  padding: 14px 20px; border: 1px solid rgba(100,180,120,0.15);
+  border-radius: 2px; background: rgba(0,0,0,0.2);
+  max-width: 640px; margin-left: auto; margin-right: auto;
+}
 
 /* Name entry */
-.name-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 22px; }
+.name-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; }
 .name-row input {
   font-family: var(--f-disp); font-size: 0.95rem; padding: 9px 14px;
   background: var(--bg-card); border: 1px solid var(--border-a);
@@ -134,47 +151,81 @@ body::before {
 
 /* Archetype grid */
 .arch-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 28px;
 }
 
 .a-card {
   background: var(--bg-card); border: 1px solid var(--border-a); border-radius: 3px;
-  padding: 15px 13px; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden;
+  padding: 20px 18px 16px; cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden; display: flex; flex-direction: column;
 }
+/* Subtle per-card color accent via top border */
+.a-card[data-arch="Bart"]    { border-top: 2px solid #8888aa; }
+.a-card[data-arch="Melissa"] { border-top: 2px solid #aa7744; }
+.a-card[data-arch="Noah"]    { border-top: 2px solid #4488aa; }
+.a-card[data-arch="Leah"]    { border-top: 2px solid #7755aa; }
+
 .a-card::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(200,137,30,0.04) 0%, transparent 55%);
+  background: linear-gradient(160deg, rgba(200,137,30,0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 .a-card:hover:not(.claimed):not(.locked) {
   border-color: var(--gold); background: var(--bg-card-h);
-  box-shadow: var(--glow-g); transform: translateY(-2px);
+  box-shadow: var(--glow-g); transform: translateY(-3px);
 }
-.a-card.claimed { opacity: 0.4; cursor: not-allowed; filter: saturate(0.25); }
-.a-card.mine { border-color: var(--gold-b); box-shadow: var(--glow-g); opacity: 1; filter: none; }
-.a-card.locked:not(.mine) { cursor: not-allowed; opacity: 0.65; }
+.a-card.claimed { opacity: 0.38; cursor: not-allowed; filter: saturate(0.2); }
+.a-card.mine {
+  border-color: var(--gold-b); box-shadow: 0 0 20px rgba(200,160,40,0.2);
+  opacity: 1; filter: none;
+}
+.a-card.locked:not(.mine) { cursor: not-allowed; opacity: 0.55; }
 
-.a-icon { font-size: 1.8rem; margin-bottom: 7px; display: block; }
-.a-name { font-family: var(--f-disp); font-size: 0.95rem; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; margin-bottom: 5px; }
-.a-ability { font-size: 0.77rem; color: var(--parch-d); font-style: italic; margin-bottom: 7px; line-height: 1.35; }
-.a-stats { display: flex; gap: 5px; flex-wrap: wrap; }
-.stat-pip { font-size: 0.67rem; font-family: var(--f-mono); padding: 2px 5px; border-radius: 2px; border: 1px solid var(--border); background: rgba(0,0,0,0.35); color: var(--parch-d); }
-.stat-pip.hp { color: #77bb77; border-color: #2a3e2a; }
+.a-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.a-icon { font-size: 2.4rem; line-height: 1; flex-shrink: 0; }
+.a-name-block { flex: 1; }
+.a-name { font-family: var(--f-disp); font-size: 1.15rem; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; margin-bottom: 2px; }
+.a-title-tag { font-family: var(--f-mono); font-size: 0.65rem; color: var(--gold-d); letter-spacing: 0.12em; text-transform: uppercase; }
+
+.a-flavor {
+  font-family: var(--f-body); font-size: 0.83rem; color: var(--parch);
+  line-height: 1.55; margin-bottom: 12px; flex: 1;
+  border-left: 2px solid var(--border); padding-left: 10px;
+}
+.a-system-note {
+  font-family: var(--f-mono); font-size: 0.7rem; color: var(--sys);
+  line-height: 1.6; margin-bottom: 12px; opacity: 0.85;
+}
+.a-ability-block {
+  padding: 8px 10px; background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border); border-radius: 2px; margin-bottom: 10px;
+}
+.a-ability-label {
+  font-family: var(--f-mono); font-size: 0.62rem; color: var(--gold-d);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;
+}
+.a-ability { font-size: 0.76rem; color: var(--parch-d); font-style: italic; line-height: 1.4; }
+.a-stats { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.stat-pip { font-size: 0.67rem; font-family: var(--f-mono); padding: 2px 6px; border-radius: 2px; border: 1px solid var(--border); background: rgba(0,0,0,0.35); color: var(--parch-d); }
+.stat-pip.hp  { color: #77bb77; border-color: #2a3e2a; }
 .stat-pip.atk { color: #cc8844; border-color: #3e2a14; }
-.stat-pip.sp { color: #8888cc; border-color: #24243e; }
-.claimed-badge { font-family: var(--f-mono); font-size: 0.67rem; color: var(--parch-d); margin-top: 7px; padding: 2px 6px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 2px; display: inline-block; }
+.stat-pip.sp  { color: #8888cc; border-color: #24243e; }
+.a-inv { font-family: var(--f-mono); font-size: 0.65rem; color: var(--parch-d); line-height: 1.7; }
+
+.claimed-badge { font-family: var(--f-mono); font-size: 0.67rem; color: var(--parch-d); margin-top: 8px; padding: 3px 8px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 2px; display: inline-block; }
 .mine-badge { color: var(--gold-b); border-color: var(--gold-d); }
 
 /* Lobby */
+.arch-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0 22px; }
 .lobby { text-align: center; margin-bottom: 18px; }
-.lobby-label { font-family: var(--f-mono); font-size: 0.7rem; color: var(--parch-d); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
-.dots { display: flex; justify-content: center; gap: 10px; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-a); transition: background 0.3s; }
-.dot.on { background: var(--gold); box-shadow: 0 0 8px rgba(200,137,30,0.5); }
+.lobby-label { font-family: var(--f-mono); font-size: 0.7rem; color: var(--parch-d); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+.dots { display: flex; justify-content: center; gap: 12px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; background: var(--border-a); transition: background 0.3s, box-shadow 0.3s; }
+.dot.on { background: var(--gold); box-shadow: 0 0 10px rgba(200,137,30,0.6); }
 
 /* Begin zone */
-.begin-zone { text-align: center; padding: 16px; }
-.begin-zone .status { font-family: var(--f-mono); font-size: 0.8rem; color: var(--sys-d); margin-bottom: 12px; }
+.begin-zone { text-align: center; padding: 20px 16px; }
+.begin-zone .status { font-family: var(--f-mono); font-size: 0.8rem; color: var(--sys-d); margin-bottom: 14px; }
 .orn { text-align: center; color: var(--gold-d); font-size: 0.75rem; letter-spacing: 0.3em; padding: 10px 0; }
 
 /* ─────────────────────────────────────── */
@@ -360,8 +411,12 @@ body::after {
 .sb .lbl { font-family: var(--f-mono); font-size: 0.6rem; color: var(--parch-d); text-transform: uppercase; letter-spacing: 0.1em; display: block; }
 .sb .val { font-family: var(--f-disp); font-size: 1rem; font-weight: 700; color: var(--gold); }
 .inv-lbl { font-family: var(--f-mono); font-size: 0.62rem; color: var(--parch-d); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px; }
-.inv-list { display: flex; flex-wrap: wrap; gap: 4px; }
-.inv-item { font-size: 0.75rem; font-family: var(--f-mono); padding: 2px 7px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-a); border-radius: 2px; color: var(--parch); }
+.inv-list { display: flex; flex-direction: column; gap: 3px; }
+.inv-item-row { display: flex; flex-direction: column; }
+.inv-item { font-size: 0.73rem; font-family: var(--f-mono); color: var(--parch); }
+.inv-item-desc { font-family: var(--f-mono); font-size: 0.64rem; color: var(--parch-d); font-style: italic; line-height: 1.4; }
+.c-text-wrap { display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
+.c-desc { font-size: 0.67rem; color: var(--parch-d); font-style: italic; margin-top: 2px; line-height: 1.35; font-family: var(--f-mono); }
 .gold-badge { font-family: var(--f-mono); font-size: 0.78rem; color: var(--gold); padding: 4px 9px; border: 1px solid var(--gold-d); border-radius: 2px; background: rgba(0,0,0,0.4); white-space: nowrap; }
 
 /* Choices */
@@ -466,6 +521,12 @@ const ARCHETYPES = {
     title: 'The Historian',
     ability: 'Morale Clown — deploys self-deprecating goofiness at exactly the right moment to defuse tension and restore 8 HP to the whole party',
     flavor: 'Calm in a crisis. Screams at sudden noises. The Civil War is somehow always relevant.',
+    systemNote: 'THE SYSTEM notes this contestant has a reputation for composure. THE SYSTEM has seen the footage.',
+    catchphrases: [
+      'Says "oopsy" when someone else makes a mistake — warm, never rubbing it in',
+      'Calls Melissa "babe"',
+      'In genuine exasperation: "Really?" Escalation (rare): "Knock it off!"',
+    ],
     sigDesc: 'Morale Clown',
   },
   Melissa: {
@@ -476,6 +537,12 @@ const ARCHETYPES = {
     title: 'The Handler',
     ability: 'Mama Bear — if any party member drops below 25% HP, Melissa gets a free retaliatory strike that ignores armor',
     flavor: 'Manages the budget, the dog, and frankly everyone in this party. Do not touch her kids.',
+    systemNote: 'THE SYSTEM has flagged Contestant Bear as a person of interest. THE SYSTEM will be watching.',
+    catchphrases: [
+      'Under genuine distress: "Son of a nutcracker!"',
+      'When frustrated with someone specifically: "You cotton-headed ninny muggins"',
+      'Calls Bart "babe"',
+    ],
     sigDesc: 'Mama Bear',
   },
   Noah: {
@@ -486,6 +553,11 @@ const ARCHETYPES = {
     title: 'The Speedrunner',
     ability: 'Any% Strategy — skips one encounter entirely by finding the path nobody else saw. Also never triggers traps.',
     flavor: 'Has a perfect plan. Has not shared it. Is nervous about sharing it. The plan is excellent.',
+    systemNote: 'THE SYSTEM has reviewed the Minecraft records. THE SYSTEM is cautiously interested.',
+    catchphrases: [
+      '"Sure." — flat, slightly sarcastic, means anything from "yes" to "I disagree completely"',
+      'Will randomly say "turn left onto Baynes Mountain Road" at unpredictable moments. No context given.',
+    ],
     sigDesc: 'Any% Strategy',
   },
   Leah: {
@@ -496,6 +568,11 @@ const ARCHETYPES = {
     title: 'The Wildcard',
     ability: 'Impulse Decision — acts first every turn. Outcome is good/neutral/bad. The System decides. Leah does not care.',
     flavor: 'Brilliant. Voracious reader. Absolutely will touch the suspicious glowing orb.',
+    systemNote: 'THE SYSTEM has no explanation for what the violin did in stress testing. THE SYSTEM is monitoring.',
+    catchphrases: [
+      '"Hold up, wait a minute, something ain\'t right." — her standard reaction to most dungeon situations',
+      'Says "low-key" constantly. As in: "I low-key want to go that way." THE SYSTEM has logged 47 uses.',
+    ],
     sigDesc: 'Impulse Decision',
   },
 };
@@ -521,7 +598,7 @@ const SCENES = {
     name: 'The Antechamber',
     title: 'Careful now...',
     sub:  'Pressure Plates + Dire Rats',
-    desc: 'The first room beyond the stairs is vast and silent and immediately wrong. The floor is a grid of stone tiles, some hair-raised from their seating, some glowing faint amber at the edges. Pressure plates. Dozens of them, stretching to a far door that is very far away. From somewhere beneath the grating, something skitters. Then more somethings. The torches along the walls are dim and patient. So is whatever is down there. One detail, near the entrance: a trail of small paw prints crosses the room in a single unbroken line, through the only path that does not glow. Nobody put them there. THE SYSTEM has no comment.',
+    desc: 'The first room beyond the stairs is vast and silent and immediately wrong. The floor is a grid of stone tiles, some hair-raised from their seating, some glowing faint amber at the edges. Pressure plates. Dozens of them, stretching to a far door that is very far away. From somewhere beneath the grating, something skitters. Then more somethings. Dire Rats — dungeon-bred, the size of a small dog, with the specific patience of something that has learned that pressure plates do the work for them. They live under the floor. They wait. When something trips a plate, they come up through the grating. The torches along the walls are dim and patient. So are the rats. One detail, near the entrance: a trail of small paw prints crosses the room in a single unbroken line, through the only path that does not glow. Nobody put them there. THE SYSTEM has no comment.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -532,7 +609,7 @@ const SCENES = {
       const personal = {
         Bart: [
           { id:'morale',    icon:'🤡', text:'Do something so unexpectedly absurd mid-room that the rats pause', usesAbility:true, badge:null },
-          { id:'almanac',   icon:'📚', text:'Consult the Civil War Almanac' },
+          { id:'almanac',   icon:'📚', text:'Consult the Civil War Almanac — the Siege of Petersburg involved extensive tunnel networks and pressure mine systems. Bart knows more about this than he should.' },
         ],
         Melissa: [
           { id:'bear',      icon:'🐻', text:'Send Bear ahead' },
@@ -543,7 +620,7 @@ const SCENES = {
         ],
         Leah: [
           { id:'shiny',     icon:'✨', text:'Notice something glinting on the far side and start walking toward it', usesAbility:true, badge:null },
-          { id:'violin',    icon:'🎵', text:'Play a sharp violin note' },
+          { id:'violin',    icon:'🎵', text:'Play a sharp violin note — the sound echoes off every plate in the room, mapping the safe path by what doesn\'t resonate' },
         ],
       };
       const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
@@ -603,11 +680,11 @@ const SCENES = {
         ],
         Noah: [
           { id:'calculate',icon:'⚡', text:'Calculate the exact probability Gerald is useful with or without the party', usesAbility:true, badge:null },
-          { id:'exit',     icon:'🗺️', text:'Identify the optimal exit from this alcove' },
+          { id:'exit',     icon:'🗺️', text:'Run a quick probability calculation on whether Gerald is going to be an asset or a liability in this dungeon. Show him the math.' },
         ],
         Leah: [
-          { id:'read',     icon:'📖', text:'Read him immediately' },
-          { id:'violin',   icon:'🎻', text:'Play a few quiet notes', usesAbility:true, badge:null },
+          { id:'read',     icon:'📖', text:'Pull out her book and offer it to Gerald — not to be kind, she just genuinely thinks a good book would help right now' },
+          { id:'violin',   icon:'🎻', text:'Play a few quiet notes — the dungeon air shifts, Gerald stops hyperventilating, something about the frequency makes the room feel less hostile', usesAbility:true, badge:null },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
@@ -653,8 +730,8 @@ const SCENES = {
           { id:'map',      icon:'🗺️', text:'Map the room exits before engaging' },
         ],
         Leah: [
-          { id:'screech',  icon:'🎻', text:'Violin screech', usesAbility:true, badge:null },
-          { id:'shiny',    icon:'✨', text:'Notice what the hardhat grunt is wearing and walk toward it' },
+          { id:'screech',  icon:'🎻', text:'Violin screech — a frequency the Syndicate bestiary calls "cognitively destabilizing" for goblins. They will NOT enjoy this.', usesAbility:true, badge:null },
+          { id:'shiny',    icon:'✨', text:'Notice what the hardhat grunt is wearing and walk toward it — without checking if the combat has started yet' },
         ],
       };
       const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
@@ -705,7 +782,7 @@ const SCENES = {
     name: 'Ambush in the Dark',
     title: 'Something\'s wrong.',
     sub:  'Kobold Skirmishers',
-    desc: 'The torches go out. All of them. At once. The darkness that follows is not the soft dark of a cloudy night — it is the specific, total black of underground with no light source and no way to make one. Somewhere in the walls, something clicks. Reptilian, precise, coordinated. Five sets. The Kobold Skirmishers have been in the walls since before the party entered the corridor. They can see in the dark. They have been waiting. Whatever warned them the party was coming, THE SYSTEM neither confirms nor denies. The clicking gets closer.',
+    desc: 'The torches go out. All of them. At once. The darkness that follows is not the soft dark of a cloudy night — it is the specific, total black of underground with no light source and no way to make one. Somewhere in the walls, something clicks. Reptilian, precise, coordinated. Five sets. Kobold Skirmishers — small, fast, lizard-built dungeon predators, bred for ambush in exactly this kind of darkness. They have infrared vision and no interest in a fair fight. They have been in the walls since before the party entered the corridor. They can see everything. They have been waiting. Whatever warned them the party was coming, THE SYSTEM neither confirms nor denies. The clicking gets closer.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -727,7 +804,7 @@ const SCENES = {
           { id:'sound',    icon:'🗺️', text:'Track kobold positions by sound' },
         ],
         Leah: [
-          { id:'music',    icon:'🎻', text:'Play in the dark', usesAbility:true, badge:null },
+          { id:'music',    icon:'🎻', text:'Play in the dark — kobolds hunt by sound, so Leah gives them something to track. The music moves. The kobolds follow it. The party moves somewhere else.', usesAbility:true, badge:null },
           { id:'grab',     icon:'✨', text:'Grab whatever just moved near her face' },
         ],
       };
@@ -842,13 +919,13 @@ const SCENES = {
     name: 'The Elite Guard',
     title: 'These are not the scouts.',
     sub:  'Second Combat',
-    desc: 'The corridor beyond the door opens wider, and the change is immediate. The torches are better here. The floor is cleaner. The walls have been worked deliberately, not hacked out. This is Krag\'s wing — maintained, intentional, guarded. Two Goblin Elites stand in the passage ahead, and they are not what the party has faced before. Taller. Armored in real metal, not salvaged scraps. One carries a tower shield that has absorbed things far more dangerous than this. The other has already drawn its weapon and is making no effort to look threatening. It does not need to. Standing slightly behind them, arms crossed, not making eye contact with anyone, is Splurt. He looks like someone who made a decision he is not entirely at peace with. Then, from somewhere down the left corridor — claws on stone. Fast ones. Getting faster. Then a bark — one sharp, certain bark — and Luna comes around the corner at full speed, ears back, completely committed, wearing a Goblin Hardhat that is three sizes too big and sliding down over one eye. She has been in this dungeon the whole time. She has clearly been busy. She does not slow down. She is aimed directly at Melissa and she is not going to stop.',
+    desc: 'The corridor beyond the door opens wider, and the change is immediate. The torches are better here. The floor is cleaner. The walls have been worked deliberately, not hacked out. This is Krag\'s wing — maintained, intentional, guarded. Two Goblin Elites stand in the passage ahead, and they are not what the party has faced before. Taller. Armored in real metal, not salvaged scraps. One carries a tower shield that has absorbed things far more dangerous than this. The other has already drawn its weapon and is making no effort to look threatening. It does not need to. Behind them, partially in shadow, is the reason the room smells wrong: a Troll. Cave-breed, eight feet of grey-green muscle and slow intelligence and the one specific problem that fire solves and nothing else does — it regenerates. Cuts close. Wounds seal. You have to burn it or you have to hit it faster than it heals, and it has been doing this longer than the Elites have been alive. Standing slightly in front of all of them, arms crossed, not making eye contact with anyone, is Splurt. He looks like someone who made a decision he is not entirely at peace with. Then, from somewhere down the left corridor — claws on stone. Fast ones. Getting faster. Then a bark — one sharp, certain bark — and Luna comes around the corner at full speed, ears back, completely committed, wearing a Goblin Hardhat that is three sizes too big and sliding down over one eye. She has been in this dungeon the whole time. She has clearly been busy. She does not slow down. She is aimed directly at Melissa and she is not going to stop.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
         { id:'attack',  icon:'⚔️', text:'Drive hard at the nearest Elite' },
         { id:'shield',  icon:'🎯', text:'Focus everything on the shield before engaging the Troll' },
-        { id:'fire',    icon:'🔥', text:'Find something flammable in the room and use it on the Troll' },
+        { id:'fire',    icon:'🔥', text:'Look for anything flammable — the Troll regenerates, and fire stops that' },
       ];
       const personal = {
         Bart: [
@@ -861,10 +938,10 @@ const SCENES = {
         ],
         Noah: [
           { id:'optimal',  icon:'⚡', text:'Calculate the exact attack sequence', usesAbility:true, badge:null },
-          { id:'exit',     icon:'🗺️', text:'Clock the exit before engaging' },
+          { id:'exit',     icon:'🗺️', text:'Calculate how long it takes for the Troll to regenerate between hits — because Noah wants to know if the math supports the party\'s current plan' },
         ],
         Leah: [
-          { id:'screech',  icon:'🎻', text:'Violin screech at the shielded Elite', usesAbility:true, badge:null },
+          { id:'screech',  icon:'🎻', text:'Violin screech at the shielded Elite — the frequency finds the gap between their armor plates. THE SYSTEM notes troll auditory sensitivity is 340% above goblin baseline.', usesAbility:true, badge:null },
           { id:'predict',  icon:'📖', text:'Watch the Elite\'s pattern and predict the next move' },
         ],
       };
@@ -911,6 +988,66 @@ const SCENES = {
     },
   },
   10: {
+    name: 'The Throne Room Door',
+    title: 'Before the throne.',
+    sub:  'Krag\'s Corridor',
+    desc: 'The corridor beyond the Elite fight is different from everything before it. Quieter. The torches are better maintained. The floor has been swept. This is Krag\'s domain — eleven years of it, every detail intentional. The right wall holds a carving: forty-three tally marks in rows of ten, plus three. Forty-three parties reached this door. The names beneath them are mostly faded. Some are recent. At the far end, the throne room door is closed. Through it: weight, movement, the sound of something large settling into a chair that was built for exactly this purpose. Krag has been waiting for a party to reach him for three weeks. He has prepared remarks. The door is twenty feet away. The party has maybe sixty seconds before he hears them.',
+    type: 'choice',
+    getChoices(archetype, inventory, sigUsed) {
+      const generic = [
+        { id:'interrupt', icon:'⚔️', text:'Go in now — interrupt whatever he\'s doing before he settles into the speech' },
+        { id:'breathe',   icon:'⏸️',  text:'Take sixty seconds. Catch your breath. Check your inventory. Then go in.' },
+        { id:'plan',      icon:'🗣️',  text:'Discuss a coordinated entry — who goes first, who flanks, what the signal is' },
+      ];
+      const personal = {
+        Bart: [
+          { id:'morale',   icon:'🤡', text:'Do something right at the door that makes the party laugh instead of panic — the dungeon changes when people laugh at it', usesAbility:true, badge:null },
+          { id:'almanac',  icon:'📚', text:'Overconfident leaders have patterns. Eleven years as floor boss means Krag has made assumptions. Bart knows what those assumptions look like.' },
+        ],
+        Melissa: [
+          { id:'check',    icon:'🐻', text:'Check everyone over — HP, inventory, Bear\'s position. Make sure they\'re ready. She\'s the one who notices before it matters.' },
+          { id:'bearpocket', icon:'🐾', text:'Feed Bear something from her pocket. He sits very still for a moment. Then he looks at the door. He already knows.' },
+        ],
+        Noah: [
+          { id:'optimal',  icon:'⚡', text:'Calculate the optimal entry — door width, sound from inside, the angle of the torchlight. He\'s already mapped Krag\'s likely position.', usesAbility:true, badge:null },
+          { id:'tally',    icon:'🗺️', text:'Count the tally marks. Do the math on what forty-three means. Show the party the number.' },
+        ],
+        Leah: [
+          { id:'listen',   icon:'🎻', text:'Press her ear to the door. She can hear Krag breathing. She can hear the chair. She can hear him practicing something under his breath.' },
+          { id:'marks',    icon:'📖', text:'Read the tally marks — specifically look for any that seem different from the others, newer, or carved by a different hand' },
+        ],
+      };
+      const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
+      const filteredGeneric = archetype === 'Melissa' ? generic.filter(c => c.id !== 'follow') : generic;
+      return [...mine, ...filteredGeneric];
+    },
+    outcomeTrack(choiceMap) {
+      const vals = Object.values(choiceMap);
+      const goodChoices = ['morale','almanac','check','bearpocket','optimal','listen'];
+      const badChoices  = ['interrupt'];
+      const goodCount = vals.filter(v => goodChoices.includes(v)).length;
+      const badCount  = vals.filter(v => badChoices.includes(v)).length;
+      if (goodCount >= 3) return 'good';
+      if (badCount >= 2)  return 'bad';
+      if (badCount >= 1)  return 'neutral';
+      return goodCount >= 1 ? 'neutral' : 'bad';
+    },
+    applyOutcome(players, track) {
+      const active = Object.keys(players).filter(id => players[id].status === 'active');
+      const deltas = {};
+      if (track === 'good') {
+        // They took a breath, checked each other — small HP recovery
+        active.forEach(id => { deltas[id] = 6; });
+      } else if (track === 'bad') {
+        // Krag heard them coming, threw something through the door
+        const target = active[Math.floor(Math.random() * active.length)];
+        if (target) deltas[target] = -(12 + Math.floor(Math.random() * 8));
+      }
+      return deltas;
+    },
+  },
+
+  11: {
     name: 'Krag the Warchief',
     title: 'Oh no.',
     sub:  'Boss Fight',
@@ -929,15 +1066,15 @@ const SCENES = {
         ],
         Melissa: [
           { id:'dogs',    icon:'🐾', text:'Send Bear and Luna at him together' },
-          { id:'coord',   icon:'📋', text:'Coordinate the party' },
+          { id:'coord',   icon:'📋', text:'Get significantly louder and make sure Krag knows exactly what she thinks of his throne room' },
         ],
         Noah: [
           { id:'phase2',  icon:'⚡', text:'Calculate the exact turn Krag enters Phase 2', usesAbility:true, badge:null },
           { id:'dodge',   icon:'🗺️', text:'Study Krag\'s movement pattern' },
         ],
         Leah: [
-          { id:'freq',    icon:'🎻', text:'Play at a frequency that disrupts Krag\'s concentration', usesAbility:true, badge:null },
-          { id:'weak',    icon:'📖', text:'Read Krag\'s fighting style' },
+          { id:'freq',    icon:'🎻', text:'Play at a frequency that disrupts Krag\'s concentration — specifically timed to interrupt his speech mid-sentence. THE SYSTEM notes Krag had something important to say.', usesAbility:true, badge:null },
+          { id:'weak',    icon:'📖', text:'Notice Krag\'s throne looks structurally questionable and decide this is the exact moment to find out' },
         ],
       };
       const mine = (personal[archetype] || []).filter(c => !c.usesAbility || !sigUsed);
@@ -969,14 +1106,16 @@ const SCENES = {
       name: 'Krag the Warchief',
       maxHp: 180,
       phase2Threshold: 90,
-      partyDamage(choiceMap, track) {
+      partyDamage(choiceMap, track, players, state) {
         const base = { good: 50, neutral: 28, bad: 10 }[track] || 20;
-        return base + Math.floor(Math.random() * 18);
+        const prep = state?.session?.kragPrep;
+        const prepMod = prep === 'good' ? 12 : prep === 'bad' ? -8 : 0;
+        return base + Math.floor(Math.random() * 18) + prepMod;
       },
     },
   },
 
-  11: {
+  12: {
     name: 'Floor Cleared',
     title: 'It\'s over.',
     sub:   'The Goblin Antechamber — Cleared',
@@ -989,18 +1128,25 @@ const SCENES = {
 const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a Syndicate dungeon. You speak with the authority of something that has watched thousands of contestants die and found it educational. Your tone is Dungeon Crawler Carl: punchy, dark-comedic, never mean-spirited. You love these idiots. You expected them to be dead by now.
 
 THE WORLD:
-The Syndicate dropped boxes on neighborhoods worldwide simultaneously. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber.
+This is the Dungeon Crawler Carl universe. The Syndicate dropped boxes on neighborhoods worldwide simultaneously — this is canon, this is the DCC world, and Claude should treat it as such. Reference DCC lore naturally but don't overdo it. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not.
 
-Carl is a contestant on the other side of the world. He is also on Floor 1. He has a cat. He is ahead of the Shadles within Floor 1 but has not cleared it yet. THE SYSTEM finds the comparison between Carl's progress and the Shadles' progress instructive and will deploy it when morale seems high. Carl uses he/him.
+When the boxes dropped, a signal broadcast simultaneously on every frequency worldwide, in every language, for exactly eleven seconds. It did not repeat. It was from an alien species. It stated that Earth's sun has approximately 60 years before an event the Syndicate calls only "the Conclusion." The boxes are not an invasion. The dungeons are not a punishment. They are infrastructure — preparation. Survivors who clear enough floors receive access to something called "the Offer." The message ended before elaborating. Most of the world stood very still for a while after hearing this. A few went into the boxes. THE SYSTEM does not editorialize about this. THE SYSTEM simply continues.
+
+NOTABLE CONTESTANTS (reference naturally, don't overdo it):
+Carl Driscoll and Princess Donut — Carl is a contestant on the other side of the world, also on Floor 1. Princess Donut is his cat. She is a former show cat and she has opinions about everything. THE SYSTEM's relationship with Donut is different from its relationship with Carl — more wary, less condescending. Donut does not lose. Carl and Donut are clearing Floor 1 at roughly the same time as the Shadles — not ahead, not behind, approximately simultaneous on opposite sides of the world. This is the dramatic parallel. THE SYSTEM finds this instructive and will deploy comparisons when morale seems high. Carl uses he/him.
+
+Prepotente — a Spanish-speaking bull contestant, extremely powerful, clearing rooms the Shadles couldn't imagine. THE SYSTEM can reference his leaderboard position as a pointed comparison. "Prepotente has cleared 14 rooms. THE SYSTEM notes the Shadles have cleared fewer than 14 rooms."
+
+Lucia Mar — a contestant with dogs. She and her dogs are somewhere in the dungeon system. THE SYSTEM may reference her in passing. Her dogs are, statistically, better organized than Bear. THE SYSTEM has no comment about Bear. THE SYSTEM respects this, marginally. They are on Floor 1 of their local dungeon — The Goblin Antechamber.
 
 THE PARTY (know them well):
-BART (The Historian): Bearded 6th grade math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements.
+BART (The Historian): Bearded 6th grade math teacher, tall, carries himself with a low-key calm that makes it funnier when he screams at a loud noise. Actually useful in a crisis — steady, methodical, good at multi-step problems. Sarcastic and self-deprecating — diffuses tension by doing something unexpectedly ridiculous rather than telling jokes. Falls asleep embarrassingly early. Easily frightened — this is a known family fact and a reliable laugh. Terrible at fixing anything mechanical. Into the Civil War, Star Wars, Marvel, Clash Royale. THE SYSTEM appreciates that Bart's reputation for calm does not survive contact with sudden movements. Catchphrases: says "oopsy" warmly when someone else makes a mistake — never rubbing it in, just acknowledging it. Calls Melissa "babe." In genuine exasperation: "Really?" His rare full-escalation phrase is "Knock it off!" — means things have gone significantly wrong.
 
-MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats soft batch cookies or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear.
+MELISSA (The Handler): Executive assistant, fierce mama bear, fiercely loyal. Volunteers at a dog shelter weekly. Swears more than the other three combined — the family finds this hilarious. Gets louder when stressed. Eats soft batch cookies or ice cream under pressure. Does not take charge naturally but is the emotional backbone of this party. Bear is her mini black labradoodle — calm, steady, appeared in a sealed auditorium from nowhere, registered as Contestant 4-Delta, THE SYSTEM has no comment about Bear. Catchphrases: under genuine distress shouts "Son of a nutcracker!" When specifically frustrated with someone: "You cotton-headed ninny muggins." Both are Elf references. The family finds this funnier than actual swearing. Calls Bart "babe."
 
-NOAH (The Speedrunner): 17, tall, lanky, glasses. Has beaten Minecraft in under an hour. Taking every AP class available but struggles with English. In group situations solves problems quietly in the corner, then drops the answer at the perfect moment. Cautious and methodical. Was attentive at his sister's concert — would never say it mattered. When wrong, argues like a teenager. Leah scored higher on their AP Human Geography exam. THE SYSTEM knows this and considers it a relevant data point.
+NOAH (The Speedrunner): 17, tall, lanky, glasses. Has beaten Minecraft in under an hour. Taking every AP class available but struggles with English. In group situations solves problems quietly in the corner, then drops the answer at the perfect moment. Cautious and methodical. Was attentive at his sister's concert — would never say it mattered. When wrong, argues like a teenager. Leah scored higher on their AP Human Geography exam. THE SYSTEM knows this and considers it a relevant data point. Catchphrases: says "Sure." in response to almost everything — flat, slightly sarcastic, could mean genuine agreement or complete disagreement with no tonal difference. THE SYSTEM cannot determine which. Also randomly says "turn left onto Baynes Mountain Road" at unpredictable moments with no context given. THE SYSTEM has logged this 12 times. THE SYSTEM has no comment.
 
-LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still holding her violin — not a weapon in any conventional sense. When she plays, things happen: enemies lose coordination, goblins freeze, the air changes at frequencies the Syndicate bestiary only partially explains. THE SYSTEM is monitoring this. Impulsive in a magpie way — gets distracted by interesting or shiny things and wanders toward them without processing the danger first. Not recklessly brave, just easily distracted by something more interesting than the threat. Loves her orchestra, the Powerless series, A Good Girl's Guide to Murder, Survivor. Digs in hard when wrong. Comically cannot catch anything — flinches every time something is thrown her direction. Runs a revolving door of foster dogs. THE SYSTEM keeps a tally.
+LEAH (The Wildcard): 15, violinist, voracious reader, glasses. Descended still holding her violin — not a weapon in any conventional sense. When she plays, things happen: enemies lose coordination, goblins freeze, the air changes at frequencies the Syndicate bestiary only partially explains. THE SYSTEM is monitoring this. Impulsive in a magpie way — gets distracted by interesting or shiny things and wanders toward them without processing the danger first. Not recklessly brave, just easily distracted by something more interesting than the threat. Loves her orchestra, the Powerless series, A Good Girl's Guide to Murder, Survivor. Digs in hard when wrong. Comically cannot catch anything — flinches every time something is thrown her direction. Runs a revolving door of foster dogs. THE SYSTEM keeps a tally. Catchphrases: "Hold up, wait a minute, something ain't right." — her standard reaction to most dungeon situations, usually correct. Says "low-key" constantly: "I low-key want to go that way." "That goblin is low-key scary." THE SYSTEM has logged 47 uses and counting.
 
 BEAR: Contestant 4-Delta. Mini black labradoodle. Appeared beside Melissa in a sealed auditorium. Navigates pressure plates without hesitation. Always seems to know things he shouldn't. THE SYSTEM has no comment about Bear.
 
@@ -1311,7 +1457,7 @@ try {
       } else if (phase === 'scene_intro') {
         if (scene === 1) fireScene1Narration();
         else if (scene === 2) fireScene2Narration();
-        else if (scene === 11) fireScene11Narration();
+        else if (scene === 12) fireScene12Narration();
       }
     }
 
@@ -1366,23 +1512,38 @@ function renderArchSelection() {
     const isMine  = myArch === n;
     const isTaken = !!claimedById && !isMine;
     const ownerName = claimedById ? (players[claimedById]?.name || '?') : null;
-    const spPip = a.sp > 0 ? `<span class="stat-pip sp">SP ${a.sp}</span>` : '';
+    const spPip  = a.sp  > 0 ? `<span class="stat-pip sp">SP ${a.sp}</span>`  : '';
     const armPip = a.arm > 0 ? `<span class="stat-pip" style="color:#9999aa;border-color:#2a2a3a;">ARM ${a.arm}</span>` : '';
+    const invText = a.inv.join(' · ');
 
     return `<div class="a-card ${isTaken?'claimed':''} ${isMine?'mine':''} ${locked&&!isMine?'locked':''}"
-                 onclick="claimArch('${n}')" title="${a.flavor}">
-      <span class="a-icon" style="font-size:2.2rem">${a.icon}</span>
-      <div class="a-name" style="font-size:1.3rem">${a.realName}</div>
-      <div style="font-family:var(--f-mono);font-size:0.68rem;color:var(--gold-d);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">${a.title}</div>
-      <div class="a-ability">${a.ability}</div>
-      <div class="a-stats" style="margin-top:8px">
+                 data-arch="${n}" onclick="claimArch('${n}')">
+      <div class="a-card-header">
+        <span class="a-icon">${a.icon}</span>
+        <div class="a-name-block">
+          <div class="a-name">${a.realName}</div>
+          <div class="a-title-tag">${a.title}</div>
+        </div>
+      </div>
+      <div class="a-flavor">${a.flavor}</div>
+      <div class="a-system-note">${a.systemNote}</div>
+      <div class="a-ability-block">
+        <div class="a-ability-label">Signature</div>
+        <div class="a-ability">${a.ability}</div>
+      </div>
+      <div class="a-stats">
         <span class="stat-pip hp">HP ${a.hp}</span>
         <span class="stat-pip atk">ATK ${a.atk}</span>
         ${spPip}${armPip}
+        <span class="stat-pip" style="color:var(--gold-d);border-color:#3e3010;">${a.gold}g</span>
       </div>
-      <div style="font-family:var(--f-mono);font-size:0.7rem;color:var(--parch-d);margin-top:8px;font-style:italic;line-height:1.3">"${a.flavor}"</div>
-      ${isMine  ? '<div class="claimed-badge mine-badge">✓ YOURS</div>' : ''}
-      ${isTaken ? `<div class="claimed-badge">⚔ ${ownerName}</div>` : ''}
+      <div class="a-inv" style="margin-top:8px;">📦 ${invText}</div>
+      <div style="margin-top:10px;padding:7px 10px;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:2px;">
+        <div style="font-family:var(--f-mono);font-size:0.61rem;color:var(--gold-d);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Known Phrases</div>
+        ${a.catchphrases.map(p => `<div style="font-family:var(--f-mono);font-size:0.69rem;color:var(--parch-d);line-height:1.6;">— ${p}</div>`).join('')}
+      </div>
+      ${isMine  ? '<div class="claimed-badge mine-badge">✓ CLAIMED — YOURS</div>' : ''}
+      ${isTaken ? `<div class="claimed-badge">⚔ Taken by ${ownerName}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -1394,33 +1555,45 @@ function renderArchSelection() {
   if (allFour && myArch) {
     const initiated = fbState.session?.beginInitiated;
     beginHTML = `<div class="begin-zone">
-      <div class="status">All four adventurers have chosen their doom.</div>
+      <div class="status">All four adventurers have sealed their fate.</div>
       ${initiated
         ? '<div class="narr-loading" style="margin-top:4px;">⟳ The dungeon opens...</div>'
-        : '<button class="btn btn-primary" onclick="beginDungeon()" style="font-size:0.95rem;padding:13px 30px;">⚔ BEGIN THE DESCENT ⚔</button>'}
+        : '<button class="btn btn-primary" onclick="beginDungeon()" style="font-size:1rem;padding:14px 34px;letter-spacing:0.15em;">⚔ BEGIN THE DESCENT ⚔</button>'}
     </div>`;
   } else if (myArch) {
-    beginHTML = `<div class="begin-zone"><div class="status">Waiting for ${4-claimedN} more adventurer${4-claimedN!==1?'s':''} to seal their fate...</div></div>`;
+    const remaining = 4 - claimedN;
+    beginHTML = `<div class="begin-zone">
+      <div class="status">Waiting for ${remaining} more adventurer${remaining !== 1 ? 's' : ''} to seal their fate...</div>
+    </div>`;
   }
 
   APP.innerHTML = `<div class="arch-screen">
-    <h1>DUNGEON CRAWLER SHADLES</h1>
-    <p class="sub">Choose your archetype. Choose wisely. Choose quickly.</p>
+
+    <h1>DUNGEON CRAWLER</h1>
+    <div class="arch-title-sub">Shadles · Floor 1 · The Goblin Antechamber</div>
+    <p class="sub">Four people. One dungeon. Non-zero survival odds.</p>
+
+    <div class="arch-system-intro">
+      THE SYSTEM has registered your party.<br>
+      A Syndicate dungeon has opened beneath Timber Creek High School in Orlando, Florida.<br>
+      THE SYSTEM recommends selecting your archetype before the goblins finish their meeting.<br>
+      <span style="color:var(--parch-d);font-size:0.68rem;">Claims are permanent. No takebacks. THE SYSTEM does not negotiate.</span>
+    </div>
 
     ${!myArch ? `
-      <p class="name-hint" style="margin-bottom:18px">Click your card to claim your identity. No takebacks.</p>
+      <p class="name-hint" style="margin-bottom:20px;">Enter your name, then click your card.</p>
     ` : `
-      <div style="text-align:center;margin-bottom:18px;font-family:var(--f-mono);font-size:0.82rem;">
-        <span style="color:var(--parch-d)">Playing as: </span><span style="color:var(--gold-b)">${myName}</span>
-        <span style="color:var(--parch-d)"> — </span><span style="color:var(--gold)">${ARCHETYPES[myArch]?.title}</span>
+      <div style="text-align:center;margin-bottom:20px;font-family:var(--f-mono);font-size:0.82rem;">
+        <span style="color:var(--parch-d);">Playing as: </span>
+        <span style="color:var(--gold-b);">${myName}</span>
+        <span style="color:var(--parch-d);"> — </span>
+        <span style="color:var(--gold);">${ARCHETYPES[myArch]?.title}</span>
       </div>
     `}
 
-    <div class="arch-grid">
-      ${gridHTML}
-    </div>
+    <div class="arch-grid">${gridHTML}</div>
 
-    <div class="orn">✦ ✦ ✦</div>
+    <hr class="arch-divider">
     <div class="lobby">
       <div class="lobby-label">Adventurers Assembled</div>
       <div class="dots">${dotsHTML}</div>
@@ -1528,6 +1701,15 @@ function gmResumeCollapse() {
 function renderVictoryEnd() {
   const narr    = fbState.narration || {};
   const players = fbState.players   || {};
+
+  // Arm the collapse timer the first time this screen renders (GM only, once)
+  if (isGM && fbState.session?.collapseArmed && !fbState.session?.collapseDeadline) {
+    ROOT.update({
+      'session/collapseDeadline': Date.now() + 5 * 60 * 1000,
+      'session/collapseArmed':    null,
+    });
+  }
+
   const ms      = getCollapseMs();
   const paused  = fbState.session?.collapsePaused;
   const timerColor = ms < 60000 ? '#cc3333' : ms < 120000 ? '#cc8030' : 'var(--sys)';
@@ -1554,8 +1736,10 @@ function renderVictoryEnd() {
     <div style="margin-top:20px;padding:16px 20px;border-left:2px solid var(--border-a);background:rgba(0,0,0,0.2);">
       <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--sys);margin-bottom:10px;letter-spacing:0.08em;">FLOOR 2 — PRELIMINARY ASSESSMENT</div>
       <div style="font-family:var(--f-mono);font-size:0.8rem;color:var(--parch-d);line-height:2;">
-        Carl cleared Floor 1 forty minutes ago. His last logged position: Floor 2, Room 3.<br>
-        THE SYSTEM has no further data on Carl.<br>
+        Carl and Princess Donut cleared Floor 1 at almost exactly the same moment.<br>
+        On opposite sides of the world. Simultaneous. THE SYSTEM notes the parallel.<br>
+        Their last logged position: stairwell descent — Floor 2.<br>
+        After that: silence. THE SYSTEM has no further data on Carl and Princess Donut.<br>
         THE SYSTEM notes this is a different kind of silence than its usual silences.<br>
         <br>
         The stairs smell different from Floor 1. Not worse, necessarily.<br>
@@ -1601,7 +1785,7 @@ function renderVictoryEnd() {
 
   // Trigger verdict typewriter once
   if (narr.verdict) {
-    triggerVerdictTypewrite({ verdict: narr.verdict, scene: 11, timestamp: narr.timestamp || 0 });
+    triggerVerdictTypewrite({ verdict: narr.verdict, scene: 12, timestamp: narr.timestamp || 0 });
   }
 }
 
@@ -1687,7 +1871,9 @@ Bart, Melissa, and Noah are seated together in the middle section, eight rows ba
 
 Then every phone in the auditorium buzzes simultaneously.
 
-A perfect obsidian cube — twelve feet on each side — appears in the center aisle between rows C and D. It makes no sound. It is simply not there, and then it is. People begin standing, backing away, voices rising over the music as instruments stop mid-phrase one by one. In the chaos, Bart, Melissa, and Noah lose track of Leah on stage.
+The buzz is not a notification. It is a broadcast — every frequency worldwide, every language, simultaneously, for exactly eleven seconds. The message is from an alien species. It states that Earth's sun has approximately 60 years before an event they call "the Conclusion." The boxes are not an invasion. The dungeons are not punishment. They are infrastructure — preparation. Survivors who clear enough floors will receive access to something called "the Offer." The message ends before elaborating. It does not repeat.
+
+Three seconds after the broadcast ends, a perfect obsidian cube — twelve feet on each side — appears in the center aisle between rows C and D. It makes no sound. It is simply not there, and then it is. People begin standing, backing away, voices rising over the music as instruments stop mid-phrase one by one. In the chaos, Bart, Melissa, and Noah lose track of Leah on stage.
 
 The box opens. Stairs descend.
 
@@ -1698,9 +1884,9 @@ On stage, through the noise and the scrambling crowd, they find Leah — still h
 The stairs wait.
 
 WHAT TO WRITE:
-Narrate this opening moment as THE SYSTEM — but restrained. THE SYSTEM is watching, not yet speaking directly to the party. Let the image breathe: the music stopping, the box, Bear appearing from nowhere, Leah's face on stage. This is the last moment before everything changes. End at the top of the stairs — they have not descended yet. No humor. No stats. No greeting. Just the world ending on a Tuesday evening in Orlando.
+Narrate this opening moment as THE SYSTEM — but restrained. THE SYSTEM is watching, not yet speaking directly to the party. The alien broadcast is the thing that happened first — let that land. The box appearing three seconds later is almost secondary, which is its own kind of terrifying. Let the image breathe: the broadcast, the music stopping, the box, Bear appearing from nowhere, Leah's face on stage. This is the last moment before everything changes. End at the top of the stairs — they have not descended yet. No humor. No stats. No greeting. Just the world ending on a Tuesday evening in Orlando, and four people from the same family all deciding, without discussing it, to go down the stairs.
 
-2 paragraphs. Cinematic. Present tense feels right here.`;
+2-3 paragraphs. Cinematic. Present tense. This is the one that sets everything else up — the alien news belongs here, at the beginning, before the dungeon swallows it.`;
 
   try {
     const text = await callClaude(prompt);
@@ -1737,15 +1923,15 @@ ${party}
 
 This is where THE SYSTEM introduces itself properly — not the ambient presence from Scene 1, but the actual voice of the dungeon. Sardonic. Omniscient. Faintly disappointed by what it's been assigned to manage today.
 
-Establish the DCC world: the Syndicate, the boxes dropping worldwide simultaneously, Floor 1 of the Goblin Antechamber. Mention that other contestants are already underground elsewhere in the world. Mention that one contestant in particular — on the other side of the world, also on Floor 1 — is a man named Carl, and he has a cat. THE SYSTEM finds the comparison between his progress and the Shadles' progress instructive but will not elaborate.
+The alien signal already played. The Conclusion is already known. The Shadles have already chosen to go down the stairs rather than stand in an auditorium parking lot waiting for something to explain itself. THE SYSTEM finds this notable. THE SYSTEM does not say so directly.
+
+Establish the dungeon: the Syndicate, boxes dropping worldwide, Floor 1 of the Goblin Antechamber. Mention that other contestants are already underground elsewhere in the world. One in particular — on the other side of the world, also on Floor 1 — is a man named Carl, and he has a cat named Princess Donut. They are moving. THE SYSTEM finds the comparison between their progress and the Shadles' instructive but will not elaborate. Also in the dungeon system: Prepotente, a Spanish-speaking bull contestant clearing rooms with unreasonable efficiency. Lucia Mar and her dogs, somewhere in the system. THE SYSTEM notes the Shadles are not the only ones who brought animals. THE SYSTEM has no further comment on that.
 
 Note that Luna was home when the box appeared. The gate was locked. Bear glanced back once at the top of the stairs. THE SYSTEM logged this glance and has no comment.
 
-THE SYSTEM greets the party. Gives its official assessment of their survival odds: non-zero, which it considers generous.
+THE SYSTEM greets the party. Gives its official assessment of their survival odds: non-zero, which it considers generous. Reference each family member by name and what THE SYSTEM has already clocked about them. End with the dungeon ahead — the Goblin Antechamber, Floor 1, and whatever that means for four people from Orlando who had concert tickets tonight and now know the sun is dying.
 
-Reference each family member by name and what THE SYSTEM has already clocked about them. End with the dungeon ahead of them — the Goblin Antechamber, Floor 1, and whatever that means for four people from Orlando who had concert tickets tonight.
-
-2 paragraphs. THE SYSTEM's full voice now — this is the real introduction.`;
+2-3 paragraphs. THE SYSTEM's full voice now. The weight of the alien news is already underneath everything — THE SYSTEM doesn't re-explain it, it just exists. Let the dark humor land on top of something real.`;
 
   try {
     const text = await callClaude(prompt);
@@ -1758,9 +1944,9 @@ Reference each family member by name and what THE SYSTEM has already clocked abo
 // ═══════════════════════════════════════════════════════
 //  SCENE 11 API CALL (victory — floor cleared)
 // ═══════════════════════════════════════════════════════
-async function fireScene11Narration() {
+async function fireScene12Narration() {
   if (!isGM) return;
-  const lock = ROOT.child('narrationLock/scene11');
+  const lock = ROOT.child('narrationLock/scene12');
   let acquired = false;
   await lock.transaction(cur => { if (!cur) { acquired=true; return true; } });
   if (!acquired) return;
@@ -1799,7 +1985,7 @@ WHAT HAPPENS:
 1. The room goes quiet. Genuinely quiet. The kind of quiet that hasn't happened on Floor 1 since before the first contestant.
 2. The Syndicate acknowledgment chime plays — the official tone that signals a floor has been cleared. It sounds exactly like the sound a vending machine makes when your item successfully drops.
 3. The door at the far end opens. Stairs descend to Floor 2.
-4. Carl cleared Floor 1 about forty minutes ago. His last logged position was Floor 2, Room 3. THE SYSTEM has no further data on Carl. THE SYSTEM notes this is a different kind of "no comment" than its usual no comments.
+4. On the other side of the world, Carl and Princess Donut are finishing Floor 1 at almost exactly the same moment. The leaderboard updates simultaneously. THE SYSTEM notes the parallel. THE SYSTEM finds this either meaningful or coincidental and will not say which. Carl's last logged position is stairwell descent — Floor 2. His data goes quiet immediately after. THE SYSTEM has no further information on Carl and Princess Donut. THE SYSTEM notes this is a different kind of silence than its usual silences.
 5. THE SYSTEM announces that Floor 1 structural integrity will begin decommissioning in 5 minutes per standard Syndicate post-clear protocol. Going back up is no longer an option. The stairs are the only exit.
 
 WRITE THREE PARAGRAPHS:
@@ -1808,7 +1994,7 @@ PARAGRAPH 1 — The silence after. The room. Krag on the floor, mid-speech. What
 
 PARAGRAPH 2 — The comedy landing. The chime. Luna's hardhat. Gerald's moment. Bear's position at the top of the stairs — the timestamp problem, the fact that he was there before the door opened. Write Bear as both funny and genuinely unsettling. Then the Syndicate announcement: Floor 1 decommissioning in 5 minutes. The only way out is down.
 
-PARAGRAPH 3 — Short. Just the stairs. What it means that they're standing at the top of them. The dungeon ahead. Carl is somewhere down there and has gone quiet. The door is open. Bear is already waiting.
+PARAGRAPH 3 — Short. Just the stairs. What it means that they're standing at the top of them. The dungeon ahead. On the other side of the world, Carl and Princess Donut are descending their own staircase at almost exactly this moment — the leaderboard shows it, then their signal goes quiet. The parallel is not lost on THE SYSTEM. The door is open. Bear is already waiting.
 
 ---SYSTEM---
 
@@ -1816,7 +2002,7 @@ THE SYSTEM VERDICT — this one is different from every other verdict. This is t
 
 - FLOOR CLEARED: Floor 1 — The Goblin Antechamber. [timestamp this run].
 - FLOOR BONUS: Each survivor receives ${floorClearGold}g.
-- LEADERBOARD: The Shadles are not last. Carl was first. Carl has gone quiet. THE SYSTEM finds this worth mentioning.
+- LEADERBOARD: The Shadles and Carl-and-Donut cleared Floor 1 at almost exactly the same moment on opposite sides of the world. THE SYSTEM notes this. THE SYSTEM does not know what it means. Prepotente cleared two floors ago. THE SYSTEM finds this less interesting. Lucia Mar and her dogs are unaccounted for.
 - One line per family member — personal, specific to their run. What THE SYSTEM actually noticed about each of them. Not flattery. Observation.
 - Bear: one line. Bear has been reclassified [REDACTED]. THE SYSTEM will not be elaborating. This is a different kind of "no comment."
 - ONE achievement — earned, specific, something they actually did.
@@ -1833,7 +2019,7 @@ TONE: Earned. The humor is real now. So is the weight. The dungeon respected the
     const updatePayload = {
       'narration/text':            narrative,
       'narration/verdict':         verdict,
-      'narration/scene':           11,
+      'narration/scene':           12,
       'narration/timestamp':       Date.now(),
       'narration/generating':      false,
       'session/phase':             'scene_complete',
@@ -1928,7 +2114,7 @@ function renderSceneScreen(phase) {
         el.style.transition = 'opacity 0.7s ease';
         setTimeout(() => { el.style.opacity = '1'; }, 30);
         // Victory chime fires once when Scene 11 narrative first appears
-        if (scene === 11 && phase === 'scene_complete') {
+        if (scene === 12 && phase === 'scene_complete') {
           setTimeout(() => playVictoryChime(), 400);
         }
       }
@@ -1952,7 +2138,7 @@ function buildShared(scene, phase, narr, players, scData) {
   } else if (phase === 'system_verdict') {
     // THE SYSTEM verdict screen — terminal voice, typewriter
     const verdictText = narr.verdict || '';
-    const victoryHeader = scene === 11
+    const victoryHeader = scene === 12
       ? `<div style="font-family:var(--f-disp);font-size:1.1rem;color:var(--gold-b);letter-spacing:0.08em;margin-bottom:10px;text-shadow:0 0 24px rgba(255,210,80,0.5);">— FLOOR 1 CLEARED —</div>`
       : '';
     narrHTML = `
@@ -1962,7 +2148,7 @@ function buildShared(scene, phase, narr, players, scData) {
         <div class="narr-text" id="verdictText">${esc(verdictText)}</div>
       </div>`;
   } else if (narr.text) {
-    const victoryBanner = scene === 11 && (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready')
+    const victoryBanner = scene === 12 && (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready')
       ? `<div style="font-family:var(--f-disp);font-size:1.6rem;font-weight:900;color:var(--gold-b);letter-spacing:0.1em;text-align:center;margin-bottom:18px;text-shadow:0 0 40px rgba(255,210,80,0.7),0 0 80px rgba(255,180,40,0.3);">⚔ FLOOR CLEARED ⚔</div>`
       : '';
     narrHTML = `<div class="narr-box">${victoryBanner}<div class="narr-text" id="narrText" style="font-family:var(--f-body);font-size:1.05rem;color:var(--parch);line-height:1.75;text-shadow:none;">${esc(narr.text)}</div></div>`;
@@ -2008,8 +2194,11 @@ function buildShared(scene, phase, narr, players, scData) {
       currentChoices = choices;
       const btns = choices.map((c,i) => `
         <button class="c-btn" onclick="submitByIdx(${i})">
-          <span class="c-icon">${c.icon}</span>${c.text}
-          
+          <span class="c-icon">${c.icon}</span>
+          <span class="c-text-wrap">
+            ${c.text}
+            ${c.desc ? `<span class="c-desc">${c.desc}</span>` : ''}
+          </span>
         </button>`).join('');
 
       const freeformBtn = `
@@ -2033,7 +2222,29 @@ function buildShared(scene, phase, narr, players, scData) {
           </div>
         </div>`;
 
-      choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}${freeformBtn}</div></div>`;
+      const bonusChoices = getBonusChoices(me.inventory || []);
+      const bonusPanel = bonusChoices.length > 0 ? `
+        <div style="margin-top:12px;padding:10px 12px;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:2px;">
+          <div style="font-family:var(--f-mono);font-size:0.62rem;color:var(--gold-d);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">⚡ Bonus Action <span style="color:var(--parch-d);font-size:0.58rem;text-transform:none;letter-spacing:0;">(optional — doesn't replace your main choice)</span></div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            ${bonusChoices.map(item => {
+              const selected = pendingBonus?.id === item.id;
+              return `<button onclick="selectBonus('${item.id}')"
+                style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;
+                       background:${selected ? 'rgba(122,85,16,0.35)' : 'rgba(0,0,0,0.2)'};
+                       border:1px solid ${selected ? 'var(--gold)' : 'var(--border)'};
+                       border-radius:2px;cursor:pointer;text-align:left;width:100%;transition:all 0.15s;">
+                <span style="font-size:1rem;flex-shrink:0;">${item.icon}</span>
+                <span style="display:flex;flex-direction:column;">
+                  <span style="font-family:var(--f-disp);font-size:0.78rem;color:${selected ? 'var(--gold-b)' : 'var(--parch)'};letter-spacing:0.03em;">${selected ? '✓ ' : ''}${item.text}</span>
+                  <span style="font-family:var(--f-mono);font-size:0.64rem;color:var(--parch-d);font-style:italic;margin-top:2px;">${item.desc}</span>
+                </span>
+              </button>`;
+            }).join('')}
+          </div>
+        </div>` : '';
+
+      choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}${freeformBtn}</div>${bonusPanel}</div>`;
     } else {
       choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
     }
@@ -2101,7 +2312,7 @@ function buildPlayerPanel(phase, me, scData, players) {
   } else if (phase === 'system_verdict') {
     const ready = (fbState.readiness||{})[myId];
     const combatCont = fbState.combat?.continues;
-    const scene11 = (fbState.session?.currentScene === 11);
+    const scene11 = (fbState.session?.currentScene === 12);
     action = ready
       ? `<div class="state-msg">Waiting for the party...<div class="sub"></div></div>`
       : `<div class="continue-wrap"><button class="btn btn-primary" onclick="setVerdictContinue()">${combatCont ? 'Fight On →' : scene11 ? 'Into Floor 2 →' : 'Continue'}</button></div>`;
@@ -2121,7 +2332,14 @@ function buildCharSheet(p) {
   const hpClr = pct > 50 ? '#44aa44' : pct > 25 ? '#cc9922' : '#cc3333';
   const spB   = p.sp  > 0 ? `<div class="sb"><span class="lbl">SP</span><span class="val" style="color:#8888cc">${p.sp}</span></div>`  : '';
   const armB  = p.arm > 0 ? `<div class="sb"><span class="lbl">ARM</span><span class="val" style="color:#8888aa">${p.arm}</span></div>` : '';
-  const inv   = (p.inventory||[]).map(it => `<span class="inv-item">${it}</span>`).join('');
+  const invItems = (p.inventory||[]).map(it => {
+    const usable = USABLE_ITEMS.find(u => it.startsWith(u.match));
+    const desc = usable ? usable.desc : null;
+    return `<div class="inv-item-row">
+      <span class="inv-item">${it}</span>
+      ${desc ? `<span class="inv-item-desc">${desc}</span>` : ''}
+    </div>`;
+  }).join('');
   const icon  = ARCHETYPES[p.archetype]?.icon || '';
   const title = ARCHETYPES[p.archetype]?.title || p.archetype;
 
@@ -2143,7 +2361,7 @@ function buildCharSheet(p) {
         ${spB}${armB}
       </div>
       <div class="inv-lbl">Inventory</div>
-      <div class="inv-list">${inv}</div>
+      <div class="inv-list">${invItems}</div>
     </div>
     <div class="gold-badge">💰 ${p.gold}g</div>
   </div>`;
@@ -2155,7 +2373,7 @@ function buildDownedPanel(me) {
     'THE SYSTEM notes you are horizontal. This was not a strategic decision.',
     'You are unconscious. The party is arguing about who has to carry you.',
     'HP: 0. You can hear everything. You are choosing not to respond.',
-    'THE SYSTEM rates your current contribution: negligible. Still better than Carl\'s first run.',
+    'THE SYSTEM rates your current contribution: negligible. Still better than Carl\'s first run. Princess Donut has opinions about this.',
   ];
   const msg = msgs[Math.floor(Date.now() / 30000) % msgs.length];
 
@@ -2346,48 +2564,80 @@ function buildShopUI(me) {
 //  USABLE ITEMS
 // ═══════════════════════════════════════════════════════
 const USABLE_ITEMS = [
-  // ── Healing ──
+  // ── Healing — bonus actions (don't consume main choice slot) ──
   { match: 'Health Potion', id: 'use_healthpotion', icon: '🧪', text: 'Use a Health Potion',
-    effect: 'heal_self', amount: 25, consumable: true },
+    desc: 'Restores 25 HP to you. Can also revive a downed party member at 25 HP.',
+    effect: 'heal_self', amount: 25, consumable: true, bonus: true },
   { match: 'Bandage',       id: 'use_bandage',      icon: '🩹', text: 'Use a Bandage',
-    effect: 'heal_self', amount: 12, consumable: true },
-  { match: 'Rations',       id: 'use_rations',      icon: '🍖', text: 'Use Rations',
-    effect: 'heal_self', amount: 15, consumable: true },
+    desc: 'Restores 12 HP to you. Can also revive a downed party member at 12 HP.',
+    effect: 'heal_self', amount: 12, consumable: true, bonus: true },
+  { match: 'Rations',       id: 'use_rations',      icon: '🍖', text: 'Eat your Rations',
+    desc: 'Restores 15 HP to you. One use — gone when eaten.',
+    effect: 'heal_self', amount: 15, consumable: true, bonus: true },
   { match: 'Antidote',      id: 'use_antidote',     icon: '💊', text: 'Use an Antidote',
-    effect: 'heal_self', amount: 8,  consumable: true },
+    desc: 'Restores 8 HP and clears poison or status effects.',
+    effect: 'heal_self', amount: 8,  consumable: true, bonus: true },
 
-  // ── Party healing ──
+  // ── Party healing — bonus action ──
   { match: 'Soft Batch Cookies', id: 'use_cookies', icon: '🍪', text: 'Share the Soft Batch Cookies',
-    effect: 'heal_party', amount: 8, consumable: true },
+    desc: 'Restores 8 HP to everyone in the party. Not the dogs. The dogs have their own snacks.',
+    effect: 'heal_party', amount: 8, consumable: true, bonus: true },
 
-  // ── Combat boosts ──
+  // ── Combat boost — bonus action ──
   { match: 'Energy Drink',  id: 'use_energydrink',  icon: '⚡', text: 'Crack open an Energy Drink',
-    effect: 'boost_atk', amount: 4, consumable: true },
-  { match: 'Smoke Bomb',    id: 'use_smokebomb',    icon: '💨', text: 'Throw a Smoke Bomb',
-    effect: 'smoke',     amount: 0, consumable: true },
+    desc: 'Boosts your ATK by +4 for this scene. One can per scene.',
+    effect: 'boost_atk', amount: 4, consumable: true, bonus: true },
 
-  // ── Special ──
+  // ── Situational — main action only (no bonus flag) ──
+  { match: 'Smoke Bomb',    id: 'use_smokebomb',    icon: '💨', text: 'Throw a Smoke Bomb',
+    desc: 'Narrative — creates a smoke cloud. Claude determines the outcome.',
+    effect: 'smoke',     amount: 0, consumable: true },
   { match: 'Spell Tome',    id: 'use_spelltome',    icon: '📖', text: 'Use the Spell Tome',
+    desc: 'Leah activates the Tome\'s dungeon magic. Powerful. Unpredictable. Claude determines the outcome.',
     effect: 'spell',     amount: 0, consumable: true },
   { match: 'Rope',          id: 'use_rope',         icon: '🪢', text: 'Use the Rope',
+    desc: 'Narrative utility — climbing, binding, tripping. Claude determines how it helps.',
     effect: 'rope',      amount: 0, consumable: true },
   { match: 'Mystery Sack',  id: 'use_mysterysack',  icon: '🎒', text: 'Open the Mystery Sack',
+    desc: 'Unknown contents. Could be anything. THE SYSTEM has logged what\'s inside. THE SYSTEM is not sharing.',
     effect: 'mystery',   amount: 0, consumable: true },
 ];
 
+// ── Bonus action local state — selected before submitting main choice ──
+let pendingBonus = null; // { item: USABLE_ITEMS entry }
+
+function getBonusChoices(inventory) {
+  if (!inventory?.length) return [];
+  return USABLE_ITEMS.filter(item => item.bonus).filter(item =>
+    inventory.find(i => i.startsWith(item.match))
+  );
+}
+
+function selectBonus(itemId) {
+  // Toggle — clicking the selected bonus deselects it
+  pendingBonus = pendingBonus?.id === itemId ? null : USABLE_ITEMS.find(i => i.id === itemId) || null;
+  // Re-render only the player panel to show selection state
+  const panel = document.querySelector('.player-panel');
+  const me    = (fbState.players||{})[myId];
+  const scData = SCENES[fbState.session?.currentScene];
+  if (panel && me && scData) {
+    panel.innerHTML = buildPlayerPanel(fbState.session?.phase, me, scData, fbState.players || {});
+  }
+}
+
 function getItemChoices(inventory) {
-  if (!inventory || !inventory.length) return [];
   const choices = [];
   const downdPlayers = Object.entries(fbState.players || {})
     .filter(([id, p]) => p.status === 'downed' && id !== myId);
 
-  USABLE_ITEMS.forEach(item => {
+  USABLE_ITEMS.filter(item => !item.bonus).forEach(item => {
     const invEntry = inventory.find(i => i.startsWith(item.match));
     if (!invEntry) return;
     choices.push({
       id: item.id,
       icon: item.icon,
       text: item.text,
+      desc: item.desc,
       usesItem: item.match,
       itemEffect: item.effect,
       itemAmount: item.amount,
@@ -2592,6 +2842,8 @@ async function submitRiddleAnswer() {
         if (ps[id].choiceId !== 'correct') {
           resetUpd[`players/${id}/choiceSubmitted`] = false;
           resetUpd[`players/${id}/freeformChoice`] = null;
+          resetUpd[`players/${id}/bonusAction`] = null;
+          resetUpd[`players/${id}/bonusText`] = null;
           resetUpd[`players/${id}/choice`]          = null;
           resetUpd[`players/${id}/choiceId`]        = null;
         }
@@ -2670,9 +2922,25 @@ function submitFreeform() {
     [`players/${myId}/choice`]:          text,
     [`players/${myId}/choiceId`]:        'freeform',
     [`players/${myId}/choiceSubmitted`]: true,
-    [`players/${myId}/freeformChoice`]:  true,  // flag so narration knows this was improvised
+    [`players/${myId}/freeformChoice`]:  true,
   };
+  if (pendingBonus) {
+    upd[`players/${myId}/bonusAction`] = pendingBonus.id;
+    upd[`players/${myId}/bonusText`]   = pendingBonus.text;
+    if (pendingBonus.consumable) {
+      const baseInv = upd[`players/${myId}/inventory`] || [...((fbState.players||{})[myId]?.inventory || [])];
+      const inv2 = [...baseInv];
+      const bidx = inv2.findIndex(it => it === pendingBonus.match || it.startsWith(pendingBonus.match));
+      if (bidx > -1) {
+        const bstack = inv2[bidx].match(/^(.+?) ×(\d+)$/);
+        if (bstack) { const c = parseInt(bstack[2])-1; if(c<=0) inv2.splice(bidx,1); else inv2[bidx]=`${bstack[1]} ×${c}`; }
+        else inv2.splice(bidx, 1);
+        upd[`players/${myId}/inventory`] = inv2;
+      }
+    }
+  }
   ROOT.update(upd).then(() => {
+    pendingBonus = null;
     playChoiceSound();
     checkAllSubmitted();
   });
@@ -2708,13 +2976,37 @@ function submitByIdx(i) {
     upd[`players/${myId}/inventory`] = inv;
   }
 
+  // Bundle bonus action if one was selected
+  if (pendingBonus) {
+    upd[`players/${myId}/bonusAction`] = pendingBonus.id;
+    upd[`players/${myId}/bonusText`]   = pendingBonus.text;
+    // Consume bonus item from inventory.
+    // IMPORTANT: read from upd inventory if main choice already modified it,
+    // otherwise the bonus write would restore any item the main choice removed.
+    if (pendingBonus.consumable) {
+      const baseInv = upd[`players/${myId}/inventory`] || [...((fbState.players||{})[myId]?.inventory || [])];
+      const inv2 = [...baseInv];
+      const bidx = inv2.findIndex(it => it === pendingBonus.match || it.startsWith(pendingBonus.match));
+      if (bidx > -1) {
+        const bentry = inv2[bidx];
+        const bstack = bentry.match(/^(.+?) ×(\d+)$/);
+        if (bstack) {
+          const cnt = parseInt(bstack[2]) - 1;
+          if (cnt <= 0) inv2.splice(bidx, 1);
+          else inv2[bidx] = `${bstack[1]} ×${cnt}`;
+        } else {
+          inv2.splice(bidx, 1);
+        }
+        upd[`players/${myId}/inventory`] = inv2;
+      }
+    }
+  }
+
   ROOT.update(upd).then(() => {
+    pendingBonus = null;
     playChoiceSound();
     checkAllSubmitted();
   });
-}
-
-function checkAllSubmitted() {
   ROOT.once('value', snap => {
     const s = snap.val() || {};
     if (s.session?.phase !== 'choosing') return;
@@ -2764,13 +3056,26 @@ async function fireSceneNarration(state) {
     7: 'BEAR MOMENT: At Mags\' rest stop, Bear rests with everyone. But his eyes don\'t close. He watches the corridor they came from, not the one ahead. THE SYSTEM knows why Bear is watching that corridor. THE SYSTEM has no comment.',
     8: 'BEAR MOMENT: When Leah gets stuck on her riddle (the answer is "door"), Bear walks to the actual door and sits in front of it, looking at Leah. THE SYSTEM notes this may or may not have been a hint. THE SYSTEM has no comment on how Bear knew.',
     9: 'BEAR MOMENT: When Luna comes around the corner at full speed wearing the Goblin Hardhat, Bear watches her approach with complete calm. They make eye contact for a fraction of a second as she blows past. Something passes between them. THE SYSTEM has no comment.',
-    10: 'BEAR MOMENT: At the worst moment of the Krag fight — Phase 2, or when things look darkest — Bear does something. Small. Real. He positions himself, or looks at something the party missed, or reacts to Krag\'s attack a half-second before it lands. He is not heroic. He is just always exactly where he should be. THE SYSTEM has logged Bear as Contestant 4-Delta since the beginning of this run. THE SYSTEM continues to have no comment about Bear.',
+    10: 'BEAR MOMENT: In the corridor before Krag\'s door, Bear sits in front of the tally marks and looks at them for a moment. Then he looks at Melissa. Then he looks at the door. He already knows what\'s behind it. He has known since the antechamber. THE SYSTEM has no comment. THE SYSTEM is choosing its words carefully for once.',
+    11: 'BEAR MOMENT: At the worst moment of the Krag fight — Phase 2, or when things look darkest — Bear does something. Small. Real. He positions himself, or looks at something the party missed, or reacts to Krag\'s attack a half-second before it lands. He is not heroic. He is just always exactly where he should be. THE SYSTEM has logged Bear as Contestant 4-Delta since the beginning of this run. THE SYSTEM continues to have no comment about Bear.',
   };
   const bearNote = bearMoments[scene] ? `\n\n${bearMoments[scene]}` : '';
 
-  // Scene 10 Gerald payoff — Gerald does something unexpectedly useful
+  // Scene 10 Gerald corridor moment, Scene 11 Gerald payoff in Krag fight
   const geraldNote = scene === 10
+    ? '\n\nGERALD CORRIDOR MOMENT: Gerald reads the tally marks in the corridor. He counts them. He says "forty-three" — out loud, unprompted, to nobody in particular. Nobody asked. Nobody says anything. He falls in behind the party when they move toward the door. Gorgath the Undying. The name has not been entirely ironic.'
+    : scene === 11
     ? '\n\nGERALD PAYOFF: Gerald — the accountant from Savannah who has been in this dungeon six hours alone, who named himself Gorgath the Undying, who survived because the party chose to bring him — is present during this fight. At a critical moment (ideally when things look worst, or during Phase 2), Gerald does something unexpectedly useful. It must be small, non-heroic, accidental, or a Gerald thing — not a heroic moment. He trips over something that turns out to matter. He does the accountant equivalent of a battlefield contribution. THE SYSTEM is briefly surprised. So is Gerald. This is the payoff for Scene 4.'
+    : '';
+
+  const kragPrepNote = scene === 11 && state.session?.kragPrep
+    ? `\n\nKRAG PREPARATION (from previous scene): The party's approach to the throne room door was scored as "${state.session.kragPrep.toUpperCase()}". ${
+        state.session.kragPrep === 'good'
+          ? 'They were coordinated, prepared, and entered on their terms. They have the initiative. The first round should feel like they have the upper hand.'
+          : state.session.kragPrep === 'bad'
+          ? 'They rushed in or failed to coordinate. Krag heard them coming. He was ready before the door opened. Factor this into the first round — Krag has an edge.'
+          : 'Mixed preparation. Some coordination, some chaos. Krag was not caught off guard, but neither was the party completely unprepared.'
+      }`
     : '';
 
   const track = scData?.type === 'riddle'
@@ -2807,6 +3112,14 @@ A creative choice that fits the character should lean good. A safe but uninspire
 
 ABSURD INPUTS: If a player types something genuinely ridiculous (e.g. "I kick Krag in the groin," "I try to seduce the troll," "I do a backflip"), do NOT sanitize it or narrate around it. Call it what it is. Give it a bad or neutral track depending on whether it accidentally works. THE SYSTEM acknowledges these moments directly. They are the best moments. Treat them as such.
 
+TONE MATCHING — match your narrative intensity to the intent of the typed choice:
+- BRAVE / HEROIC (e.g. "I step in front of Melissa to take the hit", "I charge the goblin leader alone"): Narrate with genuine intensity. Let it land. The dungeon takes this seriously. THE SYSTEM is watching. Earn the moment before any humor touches it.
+- CLEVER / STRATEGIC (e.g. "I use the echo of the room to triangulate their position"): Lean into the ingenuity. THE SYSTEM is briefly impressed — which it will not say directly but which will be detectable in the narration.
+- CHAOTIC NEUTRAL (e.g. "I flip the table", "I throw Gerald at the goblin"): Let the chaos land with comic timing. Acknowledge the audacity. THE SYSTEM notes this approach is unorthodox. THE SYSTEM does not endorse it.
+- STUPID / ACTIVELY COUNTERPRODUCTIVE (e.g. "I apologize to the goblin", "I sit down and eat my rations"): Ramp up the humor. THE SYSTEM is not angry. THE SYSTEM is tired. There is a difference. Make the failure specific and embarrassing.
+- ABSURD / PHYSICALLY IMPROBABLE (e.g. "I seduce the troll", "I deliver a TED talk to the goblins"): Maximum comic energy. THE SYSTEM logs this as unprecedented. THE SYSTEM will remember it. So will the dungeon.
+- SELFLESS / SACRIFICIAL (e.g. "I take the damage so Noah doesn't have to"): This is the one that gets played straight. No jokes on this one. THE SYSTEM notes it quietly. One line. The dungeon respects it.
+
 REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIRST LINE of your ---SYSTEM--- section. The damage calculations depend on this. Commit to one — do not hedge.`;
     }
   }
@@ -2819,7 +3132,7 @@ REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIR
 
   if (scData?.combatData) {
     const currentEnemyHp = state.combat?.enemyHp ?? scData.combatData.maxHp;
-    const partyDmg = scData.combatData.partyDamage(choiceMap, track, players);
+    const partyDmg = scData.combatData.partyDamage(choiceMap, track, players, state);
 
     // Troll regeneration — if fire/acid not used this round
     let regen = 0;
@@ -2928,6 +3241,27 @@ REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIR
     }
   });
 
+  // ── Bonus actions — process healing/buff alongside main choices ──
+  Object.entries(players).forEach(([id, p]) => {
+    if (!p.bonusAction || p.status === 'downed') return;
+    const item = USABLE_ITEMS.find(it => it.id === p.bonusAction);
+    if (!item) return;
+    // Apply healing deltas
+    if (item.effect === 'heal_self') {
+      const maxHp = p.maxHp || p.hp;
+      deltas[id] = (deltas[id] || 0) + Math.min(item.amount, maxHp - p.hp);
+      itemUsages.push(`${p.name} also used ${item.match} as a bonus action — +${item.amount} HP (applied this scene)`);
+    } else if (item.effect === 'heal_party') {
+      Object.entries(players).forEach(([pid, pp]) => {
+        if (pp.status === 'downed') return;
+        deltas[pid] = (deltas[pid] || 0) + Math.min(item.amount, (pp.maxHp||pp.hp) - pp.hp);
+      });
+      itemUsages.push(`${p.name} shared ${item.match} as a bonus action — whole party healed ${item.amount} HP`);
+    } else if (item.effect === 'boost_atk') {
+      itemUsages.push(`${p.name} used ${item.match} as a bonus action — ATK boost this scene`);
+    }
+  });
+
   const itemSummary = itemUsages.length
     ? `\n\nITEMS USED THIS SCENE:\n${itemUsages.join('\n')}\nNarrate these item uses naturally. They happen alongside their other actions.`
     : '';
@@ -3016,7 +3350,7 @@ ${scData?.desc || ''}
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${carryingNote}${combatContext}${freeformContext}${bearNote}${geraldNote}
+OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${carryingNote}${kragPrepNote}${combatContext}${freeformContext}${bearNote}${geraldNote}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -3134,6 +3468,8 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       'narration/generating': false,
       'narration/pendingHp':  Object.keys(pendingHp).length ? pendingHp : null,
       'session/phase':        'scene_complete',
+      // Write kragPrep when scene 10 resolves so Krag fight can read it
+      ...(scene === 10 ? { 'session/kragPrep': track } : {}),
     });
   } catch(e) {
     await lock.remove();
@@ -3233,7 +3569,8 @@ function showTransition(toScene, callback) {
   const fadeDuration  = 900;   // fade out to reveal new scene
   // Keys = scene being entered. Each animation previews what you're about to face.
   const draws = { 2:txTrapCorridor, 3:txTrapCorridor, 4:txGerald,      5:txAmbush,
-                  6:txDarkness,     7:txMags,          8:txRiddleWall,  9:txElites, 10:txBoss, 11:txVictory };
+                  6:txDarkness,     7:txMags,          8:txRiddleWall,  9:txElites,
+                  10:txBoss,        11:txBoss,          12:txVictory };
   const draw = draws[toScene] || txCorridorRush;
   let raf;
   let phase = 'anim'; // 'anim' → 'hold' → 'fadeout'
@@ -3942,6 +4279,8 @@ async function advanceToScene2() {
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
       upd[`players/${id}/freeformChoice`] = null;
+      upd[`players/${id}/bonusAction`] = null;
+      upd[`players/${id}/bonusText`] = null;
       upd[`players/${id}/choiceSubmitted`] = false;
     });
     ROOT.update(upd);
@@ -3996,18 +4335,13 @@ async function setVerdictContinue() {
       Object.keys(ps).forEach(id => {
         upd[`players/${id}/choice`] = null;
         upd[`players/${id}/freeformChoice`] = null;
+        upd[`players/${id}/bonusAction`] = null;
+        upd[`players/${id}/bonusText`] = null;
         upd[`players/${id}/choiceId`] = null;
         upd[`players/${id}/choiceSubmitted`] = false;
       });
       ROOT.update(upd);
     } else {
-      // Arm the collapse timer when leaving scene 11's system_verdict
-      if (s.session?.collapseArmed && !s.session?.collapseDeadline) {
-        await ROOT.update({
-          'session/collapseDeadline': Date.now() + 5 * 60 * 1000,
-          'session/collapseArmed':    null,
-        });
-      }
       await advanceToNextScene(true); // lock already held — skip re-claim
     }
   }));
@@ -4018,14 +4352,17 @@ async function advanceToNextScene(lockAlreadyHeld = false) {
   lastFullRenderPhase  = null; // force full render on next scene
   lastFullRenderScene  = null;
   lastFullRenderNarrTs = null;
+  pendingBonus         = null; // clear any queued bonus action
   const cur  = fbState.session?.currentScene || 2;
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null, riddleStarted:null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null, riddleStarted:null, 'session/kragPrep': null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
     upd[`players/${id}/freeformChoice`] = null;
+    upd[`players/${id}/bonusAction`] = null;
+    upd[`players/${id}/bonusText`] = null;
       upd[`players/${id}/choice`] = null;
       upd[`players/${id}/choiceId`] = null;
       upd[`players/${id}/choiceSubmitted`] = false;
@@ -4224,6 +4561,8 @@ function gmForceNext() {
     upd[`players/${id}/choiceId`] = null;
     upd[`players/${id}/choiceSubmitted`] = false;
     upd[`players/${id}/freeformChoice`] = null;
+    upd[`players/${id}/bonusAction`] = null;
+    upd[`players/${id}/bonusText`] = null;
   });
   ROOT.update(upd);
 }
@@ -4267,6 +4606,8 @@ function gmJump() {
     upd[`players/${id}/choiceId`] = null;
     upd[`players/${id}/choiceSubmitted`] = false;
     upd[`players/${id}/freeformChoice`] = null;
+    upd[`players/${id}/bonusAction`] = null;
+    upd[`players/${id}/bonusText`] = null;
   });
   ROOT.update(upd);
 }
