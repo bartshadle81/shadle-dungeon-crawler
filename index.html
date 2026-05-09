@@ -1720,6 +1720,7 @@ function fmtCollapse(ms) {
 }
 
 let collapseTick = null;
+let explosionFired = false;
 function manageCollapseTick(phase) {
   const hasTimer = !!(fbState.session?.collapseDeadline || fbState.session?.collapseRemaining);
   const active   = phase === 'victory_end' && hasTimer && !fbState.session?.collapsePaused;
@@ -1735,10 +1736,11 @@ function manageCollapseTick(phase) {
         el.textContent = fmtCollapse(ms);
       }
       // Fire floor_collapse when timer hits 0
-      if (ms <= 0 && isGM) {
+      if (ms <= 0 && !explosionFired) {
+        explosionFired = true;
         clearInterval(collapseTick); collapseTick = null;
         fireCollapseExplosion(() => {
-          ROOT.update({ 'session/phase': 'floor_collapse', 'session/collapseDeadline': null });
+          if (isGM) ROOT.update({ 'session/phase': 'floor_collapse', 'session/collapseDeadline': null });
         });
       }
     }, 1000);
@@ -4545,6 +4547,7 @@ async function advanceToNextScene(lockAlreadyHeld = false) {
   lastFullRenderScene  = null;
   lastFullRenderNarrTs = null;
   pendingBonus         = null; // clear any queued bonus action
+  explosionFired       = false;
   const cur  = fbState.session?.currentScene || 2;
   const next = cur + 1;
   showTransition(next, () => {
