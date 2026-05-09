@@ -1737,7 +1737,9 @@ function manageCollapseTick(phase) {
       // Fire floor_collapse when timer hits 0
       if (ms <= 0 && isGM) {
         clearInterval(collapseTick); collapseTick = null;
-        ROOT.update({ 'session/phase': 'floor_collapse', 'session/collapseDeadline': null });
+        fireCollapseExplosion(() => {
+          ROOT.update({ 'session/phase': 'floor_collapse', 'session/collapseDeadline': null });
+        });
       }
     }, 1000);
   } else if (!active && collapseTick) {
@@ -1770,7 +1772,7 @@ function renderVictoryEnd() {
   // Arm the collapse timer the first time this screen renders (GM only, once)
   if (isGM && fbState.session?.collapseArmed && !fbState.session?.collapseDeadline) {
     ROOT.update({
-      'session/collapseDeadline': Date.now() + 5 * 60 * 1000,
+      'session/collapseDeadline': Date.now() + 90 * 1000,
       'session/collapseArmed':    null,
     });
   }
@@ -3597,7 +3599,155 @@ Keep it under 10 lines. THE SYSTEM is efficient even in failure.`;
     });
   }
 }
-const txCanvas = document.createElement('canvas');
+// ═══════════════════════════════════════════════════════
+//  COLLAPSE EXPLOSION — fires when the Floor 1 timer hits 0
+// ═══════════════════════════════════════════════════════
+function fireCollapseExplosion(onComplete) {
+  const W = window.innerWidth, H = window.innerHeight;
+
+  // Full-screen canvas overlay
+  const cv = document.createElement('canvas');
+  cv.width  = W; cv.height = H;
+  cv.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+
+  // Rumble + boom sound
+  try {
+    const ac  = getSctx();
+    const t   = ac.currentTime;
+    // Sub-bass thud
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(80, t);
+    osc.frequency.exponentialRampToValueAtTime(20, t + 1.2);
+    gain.gain.setValueAtTime(1.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.start(t); osc.stop(t + 1.4);
+    // High crack
+    const buf  = ac.createBuffer(1, ac.sampleRate * 0.15, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+    const src  = ac.createBufferSource();
+    const gn2  = ac.createGain();
+    src.buffer = buf;
+    gn2.gain.setValueAtTime(3, t);
+    src.connect(gn2); gn2.connect(ac.destination);
+    src.start(t);
+  } catch(e) {}
+
+  // Particles
+  const COLORS = ['#fff', '#ffeeaa', '#ffaa33', '#ff6600', '#cc2200', '#ff3300'];
+  const particles = [];
+  const COUNT = 220;
+  for (let i = 0; i < COUNT; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 14;
+    particles.push({
+      x: W / 2, y: H / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - Math.random() * 4,
+      life: 0.8 + Math.random() * 0.8,
+      decay: 0.012 + Math.random() * 0.02,
+      r: 2 + Math.random() * 5,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    });
+  }
+
+  // Shockwave rings
+  const rings = [
+    { r: 0, maxR: Math.max(W, H) * 0.75, life: 1 },
+    { r: 0, maxR: Math.max(W, H) * 0.55, life: 1, delay: 120 },
+  ];
+
+  let startTime = null;
+  const DURATION = 1800;
+  let shake = 18;
+
+  function frame(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    const progress = elapsed / DURATION;
+
+    // Screen shake — decays over time
+    shake = Math.max(0, 18 * (1 - progress * 1.5));
+    const dx = (Math.random() - 0.5) * shake;
+    const dy = (Math.random() - 0.5) * shake;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(dx, dy);
+
+    // Flash
+    if (progress < 0.08) {
+      const flashAlpha = (1 - progress / 0.08) * 0.95;
+      ctx.fillStyle = `rgba(255,240,200,${flashAlpha})`;
+      ctx.fillRect(-dx, -dy, W, H);
+    }
+
+    // Shockwave rings
+    rings.forEach(ring => {
+      if (elapsed < (ring.delay || 0)) return;
+      const rp = Math.min(1, (elapsed - (ring.delay || 0)) / (DURATION * 0.6));
+      ring.r = ring.maxR * rp;
+      ring.life = 1 - rp;
+      if (ring.life <= 0) return;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, ring.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,140,40,${ring.life * 0.6})`;
+      ctx.lineWidth = 6 * ring.life;
+      ctx.stroke();
+    });
+
+    // Particles
+    particles.forEach(p => {
+      if (p.life <= 0) return;
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.18; // gravity
+      p.vx *= 0.97;
+      p.life -= p.decay;
+      const alpha = Math.max(0, p.life);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * alpha, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    // Dark vignette closing in
+    if (progress > 0.6) {
+      const vigAlpha = (progress - 0.6) / 0.4;
+      const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.7);
+      grad.addColorStop(0,   `rgba(0,0,0,0)`);
+      grad.addColorStop(0.5, `rgba(0,0,0,${vigAlpha * 0.5})`);
+      grad.addColorStop(1,   `rgba(0,0,0,${vigAlpha})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(-dx, -dy, W, H);
+    }
+
+    ctx.restore();
+
+    if (elapsed < DURATION) {
+      requestAnimationFrame(frame);
+    } else {
+      // Fade to black then hand off
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      setTimeout(() => {
+        document.body.removeChild(cv);
+        onComplete();
+      }, 200);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+
 txCanvas.style.cssText = 'position:fixed;inset:0;z-index:400;pointer-events:none;';
 document.body.appendChild(txCanvas);
 const txCtx = txCanvas.getContext('2d');
