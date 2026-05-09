@@ -16,10 +16,10 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:           #0e0b07;
-  --bg-panel:     #1a1510;
-  --bg-card:      #241e14;
-  --bg-card-h:    #2e2618;
+  --bg:           #1a1714;
+  --bg-panel:     #221e17;
+  --bg-card:      #2a2318;
+  --bg-card-h:    #342b1e;
   --border:       #3a2a14;
   --border-a:     #6e4e28;
   --gold:         #d4962a;
@@ -415,6 +415,19 @@ body::after {
 .inv-item-row { display: flex; flex-direction: column; }
 .inv-item { font-size: 0.73rem; font-family: var(--f-mono); color: var(--parch); }
 .inv-item-desc { font-family: var(--f-mono); font-size: 0.64rem; color: var(--parch-d); font-style: italic; line-height: 1.4; }
+.c-btn-bonus {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 10px; width: 100%; text-align: left;
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border-a);
+  border-radius: 2px; cursor: pointer; transition: all 0.15s;
+  font-family: inherit;
+}
+.c-btn-bonus:hover { border-color: var(--gold-d); background: rgba(60,40,10,0.2); }
+.c-btn-bonus.selected { background: rgba(122,85,16,0.35); border-color: var(--gold); }
+.c-btn-bonus-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.c-btn-bonus-name { font-family: var(--f-disp); font-size: 0.78rem; color: var(--parch); letter-spacing: 0.03em; display: block; }
+.c-btn-bonus.selected .c-btn-bonus-name { color: var(--gold-b); }
+.c-btn-bonus-desc { font-family: var(--f-mono); font-size: 0.63rem; color: var(--parch-d); font-style: italic; margin-top: 2px; display: block; line-height: 1.35; }
 .c-text-wrap { display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
 .c-desc { font-size: 0.67rem; color: var(--parch-d); font-style: italic; margin-top: 2px; line-height: 1.35; font-family: var(--f-mono); }
 .gold-badge { font-family: var(--f-mono); font-size: 0.78rem; color: var(--gold); padding: 4px 9px; border: 1px solid var(--gold-d); border-radius: 2px; background: rgba(0,0,0,0.4); white-space: nowrap; }
@@ -1459,6 +1472,61 @@ try {
         else if (scene === 2) fireScene2Narration();
         else if (scene === 12) fireScene12Narration();
       }
+
+      // Riddle scoring — GM tab handles this when all players have submitted.
+      // Moved from per-player ROOT.once to avoid race condition where each tab's
+      // read fires before other tabs' writes have propagated.
+      if (phase === 'choosing' && SCENES[scene]?.type === 'riddle' && !fbState.session?.riddleScoringLock) {
+        const ps       = fbState.players || {};
+        const allDone  = Object.values(ps).every(p => p.status === 'downed' || p.choiceSubmitted);
+        if (allDone) {
+          const active       = Object.entries(ps).filter(([, p]) => p.status !== 'downed');
+          const correctCount = active.filter(([, p]) => p.choiceId === 'correct').length;
+          const totalActive  = active.length;
+          const passes       = correctCount >= Math.ceil(totalActive / 2);
+
+          if (passes) {
+            ROOT.update({
+              riddleSolved:               true,
+              riddleCorrectCount:         correctCount,
+              riddleTotalActive:          totalActive,
+              'session/phase':            'waiting_for_narration',
+              'session/riddleScoringLock': true,
+            });
+          } else {
+            const attempts = (fbState.riddleAttempts || 0) + 1;
+            const upd = {
+              riddleAttempts:             attempts,
+              riddleCorrectCount:         correctCount,
+              riddleTotalActive:          totalActive,
+              'session/riddleScoringLock': true,
+            };
+            Object.keys(ps).forEach(id => {
+              if (ps[id].status === 'downed') return;
+              if (ps[id].choiceId !== 'correct') {
+                upd[`players/${id}/choiceSubmitted`] = false;
+                upd[`players/${id}/freeformChoice`]  = null;
+                upd[`players/${id}/bonusAction`]     = null;
+                upd[`players/${id}/bonusText`]       = null;
+                upd[`players/${id}/choice`]          = null;
+                upd[`players/${id}/choiceId`]        = null;
+              }
+            });
+            if (attempts >= 2) {
+              upd['session/phase'] = 'waiting_for_narration';
+            } else {
+              upd['session/phase'] = 'choosing';
+              upd['session/riddleScoringLock'] = null; // unlock so GM can score next attempt
+              Object.keys(ps).filter(id => ps[id].status === 'active').forEach(id => {
+                const newHp = Math.max(0, (ps[id].hp || 0) - 8);
+                upd[`players/${id}/hp`] = newHp;
+                if (newHp <= 0) upd[`players/${id}/status`] = 'downed';
+              });
+            }
+            ROOT.update(upd);
+          }
+        }
+      }
     }
 
     render();
@@ -1538,10 +1606,6 @@ function renderArchSelection() {
         <span class="stat-pip" style="color:var(--gold-d);border-color:#3e3010;">${a.gold}g</span>
       </div>
       <div class="a-inv" style="margin-top:8px;">📦 ${invText}</div>
-      <div style="margin-top:10px;padding:7px 10px;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:2px;">
-        <div style="font-family:var(--f-mono);font-size:0.61rem;color:var(--gold-d);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Known Phrases</div>
-        ${a.catchphrases.map(p => `<div style="font-family:var(--f-mono);font-size:0.69rem;color:var(--parch-d);line-height:1.6;">— ${p}</div>`).join('')}
-      </div>
       ${isMine  ? '<div class="claimed-badge mine-badge">✓ CLAIMED — YOURS</div>' : ''}
       ${isTaken ? `<div class="claimed-badge">⚔ Taken by ${ownerName}</div>` : ''}
     </div>`;
@@ -1793,7 +1857,7 @@ function renderVictoryEnd() {
 //  FLOOR COLLAPSE SCREEN
 // ═══════════════════════════════════════════════════════
 function renderFloorCollapse() {
-  APP.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:#000;">
+  APP.innerHTML = `<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;background:#111009;">
     <div style="width:100%;max-width:600px;text-align:center;">
       <div style="font-family:var(--f-disp);font-size:1.1rem;color:#cc3333;letter-spacing:0.15em;margin-bottom:24px;text-shadow:0 0 20px rgba(200,40,40,0.6);">FLOOR 1 — DECOMMISSIONED</div>
       <div style="font-family:var(--f-mono);font-size:0.82rem;color:var(--parch-d);line-height:2.2;margin-bottom:32px;">
@@ -2101,9 +2165,7 @@ function renderSceneScreen(phase) {
       [`players/${myId}/choiceId`]:        'downed_carried',
       [`players/${myId}/choiceSubmitted`]: true,
     }).then(() => checkAllSubmitted());
-  }
-
-  // Narrative: fade in (no typewriter)
+  }  // Narrative: fade in (no typewriter)
   if (phase === 'scene_complete' || phase === 'scene1_ready' || phase === 'scene2_ready') {
     const el = document.getElementById('narrText');
     if (el) {
@@ -2188,6 +2250,11 @@ function buildShared(scene, phase, narr, players, scData) {
         : '';
       choicesHTML = `<div style="margin-top:10px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border-a);border-radius:2px;">${scoreNote}${partyGrid}</div>` + buildRiddleUI(me, scData);
     } else if (!me.choiceSubmitted) {
+      // Shop scenes — choices are in the shared panel (left side), not here
+      if (scData?.type === 'shop') {
+        choicesHTML = `<div class="state-msg dim" style="margin-top:14px;font-size:0.8rem;">
+          Browse Mags' wares on the left.<div class="sub">Buy one item or pass.</div></div>`;
+      } else {
       const baseChoices = scData?.getChoices(me.archetype, me.inventory, me.signatureUsed) || [];
       const itemChoices = getItemChoices(me.inventory||[]);
       const choices = [...baseChoices, ...itemChoices];
@@ -2229,15 +2296,11 @@ function buildShared(scene, phase, narr, players, scData) {
           <div style="display:flex;flex-direction:column;gap:5px;">
             ${bonusChoices.map(item => {
               const selected = pendingBonus?.id === item.id;
-              return `<button onclick="selectBonus('${item.id}')"
-                style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;
-                       background:${selected ? 'rgba(122,85,16,0.35)' : 'rgba(0,0,0,0.2)'};
-                       border:1px solid ${selected ? 'var(--gold)' : 'var(--border)'};
-                       border-radius:2px;cursor:pointer;text-align:left;width:100%;transition:all 0.15s;">
-                <span style="font-size:1rem;flex-shrink:0;">${item.icon}</span>
-                <span style="display:flex;flex-direction:column;">
-                  <span style="font-family:var(--f-disp);font-size:0.78rem;color:${selected ? 'var(--gold-b)' : 'var(--parch)'};letter-spacing:0.03em;">${selected ? '✓ ' : ''}${item.text}</span>
-                  <span style="font-family:var(--f-mono);font-size:0.64rem;color:var(--parch-d);font-style:italic;margin-top:2px;">${item.desc}</span>
+              return `<button type="button" class="c-btn-bonus${selected ? ' selected' : ''}" onclick="selectBonus('${item.id}')">
+                <span class="c-btn-bonus-icon">${item.icon}</span>
+                <span style="flex:1;">
+                  <span class="c-btn-bonus-name">${selected ? '✓ ' : ''}${item.text}</span>
+                  <span class="c-btn-bonus-desc">${item.desc}</span>
                 </span>
               </button>`;
             }).join('')}
@@ -2245,6 +2308,7 @@ function buildShared(scene, phase, narr, players, scData) {
         </div>` : '';
 
       choicesHTML = `<div class="choice-area" style="margin-top:14px;"><div class="choice-lbl">What do you do?</div><div style="display:flex;flex-direction:column;gap:8px;">${btns}${freeformBtn}</div>${bonusPanel}</div>`;
+      } // end non-shop else
     } else {
       choicesHTML = `<div class="state-msg" style="text-align:left;padding:12px 0;">✓ Your choice is in: <span style="color:var(--parch-d);font-style:italic">"${esc(me.choice)}"</span></div>`;
     }
@@ -2328,7 +2392,14 @@ function buildPlayerPanel(phase, me, scData, players) {
 }
 
 function buildCharSheet(p) {
-  const pct   = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
+  // During scene_complete, show pendingHp values so the bar matches what Claude narrated.
+  // pendingHp is written to Firebase at the same moment as the narration, so it's available
+  // immediately. The actual player HP in Firebase doesn't update until setContinue fires.
+  const phase = fbState.session?.phase;
+  const pending = (phase === 'scene_complete' && myId) ? fbState.narration?.pendingHp?.[myId] : null;
+  const displayHp = (pending?.hp !== undefined) ? pending.hp : p.hp;
+
+  const pct   = Math.max(0, Math.min(100, (displayHp / p.maxHp) * 100));
   const hpClr = pct > 50 ? '#44aa44' : pct > 25 ? '#cc9922' : '#cc3333';
   const spB   = p.sp  > 0 ? `<div class="sb"><span class="lbl">SP</span><span class="val" style="color:#8888cc">${p.sp}</span></div>`  : '';
   const armB  = p.arm > 0 ? `<div class="sb"><span class="lbl">ARM</span><span class="val" style="color:#8888aa">${p.arm}</span></div>` : '';
@@ -2351,7 +2422,7 @@ function buildCharSheet(p) {
       </div>
       <div class="hp-lbl-row">
         <span class="hp-lbl">HP</span>
-        <span class="hp-val" style="color:${hpClr}">${p.hp} / ${p.maxHp}</span>
+        <span class="hp-val" style="color:${hpClr}">${displayHp} / ${p.maxHp}</span>
       </div>
       <div class="hp-wrap" style="margin-bottom:9px">
         <div class="hp-fill" style="width:${pct}%;background:${hpClr}"></div>
@@ -2478,7 +2549,7 @@ function playAllReadySound() {
 const SHOP_ITEMS = [
   { id:'health_potion', icon:'🧪', name:'Health Potion',        desc:'+25 HP',                          cost:15, inv:'Health Potion' },
   { id:'bandage',       icon:'🩹', name:'Bandage',              desc:'+12 HP',                          cost:8,  inv:'Bandage' },
-  { id:'torch',         icon:'🔦', name:'Torch ×3',             desc:'Required. Scene 5 made this clear.', cost:5, inv:'Torch ×3' },
+  { id:'torch',         icon:'🔦', name:'Torch ×3',             desc:'Required. The previous darkness made this clear.', cost:5, inv:'Torch ×3' },
   { id:'smoke_bomb',    icon:'💨', name:'Smoke Bomb',           desc:'Escape combat or stun one enemy',  cost:10, inv:'Smoke Bomb' },
   { id:'antidote',      icon:'💊', name:'Antidote',             desc:'Cure poison',                     cost:12, inv:'Antidote' },
   { id:'rope',          icon:'🪢', name:'Rope',                 desc:'Useful later. Mags won\'t say why.', cost:12, inv:'Rope' },
@@ -2590,16 +2661,16 @@ const USABLE_ITEMS = [
 
   // ── Situational — main action only (no bonus flag) ──
   { match: 'Smoke Bomb',    id: 'use_smokebomb',    icon: '💨', text: 'Throw a Smoke Bomb',
-    desc: 'Narrative — creates a smoke cloud. Claude determines the outcome.',
+    desc: 'Creates a smoke cloud — useful for escape, distraction, or buying time.',
     effect: 'smoke',     amount: 0, consumable: true },
   { match: 'Spell Tome',    id: 'use_spelltome',    icon: '📖', text: 'Use the Spell Tome',
-    desc: 'Leah activates the Tome\'s dungeon magic. Powerful. Unpredictable. Claude determines the outcome.',
+    desc: 'Leah activates the Tome\'s dungeon magic. Powerful. Unpredictable.',
     effect: 'spell',     amount: 0, consumable: true },
   { match: 'Rope',          id: 'use_rope',         icon: '🪢', text: 'Use the Rope',
-    desc: 'Narrative utility — climbing, binding, tripping. Claude determines how it helps.',
+    desc: 'Tactical utility — climbing, binding, tripping, or whatever the situation calls for.',
     effect: 'rope',      amount: 0, consumable: true },
   { match: 'Mystery Sack',  id: 'use_mysterysack',  icon: '🎒', text: 'Open the Mystery Sack',
-    desc: 'Unknown contents. Could be anything. THE SYSTEM has logged what\'s inside. THE SYSTEM is not sharing.',
+    desc: 'Unknown contents. Could be anything. THE SYSTEM is not sharing.',
     effect: 'mystery',   amount: 0, consumable: true },
 ];
 
@@ -2614,14 +2685,12 @@ function getBonusChoices(inventory) {
 }
 
 function selectBonus(itemId) {
-  // Toggle — clicking the selected bonus deselects it
   pendingBonus = pendingBonus?.id === itemId ? null : USABLE_ITEMS.find(i => i.id === itemId) || null;
-  // Re-render only the player panel to show selection state
-  const panel = document.querySelector('.player-panel');
-  const me    = (fbState.players||{})[myId];
+  const panel  = document.querySelector('.player-panel');
+  const me     = (fbState.players||{})[myId];
   const scData = SCENES[fbState.session?.currentScene];
-  if (panel && me && scData) {
-    panel.innerHTML = buildPlayerPanel(fbState.session?.phase, me, scData, fbState.players || {});
+  if (panel && me) {
+    panel.innerHTML = buildPlayerPanel(fbState.session?.phase, me, scData || {}, fbState.players || {});
   }
 }
 
@@ -2790,8 +2859,8 @@ async function submitRiddleAnswer() {
   const answer = input.value.trim().toLowerCase();
   if (!answer) return;
 
-  const scData = SCENES[8];
-  const correct = scData.getAnswer(me.archetype);
+  const scData = SCENES[fbState.session?.currentScene] || SCENES[8];
+  const correct = scData.getAnswer ? scData.getAnswer(me.archetype) : '';
   const isRight = answer === correct;
 
   const upd = {
@@ -2803,65 +2872,7 @@ async function submitRiddleAnswer() {
   if (!fbState.riddleStarted) upd['riddleStarted'] = Date.now();
   await ROOT.update(upd);
   playChoiceSound();
-
-  // Check if all have submitted
-  ROOT.once('value', snap => {
-    const s = snap.val() || {};
-    const ps = s.players || {};
-    const allDone = Object.values(ps).every(p => p.status === 'downed' || p.choiceSubmitted);
-    if (!allDone) return;
-
-    const activePlayers = Object.entries(ps).filter(([, p]) => p.status !== 'downed');
-    const correctCount  = activePlayers.filter(([, p]) => p.choiceId === 'correct').length;
-    const totalActive   = activePlayers.length;
-
-    // Tiered outcome: 4/4 → good (door opens), 2-3/4 → neutral (door opens), 0-1/4 → bad (damage + retry or fail)
-    const allCorrect  = correctCount === totalActive;
-    const mostCorrect = correctCount >= Math.ceil(totalActive / 2); // majority correct
-
-    if (allCorrect || mostCorrect) {
-      // Door opens — track written to Firebase so Claude knows how many got it right
-      ROOT.update({
-        riddleSolved: true,
-        riddleCorrectCount: correctCount,
-        riddleTotalActive: totalActive,
-        'session/phase': 'waiting_for_narration',
-      });
-    } else {
-      // Partial/total failure — apply damage, increment attempts, reset only wrong players
-      const attempts = (s.riddleAttempts || 0) + 1;
-      const resetUpd = {
-        riddleAttempts: attempts,
-        riddleCorrectCount: correctCount,
-        riddleTotalActive: totalActive,
-        'session/phase': 'choosing',
-      };
-      // Only clear wrong players so correct ones keep their answered state
-      Object.keys(ps).forEach(id => {
-        if (ps[id].status === 'downed') return;
-        if (ps[id].choiceId !== 'correct') {
-          resetUpd[`players/${id}/choiceSubmitted`] = false;
-          resetUpd[`players/${id}/freeformChoice`] = null;
-          resetUpd[`players/${id}/bonusAction`] = null;
-          resetUpd[`players/${id}/bonusText`] = null;
-          resetUpd[`players/${id}/choice`]          = null;
-          resetUpd[`players/${id}/choiceId`]        = null;
-        }
-      });
-      if (attempts >= 2) {
-        // All attempts used — fire narration on bad track
-        resetUpd['session/phase'] = 'waiting_for_narration';
-      } else {
-        // Apply 8 damage to all active players
-        Object.keys(ps).filter(id => ps[id].status === 'active').forEach(id => {
-          const newHp = Math.max(0, (ps[id].hp || 0) - 8);
-          resetUpd[`players/${id}/hp`] = newHp;
-          if (newHp <= 0) resetUpd[`players/${id}/status`] = 'downed';
-        });
-      }
-      ROOT.update(resetUpd);
-    }
-  });
+  // The GM listener handles allDone detection and riddle scoring once all tabs have written
 }
 
 
@@ -4357,7 +4368,7 @@ async function advanceToNextScene(lockAlreadyHeld = false) {
   const next = cur + 1;
   showTransition(next, () => {
     const ps   = fbState.players || {};
-    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null, riddleStarted:null, 'session/kragPrep': null };
+    const upd  = { readiness:null, 'narration/text':null, 'narration/verdict':null, 'narration/scene':null, 'narration/pendingHp':null, riddleAttempts:null, riddleSolved:null, riddleCorrectCount:null, riddleTotalActive:null, riddleStarted:null, 'session/kragPrep': null, 'session/riddleScoringLock': null };
     upd[`narrationLock/scene${next}`] = null;
     Object.keys(ps).forEach(id => {
     upd[`players/${id}/freeformChoice`] = null;
