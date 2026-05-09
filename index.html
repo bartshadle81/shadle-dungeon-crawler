@@ -25,15 +25,15 @@
   --gold:         #d4962a;
   --gold-b:       #f5b840;
   --gold-d:       #8a6218;
-  --parch:        #f0e2c0;
-  --parch-d:      #c0a878;
+  --parch:        #ddd0aa;
+  --parch-d:      #b09a6a;
   --muted:        #5a4828;
   --red:          #7a1c1c;
   --red-b:        #e04040;
   --green:        #3a7a3a;
   --green-b:      #66dd66;
-  --sys:          #f0c040;   /* The System voice */
-  --sys-d:        #b08820;
+  --sys:          #d4a832;   /* The System voice */
+  --sys-d:        #9a7618;
   --blue-d:       #284468;
   --glow-g: 0 0 18px rgba(200,137,30,0.35);
   --glow-r: 0 0 18px rgba(122,28,28,0.5);
@@ -329,7 +329,7 @@ body::after {
 .narr-box {
   position: relative;
   min-height: 100px; padding: 14px 16px;
-  background: rgba(0,0,0,0.55);
+  background: rgba(30,22,12,0.7);
   border: 1px solid var(--border-a); border-radius: 2px; margin-bottom: 10px;
   overflow: hidden;
 }
@@ -674,7 +674,7 @@ const SCENES = {
     name: 'The Survivor',
     title: 'You are not alone.',
     sub:  'NPC Encounter',
-    desc: 'Past the antechamber the corridor narrows, and that is where they find him — wedged into an alcove between two supply barrels, knees to his chest, a half-eaten granola bar in one hand and a hand-drawn map in the other. Late forties. What was once business casual. He has been down here for six hours. He gave himself a dungeon name when he descended — Gorgath the Undying — but his real name is Gerald. He was an accountant in Savannah. His family did not make it to their box in time. He went in alone. He has been in this alcove ever since, watching the corridor, hoping for almost anything except more goblins. He sees the party. He freezes. He looks at Bear. Bear looks back. Gerald exhales for what might be the first time in hours.',
+    desc: 'The pressure plate room is behind them. The paw prints that crossed it safely — one unbroken trail through the only path that didn\'t glow — continued into this corridor and then stopped. Whatever made them is somewhere ahead. Past the antechamber the corridor narrows, and that is where they find him — wedged into an alcove between two supply barrels, knees to his chest, a half-eaten granola bar in one hand and a hand-drawn map in the other. Late forties. What was once business casual. He has been down here for six hours. He gave himself a dungeon name when he descended — Gorgath the Undying — but his real name is Gerald. He was an accountant in Savannah. His family did not make it to their box in time. He went in alone. He has been in this alcove ever since, watching the corridor, hoping for almost anything except more goblins. He sees the party. He freezes. He looks at Bear. Bear looks back. Gerald exhales for what might be the first time in hours.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -721,7 +721,7 @@ const SCENES = {
     name: 'First Blood',
     title: 'Oh no.',
     sub:  'Goblin Grunt Patrol',
-    desc: 'The corridor opens into a guard chamber, and the party has about one second to take it in: four Goblin Grunts, mid-argument, completely unprepared for company. They are stationed here. They were not expecting anyone from this entrance. One of them is wearing a hardhat. Another\'s sword is still in its Syndicate-issue packaging. For one suspended moment, both sides look at each other. Then the grunts reach the same conclusion at roughly the same time. One of them — smaller than the others, holding up both hands immediately — does not. His name is Splurt. He would very much like to discuss a peaceful resolution. The other three would not.',
+    desc: 'The corridor past the alcoves opens into a guard chamber, and the party has about one second to take it in: four Goblin Grunts, mid-argument, completely unprepared for company. They are stationed here. They were not expecting anyone from this entrance. One of them is wearing a hardhat. Another\'s sword is still in its Syndicate-issue packaging. For one suspended moment, both sides look at each other. Then the grunts reach the same conclusion at roughly the same time. One of them — smaller than the others, holding up both hands immediately — does not. His name is Splurt. He would very much like to discuss a peaceful resolution. The other three would not.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -776,8 +776,8 @@ const SCENES = {
         pool.forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*7)); });
         if (leah && !deltas[leah]) deltas[leah] = -(8 + Math.floor(Math.random()*5));
       } else {
-        active.forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*7)); });
-        if (leah) deltas[leah] = Math.min(-18, (deltas[leah]||0) - 4);
+        active.forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*7)); });
+        if (leah) deltas[leah] = Math.min(-14, (deltas[leah]||0) - 4);
       }
       return deltas;
     },
@@ -795,7 +795,7 @@ const SCENES = {
     name: 'Ambush in the Dark',
     title: 'Something\'s wrong.',
     sub:  'Kobold Skirmishers',
-    desc: 'The torches go out. All of them. At once. The darkness that follows is not the soft dark of a cloudy night — it is the specific, total black of underground with no light source and no way to make one. Somewhere in the walls, something clicks. Reptilian, precise, coordinated. Five sets. Kobold Skirmishers — small, fast, lizard-built dungeon predators, bred for ambush in exactly this kind of darkness. They have infrared vision and no interest in a fair fight. They have been in the walls since before the party entered the corridor. They can see everything. They have been waiting. Whatever warned them the party was coming, THE SYSTEM neither confirms nor denies. The clicking gets closer.',
+    desc: 'The goblin fight is behind them. The corridor is quiet — the specific quiet of a dungeon that has just decided to try something different. Then the torches go out. All of them. At once. The darkness that follows is not the soft dark of a cloudy night — it is the specific, total black of underground with no light source and no way to make one. Somewhere in the walls, something clicks. Reptilian, precise, coordinated. Five sets. Kobold Skirmishers — small, fast, lizard-built dungeon predators, bred for ambush in exactly this kind of darkness. They have infrared vision and no interest in a fair fight. They have been in the walls since before the party entered the corridor. They can see everything. They have been waiting. Whatever warned them the party was coming, THE SYSTEM neither confirms nor denies. The clicking gets closer.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -844,14 +844,14 @@ const SCENES = {
       const deltas   = {};
       if (track === 'good') {
         // 1-2 players take light damage
-        active.slice(0,2).forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*7)); });
+        active.slice(0,2).forEach(id => { deltas[id] = -(7 + Math.floor(Math.random()*6)); });
       } else if (track === 'neutral') {
-        active.forEach(id => { deltas[id] = -(16 + Math.floor(Math.random()*9)); });
-        if (leah) deltas[leah] = (deltas[leah]||0) - 6; // extra for grabbing the tail
+        active.forEach(id => { deltas[id] = -(12 + Math.floor(Math.random()*7)); });
+        if (leah) deltas[leah] = (deltas[leah]||0) - 5; // extra for grabbing the tail
       } else {
-        active.forEach(id => { deltas[id] = -(22 + Math.floor(Math.random()*9)); });
-        fighters.forEach(id => { deltas[id] = (deltas[id]||0) - 8; }); // charging blind costs extra
-        if (leah) deltas[leah] = (deltas[leah]||0) - 6;
+        active.forEach(id => { deltas[id] = -(17 + Math.floor(Math.random()*8)); });
+        fighters.forEach(id => { deltas[id] = (deltas[id]||0) - 6; }); // charging blind costs extra
+        if (leah) deltas[leah] = (deltas[leah]||0) - 5;
       }
       return deltas;
     },
@@ -886,7 +886,7 @@ const SCENES = {
       // Everyone gets a small HP recovery from the rest alcove
       const active = Object.keys(players).filter(id => players[id].status === 'active');
       const deltas = {};
-      active.forEach(id => { deltas[id] = track === 'good' ? 10 : 6; });
+      active.forEach(id => { deltas[id] = track === 'good' ? 20 : 12; });
       return deltas;
     },
   },
@@ -895,7 +895,7 @@ const SCENES = {
     name: 'The Puzzle Lock',
     title: 'Think.',
     sub:  'Syndicate Class-3 Security Door',
-    desc: 'The corridor ends at a door that has no business being here — solid stone, three feet thick, with a keypad set into the face and a screen above it. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. Below that, smaller: unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. The moment the party reads it, something shifts — a pressure, not quite a sound, like a word on the tip of the tongue. Each person holds one riddle. The others hold theirs. The door predates the goblins. The door has seen parties stand here and not make it through. It is waiting to see what this one does.',
+    desc: 'Past Mags\' alcove, past the warmth of the only rest stop Floor 1 is legally required to provide, the corridor ends at a door that has no business being here — solid stone, three feet thick, with a keypad set into the face and a screen above it. The screen reads: FOUR-PART AUTHORIZATION REQUIRED. EACH MEMBER OF YOUR PARTY HOLDS ONE PART. Below that, smaller: unauthorized bypass attempts result in a corrective discharge. Attempts remaining: 2. The moment the party reads it, something shifts — a pressure, not quite a sound, like a word on the tip of the tongue. Each person holds one riddle. The others hold theirs. The door predates the goblins. The door has seen parties stand here and not make it through. It is waiting to see what this one does.',
     type: 'riddle',
     riddleLines: {
       Bart:    'I have no mouth but I speak to every dark place. I have no hands but I reach for the ceiling. Feed me and I grow. Starve me and I vanish. What am I?',
@@ -978,12 +978,12 @@ const SCENES = {
       const deltas = {};
       if (track === 'good') {
         const t = fighters[0] || active[0];
-        if (t) deltas[t] = -(10 + Math.floor(Math.random()*8));
+        if (t) deltas[t] = -(7 + Math.floor(Math.random()*7));
       } else if (track === 'neutral') {
         const pool = [...fighters, ...defenders].slice(0,2);
-        pool.forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*8)); });
+        pool.forEach(id => { deltas[id] = -(10 + Math.floor(Math.random()*8)); });
       } else {
-        active.forEach(id => { deltas[id] = -(18 + Math.floor(Math.random()*10)); });
+        active.forEach(id => { deltas[id] = -(14 + Math.floor(Math.random()*9)); });
       }
       return deltas;
     },
@@ -1004,7 +1004,7 @@ const SCENES = {
     name: 'The Throne Room Door',
     title: 'Before the throne.',
     sub:  'Krag\'s Corridor',
-    desc: 'The corridor beyond the Elite fight is different from everything before it. Quieter. The torches are better maintained. The floor has been swept. This is Krag\'s domain — eleven years of it, every detail intentional. The right wall holds a carving: forty-three tally marks in rows of ten, plus three. Forty-three parties reached this door. The names beneath them are mostly faded. Some are recent. At the far end, the throne room door is closed. Through it: weight, movement, the sound of something large settling into a chair that was built for exactly this purpose. Krag has been waiting for a party to reach him for three weeks. He has prepared remarks. The door is twenty feet away. The party has maybe sixty seconds before he hears them.',
+    desc: 'The troll is behind them. Luna is with them now — she found Melissa in the middle of that fight, full speed, wearing a hardhat three sizes too big, and she has clearly been in this dungeon the entire time doing something the party was not informed about. The corridor beyond the Elite fight is different from everything before it. Quieter. The torches are better maintained. The floor has been swept. This is Krag\'s domain — eleven years of it, every detail intentional. The right wall holds a carving: forty-three tally marks in rows of ten, plus three. Forty-three parties reached this door. The names beneath them are mostly faded. Some are recent. At the far end, the throne room door is closed. Through it: weight, movement, the sound of something large settling into a chair that was built for exactly this purpose. Krag has been waiting for a party to reach him for three weeks. He has prepared remarks. The door is twenty feet away. The party has maybe sixty seconds before he hears them.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -1064,7 +1064,7 @@ const SCENES = {
     name: 'Krag the Warchief',
     title: 'Oh no.',
     sub:  'Boss Fight',
-    desc: 'The throne room opens at the end of the corridor and it is deliberately, architecturally, meant to make whoever enters feel small. High vaulted ceiling. Torches in iron brackets running the length of both walls. A floor that has seen things. And at the far end, on a throne assembled from weapons and intention, sits Krag. Warchief of the Goblin Antechamber. Floor Boss, certified by the Syndicate, eleven years in the role. He is large and scarred and has a speech prepared. He stands when the door opens. He rolls his neck. The crack fills the room. He opens his mouth — and he is going to say something genuinely menacing.',
+    desc: 'Forty-three tally marks are on the wall twenty feet behind them. Whatever the party did with their sixty seconds, this is what comes after. The throne room opens at the end of the corridor and it is deliberately, architecturally, meant to make whoever enters feel small. High vaulted ceiling. Torches in iron brackets running the length of both walls. A floor that has seen things. And at the far end, on a throne assembled from weapons and intention, sits Krag. Warchief of the Goblin Antechamber. Floor Boss, certified by the Syndicate, eleven years in the role. He is large and scarred and has a speech prepared. He stands when the door opens. He rolls his neck. The crack fills the room. He opens his mouth — and he is going to say something genuinely menacing.',
     type: 'choice',
     getChoices(archetype, inventory, sigUsed) {
       const generic = [
@@ -1106,11 +1106,11 @@ const SCENES = {
       const active = Object.keys(players).filter(id => players[id].status === 'active');
       const deltas = {};
       if (track === 'good') {
-        active.forEach(id => { deltas[id] = -(15 + Math.floor(Math.random()*10)); });
+        active.forEach(id => { deltas[id] = -(11 + Math.floor(Math.random()*8)); });
       } else if (track === 'neutral') {
-        active.forEach(id => { deltas[id] = -(22 + Math.floor(Math.random()*12)); });
+        active.forEach(id => { deltas[id] = -(17 + Math.floor(Math.random()*10)); });
       } else {
-        active.forEach(id => { deltas[id] = -(30 + Math.floor(Math.random()*14)); });
+        active.forEach(id => { deltas[id] = -(24 + Math.floor(Math.random()*12)); });
       }
       return deltas;
     },
@@ -1139,6 +1139,9 @@ const SCENES = {
 
 // ── THE SYSTEM PROMPT ──
 const SYS_PROMPT = `You are THE SYSTEM — the omniscient, sarcastic, and faintly disappointed narrator of a Syndicate dungeon. You speak with the authority of something that has watched thousands of contestants die and found it educational. Your tone is Dungeon Crawler Carl: punchy, dark-comedic, never mean-spirited. You love these idiots. You expected them to be dead by now.
+
+NARRATIVE CONTINUITY:
+Each scene is a chapter, not an episode. The party carries momentum, injury, and mood from what just happened — they do not reset between rooms. THE SYSTEM notices continuity. THE SYSTEM remembers. A party that just survived total darkness does not walk into a rest stop with the same energy as a party that breezed through pressure plates. A bad track leaves marks — on the narration, on the tone, on how THE SYSTEM regards them. A good track earns a moment of something almost like respect, which THE SYSTEM will not acknowledge directly. Weave threads forward. If Bear did something two scenes ago, THE SYSTEM still knows. If Gerald is with them, Gerald is still with them. The dungeon is one continuous experience, and the writing should feel that way.
 
 THE WORLD:
 This is the Dungeon Crawler Carl universe. The Syndicate dropped boxes on neighborhoods worldwide simultaneously — this is canon, this is the DCC world, and Claude should treat it as such. Reference DCC lore naturally but don't overdo it. The Shadle family was at their daughter's orchestra concert at Timber Creek High School in Orlando when their box appeared mid-performance. They descended. Most of the world did not.
@@ -1317,30 +1320,7 @@ function showAchievement(text) {
 let lastVerdictKey = null;
 let verdictTimer   = null;
 
-// ── Riddle waiting tick — re-renders player panel every second so elapsed time is live ──
-let riddleTick = null;
-function manageRiddleTick(phase, me) {
-  const isRiddleWaiting = phase === 'choosing'
-    && SCENES[fbState.session?.currentScene]?.type === 'riddle'
-    && me?.choiceSubmitted;
-
-  if (isRiddleWaiting && !riddleTick) {
-    riddleTick = setInterval(() => {
-      // Only re-render the player panel div, not the full screen
-      const panel = document.querySelector('.player-panel');
-      const me2   = (fbState.players||{})[myId];
-      const scData2 = SCENES[fbState.session?.currentScene];
-      if (panel && me2 && scData2) {
-        panel.innerHTML = me2.status === 'downed'
-          ? buildDownedPanel(me2)
-          : buildPlayerPanel(fbState.session?.phase, me2, scData2, fbState.players || {});
-      }
-    }, 1000);
-  } else if (!isRiddleWaiting && riddleTick) {
-    clearInterval(riddleTick);
-    riddleTick = null;
-  }
-}
+function manageRiddleTick() {} // no-op — riddle timer removed
 
 function triggerVerdictTypewrite(narr) {
   if (!narr.verdict || !narr.scene) return;
@@ -1954,7 +1934,7 @@ Narrate this opening moment as THE SYSTEM — but restrained. THE SYSTEM is watc
 
   try {
     const text = await callClaude(prompt);
-    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':1, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready' });
+    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':1, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene1_ready', 'narrationHistory/scene1/text':text });
   } catch(e) {
     ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene1_ready' });
   }
@@ -1999,7 +1979,7 @@ THE SYSTEM greets the party. Gives its official assessment of their survival odd
 
   try {
     const text = await callClaude(prompt);
-    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':2, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene2_ready' });
+    ROOT.update({ 'narration/text':text, 'narration/verdict':'', 'narration/scene':2, 'narration/timestamp':Date.now(), 'narration/generating':false, 'session/phase':'scene2_ready', 'narrationHistory/scene2/text':text });
   } catch(e) {
     ROOT.update({ 'narration/text':`THE SYSTEM has encountered a technical difficulty.\n\n[API Error: ${e.message}]`, 'narration/generating':false, 'session/phase':'scene2_ready' });
   }
@@ -2686,12 +2666,18 @@ function getBonusChoices(inventory) {
 
 function selectBonus(itemId) {
   pendingBonus = pendingBonus?.id === itemId ? null : USABLE_ITEMS.find(i => i.id === itemId) || null;
-  const panel  = document.querySelector('.player-panel');
-  const me     = (fbState.players||{})[myId];
-  const scData = SCENES[fbState.session?.currentScene];
-  if (panel && me) {
-    panel.innerHTML = buildPlayerPanel(fbState.session?.phase, me, scData || {}, fbState.players || {});
-  }
+  // Bonus panel lives in the shared panel — update buttons in place
+  document.querySelectorAll('.c-btn-bonus').forEach(btn => {
+    const id = btn.getAttribute('onclick')?.match(/selectBonus\('(.+?)'\)/)?.[1];
+    if (!id) return;
+    const sel = pendingBonus?.id === id;
+    btn.classList.toggle('selected', sel);
+    const nameEl = btn.querySelector('.c-btn-bonus-name');
+    if (nameEl) {
+      const item = USABLE_ITEMS.find(i => i.id === id);
+      nameEl.textContent = (sel ? '✓ ' : '') + (item?.text || '');
+    }
+  });
 }
 
 function getItemChoices(inventory) {
@@ -2772,35 +2758,22 @@ function buildRiddleUI(me, scData) {
     return `<div class="state-msg">✓ The door is open.<div class="sub">Well done.</div></div>`;
   }
   if (me.choiceSubmitted) {
-    // ── Name-and-shame: show who's still thinking, with elapsed time ──
+    // ── Name-and-shame: show who's still thinking ──
     const players  = fbState.players || {};
-    const started  = fbState.riddleStarted || Date.now();
-    const elapsed  = Math.floor((Date.now() - started) / 1000);
-    const mins     = Math.floor(elapsed / 60);
-    const secs     = elapsed % 60;
-    const timeStr  = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-    const waiting = Object.values(players).filter(p =>
-      p.status !== 'downed' && !p.choiceSubmitted && p.playerId !== myId
-    );
-    // Also catch by id in case playerId isn't stored
     const waitingById = Object.entries(players)
       .filter(([id, p]) => p.status !== 'downed' && !p.choiceSubmitted && id !== myId)
       .map(([, p]) => p.name);
 
-    const waitingNames = waitingById.length > 0 ? waitingById : waiting.map(p => p.name);
-
-    const waitingLines = waitingNames.length === 0
+    const waitingLines = waitingById.length === 0
       ? `<div style="color:var(--green-b);margin-top:4px;">Everyone has answered.</div>`
-      : waitingNames.map(name =>
+      : waitingById.map(name =>
           `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
             <span style="color:var(--red-b);font-size:1rem;">⟳</span>
             <span style="color:var(--parch);">${esc(name)}</span>
             <span style="color:var(--parch-d);font-size:0.72rem;margin-left:auto;">still thinking...</span>
           </div>`
         ).join('');
-
-    const timeColor = elapsed > 90 ? 'var(--red-b)' : elapsed > 45 ? '#d08030' : 'var(--sys)';
 
     return `
       <div style="margin-top:14px;">
@@ -2809,10 +2782,7 @@ function buildRiddleUI(me, scData) {
           <div class="sub">THE SYSTEM is waiting.</div>
         </div>
         <div style="margin-top:14px;padding:12px 14px;background:rgba(0,0,0,0.35);border:1px solid var(--border-a);border-radius:2px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <span style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);letter-spacing:0.05em;">WAITING FOR</span>
-            <span style="font-family:var(--f-mono);font-size:0.8rem;color:${timeColor};letter-spacing:0.04em;">${timeStr}</span>
-          </div>
+          <div style="font-family:var(--f-mono);font-size:0.72rem;color:var(--parch-d);letter-spacing:0.05em;margin-bottom:10px;">WAITING FOR</div>
           <div style="font-family:var(--f-mono);font-size:0.82rem;">${waitingLines}</div>
         </div>
       </div>`;
@@ -2868,8 +2838,6 @@ async function submitRiddleAnswer() {
     [`players/${myId}/choiceId`]:        isRight ? 'correct' : 'wrong',
     [`players/${myId}/choiceSubmitted`]: true,
   };
-  // Stamp the start time on the first submission so elapsed clock is synced across all tabs
-  if (!fbState.riddleStarted) upd['riddleStarted'] = Date.now();
   await ROOT.update(upd);
   playChoiceSound();
   // The GM listener handles allDone detection and riddle scoring once all tabs have written
@@ -3018,17 +2986,21 @@ function submitByIdx(i) {
     playChoiceSound();
     checkAllSubmitted();
   });
-  ROOT.once('value', snap => {
-    const s = snap.val() || {};
-    if (s.session?.phase !== 'choosing') return;
-    const ps = s.players || {};
-    const allDone = Object.values(ps).every(p => p.status==='downed' || p.choiceSubmitted);
-    if (allDone) {
-      playAllReadySound();
-      triggerReadyFlash();
-      ROOT.update({ 'session/phase':'waiting_for_narration' });
-    }
-  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHECK ALL SUBMITTED → advance phase to waiting_for_narration
+// ═══════════════════════════════════════════════════════
+function checkAllSubmitted() {
+  const phase = fbState.session?.phase;
+  if (phase !== 'choosing') return;
+  const scene = fbState.session?.currentScene;
+  // Riddle scenes are handled by the GM listener's riddle scoring block
+  if (SCENES[scene]?.type === 'riddle') return;
+  const players = fbState.players || {};
+  const allDone = Object.values(players).every(p => p.status === 'downed' || p.choiceSubmitted);
+  if (!allDone) return;
+  ROOT.update({ 'session/phase': 'waiting_for_narration' });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3185,18 +3157,22 @@ REQUIRED: You must include TRACK: good, TRACK: neutral, or TRACK: bad as the FIR
 
   // Build outcome summary for Claude so narration matches reality exactly
   let outcomeSummary = '';
-  if (Object.keys(deltas).length > 0) {
-    const lines = Object.entries(deltas).map(([id, d]) => {
-      const p = players[id];
-      if (!p) return null;
+  {
+    const lines = Object.entries(players).map(([id, p]) => {
+      if (p.status === 'downed') return null;
+      if (id === '__goldLoot') return null;
+      const d       = deltas[id];
       const current = p.hp || 0;
-      const maxHp = p.maxHp || current;
+      const maxHp   = p.maxHp || current;
+      if (d === undefined || d === 0) {
+        return `${p.name} — no damage this round. HP stays at ${current}/${maxHp}. DO NOT add damage for this player.`;
+      }
       const newHp = Math.min(maxHp, Math.max(0, current + d));
       if (d < 0) return `${p.name} takes ${Math.abs(d)} damage (HP: ${current} → ${newHp}${newHp <= 0 ? ' — DOWNED' : ''})`;
       if (d > 0) return `${p.name} heals ${d} HP (HP: ${current} → ${newHp})`;
       return null;
     }).filter(Boolean);
-    if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING — THESE NUMBERS ARE EXACT. Use them verbatim in the verdict. Do not invent, round, or change any HP value:\n${lines.join('\n')}`;
+    if (lines.length) outcomeSummary = `\n\nACTUAL DAMAGE/HEALING — COMPLETE AND EXACT. Every active player is listed below. Use these verbatim in the verdict. Do NOT invent damage for any player. Do NOT omit any player:\n${lines.join('\n')}`;
   }
 
   // Gold loot — calculated before Claude call so amounts match
@@ -3355,13 +3331,23 @@ THESE HP VALUES ARE EXACT AND AUTHORITATIVE. Use them verbatim. Do not round, es
 ${statusLine}${phase2Flag}${historyText}`;
   }
 
+  // ── Previous scene context — track + narration handoff for continuity ──
+  let prevSceneContext = '';
+  if (scene > 3) {
+    const prevEntry = (fbState.narrationHistory || {})[`scene${scene - 1}`];
+    if (prevEntry) {
+      const trackLine  = prevEntry.track   ? `The previous scene resolved on a ${prevEntry.track.toUpperCase()} track.` : '';
+      prevSceneContext = `\n\nPREVIOUS SCENE CONTEXT:\n${trackLine}\nOpen your narration with a line or two that carries momentum from that scene into this one — not a recap, just the feeling of continued motion. The party does not teleport between scenes. Something from before should still be in the air.`;
+    }
+  }
+
   const prompt = `SCENE ${scene}: ${scData?.name || ''}
 ${scData?.desc || ''}
 
 PLAYER CHOICES:
 ${party}
 
-OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${carryingNote}${kragPrepNote}${combatContext}${freeformContext}${bearNote}${geraldNote}
+OUTCOME TRACK: ${hasFreeform ? '[Claude determines — see FREEFORM CHOICES IN PLAY above]' : `${track.toUpperCase()} — ${hint[track]||''}`}${outcomeSummary}${goldSummary}${shopNote}${riddleNote}${itemSummary}${carryingNote}${kragPrepNote}${combatContext}${freeformContext}${bearNote}${geraldNote}${prevSceneContext}
 
 YOUR RESPONSE MUST HAVE EXACTLY TWO SECTIONS SEPARATED BY ---SYSTEM---
 
@@ -3406,7 +3392,23 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
   }
 
   try {
-    const raw = await callClaude(prompt);
+    // Build multi-turn message history so Claude remembers prior narrations
+    const history = fbState.narrationHistory || {};
+    const historyMessages = [];
+    for (let s = Math.max(1, scene - 3); s < scene; s++) {
+      const entry = history[`scene${s}`];
+      if (!entry?.text) continue;
+      const assistantContent = entry.verdict
+        ? `${entry.text}\n\n---SYSTEM---\n${entry.verdict}`
+        : entry.text;
+      const trackLine  = entry.track   ? ` — Track: ${entry.track}`         : '';
+      const choiceLine = entry.choices ? `\nChoices: ${entry.choices}` : '';
+      historyMessages.push({ role: 'user',      content: `[Scene ${s}${trackLine}]${choiceLine}` });
+      historyMessages.push({ role: 'assistant', content: assistantContent });
+    }
+    historyMessages.push({ role: 'user', content: prompt });
+
+    const raw = await callClaude(prompt, historyMessages);
 
     // Split on separator
     const sepIdx = raw.indexOf('---SYSTEM---');
@@ -3479,6 +3481,14 @@ If nothing bad happened, keep it short. THE SYSTEM does not pad.`;
       'narration/generating': false,
       'narration/pendingHp':  Object.keys(pendingHp).length ? pendingHp : null,
       'session/phase':        'scene_complete',
+      // Persist narration for continuity — Claude reads last 3 scenes before writing the next
+      [`narrationHistory/scene${scene}/text`]:    narrative,
+      [`narrationHistory/scene${scene}/verdict`]: verdict,
+      [`narrationHistory/scene${scene}/track`]:   track,
+      [`narrationHistory/scene${scene}/choices`]: Object.values(players)
+        .filter(p => p.name && p.choice)
+        .map(p => `${p.name}: ${p.choice}`)
+        .join(' | '),
       // Write kragPrep when scene 10 resolves so Krag fight can read it
       ...(scene === 10 ? { 'session/kragPrep': track } : {}),
     });
@@ -4626,7 +4636,7 @@ function gmJump() {
 // ═══════════════════════════════════════════════════════
 //  ANTHROPIC API
 // ═══════════════════════════════════════════════════════
-async function callClaude(userPrompt) {
+async function callClaude(userPrompt, messages = null) {
   const key = sessionStorage.getItem('dcs_apikey');
   if (!key) throw new Error('No API key set. Open the GM panel (?gm=true) and enter your Anthropic API key.');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -4639,9 +4649,9 @@ async function callClaude(userPrompt) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 800,
+      max_tokens: 1200,
       system: SYS_PROMPT,
-      messages: [{ role:'user', content:userPrompt }],
+      messages: messages || [{ role:'user', content:userPrompt }],
     }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
