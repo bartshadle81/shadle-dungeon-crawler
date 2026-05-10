@@ -3749,7 +3749,7 @@ function fireCollapseExplosion(onComplete) {
   requestAnimationFrame(frame);
 }
 
-
+const txCanvas = document.createElement('canvas');
 txCanvas.style.cssText = 'position:fixed;inset:0;z-index:400;pointer-events:none;';
 document.body.appendChild(txCanvas);
 const txCtx = txCanvas.getContext('2d');
